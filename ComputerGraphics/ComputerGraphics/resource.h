@@ -13,6 +13,9 @@
 #define IDC_EXPR1                       109
 #define IDR_MAINFRAME                   128
 #define IDI_COMPUTERGRAPHICS IDI_APPLICATION
+#define IDC_STATIC                      -1
+#define IDC_COMPUTERGRAPHICS            IDC_EXPR1
+
 
 // ≤Àµ•ID∂®“Â
 #define ID_FILE_NEW                     40001
