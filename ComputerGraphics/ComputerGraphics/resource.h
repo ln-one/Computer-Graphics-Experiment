@@ -13,7 +13,7 @@
 #define IDC_COMPUTERGRAPHICS            109
 #define IDR_MAINFRAME                   128
 
-// 菜单ID定义
+// Menu ID definitions
 #define ID_FILE_NEW                     40001
 #define ID_FILE_EXIT                    40002
 

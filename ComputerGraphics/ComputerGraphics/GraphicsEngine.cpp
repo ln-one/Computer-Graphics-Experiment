@@ -105,7 +105,7 @@ void GraphicsEngine::OnRButtonDown(int x, int y) {
 }
 
 void GraphicsEngine::OnMouseMove(int x, int y) {
-    // 实时预览功能
+    // Real-time preview functionality
 }
 
 void GraphicsEngine::DrawExpr1Graphics() {
@@ -115,13 +115,13 @@ void GraphicsEngine::DrawExpr1Graphics() {
     int offsetX = 100, offsetY = 100;
     int scale = 5;
     
-    // 外圆角矩形 (66×46, R7)
+    // Outer rounded rectangle (66x46, R7)
     RoundRect(hdc,
         offsetX, offsetY,
         offsetX + 66 * scale, offsetY + 46 * scale,
         7 * scale, 7 * scale);
     
-    // 内圆角矩形孔 (43×30, R3)
+    // Inner rounded rectangle hole (43x30, R3)
     RoundRect(hdc,
         offsetX + (66 - 43) / 2 * scale,
         offsetY + (46 - 30) / 2 * scale,
@@ -129,8 +129,8 @@ void GraphicsEngine::DrawExpr1Graphics() {
         offsetY + (46 + 30) / 2 * scale,
         3 * scale, 3 * scale);
     
-    // 四个圆孔 (Φ7)
-    int holeR = 7 / 2.0 * scale;
+    // Four circular holes (Phi 7)
+    int holeR = static_cast<int>(7.0 / 2.0 * scale);
     int holeCenterOffsetX = (66 - 52) / 2 * scale;
     int holeCenterOffsetY = (46 - 32) / 2 * scale;
 
@@ -256,7 +256,7 @@ void GraphicsEngine::DrawRectangle(Point2D p1, Point2D p2, COLORREF color) {
 }
 
 void GraphicsEngine::DrawPolyline(const std::vector<Point2D>& points, COLORREF color) {
-    for (size_t i = 1; i < points.size(); i++) {
+    for (int i = 1; i < static_cast<int>(points.size()); i++) {
         DrawLineBresenham(points[i-1], points[i], color);
     }
 }
@@ -277,7 +277,7 @@ void GraphicsEngine::DrawBSpline(const std::vector<Point2D>& controlPoints, COLO
 }
 
 Point2D GraphicsEngine::CalculateBSplinePoint(float t, const std::vector<Point2D>& controlPoints) {
-    int n = controlPoints.size();
+    int n = static_cast<int>(controlPoints.size());
     if (n < 4) return Point2D(0, 0);
     
     float u = t * (n - 3);

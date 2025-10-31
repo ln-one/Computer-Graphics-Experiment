@@ -3,28 +3,28 @@
 #include <vector>
 #include <cmath>
 
-// 绘图模式枚举
+// Drawing mode enumeration
 enum DrawMode {
     MODE_NONE = 0,
-    MODE_EXPR1,             // 实验一：基本图形绘制
-    MODE_LINE_DDA,          // DDA直线算法
-    MODE_LINE_BRESENHAM,    // Bresenham直线算法
-    MODE_CIRCLE_MIDPOINT,   // 中点圆算法
-    MODE_CIRCLE_BRESENHAM,  // Bresenham圆算法
-    MODE_RECTANGLE,         // 矩形
-    MODE_POLYLINE,          // 多段线
-    MODE_BSPLINE,          // B样条曲线
-    MODE_FILL_SCANLINE,    // 扫描线填充
-    MODE_FILL_BOUNDARY     // 边界填充
+    MODE_EXPR1,             // Experiment 1: Basic graphics drawing
+    MODE_LINE_DDA,          // DDA line algorithm
+    MODE_LINE_BRESENHAM,    // Bresenham line algorithm
+    MODE_CIRCLE_MIDPOINT,   // Midpoint circle algorithm
+    MODE_CIRCLE_BRESENHAM,  // Bresenham circle algorithm
+    MODE_RECTANGLE,         // Rectangle
+    MODE_POLYLINE,          // Polyline
+    MODE_BSPLINE,          // B-spline curve
+    MODE_FILL_SCANLINE,    // Scanline fill
+    MODE_FILL_BOUNDARY     // Boundary fill
 };
 
-// 点结构
+// Point structure
 struct Point2D {
     int x, y;
     Point2D(int x = 0, int y = 0) : x(x), y(y) {}
 };
 
-// 图形绘制引擎类
+// Graphics drawing engine class
 class GraphicsEngine {
 private:
     HDC hdc;
@@ -41,15 +41,15 @@ public:
     void SetMode(DrawMode mode);
     DrawMode GetMode() const { return currentMode; }
     
-    // 鼠标事件处理
+    // Mouse event handling
     void OnLButtonDown(int x, int y);
     void OnMouseMove(int x, int y);
     void OnRButtonDown(int x, int y);
     
-    // 实验一：基本图形绘制
+    // Experiment 1: Basic graphics drawing
     void DrawExpr1Graphics();
     
-    // 实验二：基本图形生成算法
+    // Experiment 2: Basic graphics generation algorithms
     void DrawLineDDA(Point2D p1, Point2D p2, COLORREF color = RGB(0, 0, 0));
     void DrawLineBresenham(Point2D p1, Point2D p2, COLORREF color = RGB(0, 0, 0));
     void DrawCircleMidpoint(Point2D center, int radius, COLORREF color = RGB(0, 0, 0));
@@ -58,10 +58,10 @@ public:
     void DrawPolyline(const std::vector<Point2D>& points, COLORREF color = RGB(0, 0, 0));
     void DrawBSpline(const std::vector<Point2D>& controlPoints, COLORREF color = RGB(0, 0, 0));
     
-    // 填充算法
+    // Fill algorithms
     void BoundaryFill(int x, int y, COLORREF fillColor, COLORREF boundaryColor);
     
-    // 辅助函数
+    // Helper functions
     void SetPixel(int x, int y, COLORREF color);
     COLORREF GetPixel(int x, int y);
     void ClearCanvas();
@@ -70,7 +70,7 @@ private:
     Point2D CalculateBSplinePoint(float t, const std::vector<Point2D>& controlPoints);
 };
 
-// 菜单ID定义
+// Menu ID definitions
 #define ID_FILE_NEW         40001
 #define ID_FILE_EXIT        40002
 #define ID_EXPR_EXPR1       40101
