@@ -117,6 +117,18 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
     case MODE_FILL_BOUNDARY:
         BoundaryFill(x, y, RGB(255, 0, 0), RGB(0, 0, 0));
         break;
+        
+    case MODE_FILL_SCANLINE:
+        tempPoints.push_back(clickPoint);
+        if (!isDrawing) {
+            isDrawing = true;
+        }
+        // 需要至少3个点形成多边形
+        if (tempPoints.size() >= 3) {
+            // 可以实时显示当前多边形轮廓
+            DrawPolyline(tempPoints, RGB(0, 0, 0));
+        }
+        break;
     }
 }
 
@@ -125,6 +137,15 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
     if (currentMode == MODE_POLYLINE && tempPoints.size() >= 2)
     {
         DrawPolyline(tempPoints);
+        tempPoints.clear();
+        isDrawing = false;
+    }
+    else if (currentMode == MODE_FILL_SCANLINE && tempPoints.size() >= 3)
+    {
+        // 闭合多边形并填充
+        std::vector<Point2D> polygon = tempPoints;
+        DrawPolyline(polygon, RGB(0, 0, 0)); // 绘制边界
+        ScanlineFill(polygon, RGB(255, 0, 0)); // 填充
         tempPoints.clear();
         isDrawing = false;
     }
@@ -356,16 +377,34 @@ Point2D GraphicsEngine::CalculateBSplinePoint(float t, const std::vector<Point2D
 
 void GraphicsEngine::BoundaryFill(int x, int y, COLORREF fillColor, COLORREF boundaryColor)
 {
-    COLORREF currentColor = GetPixel(x, y);
-
-    if (currentColor != boundaryColor && currentColor != fillColor)
-    {
-        SetPixel(x, y, fillColor);
-
-        BoundaryFill(x + 1, y, fillColor, boundaryColor);
-        BoundaryFill(x - 1, y, fillColor, boundaryColor);
-        BoundaryFill(x, y + 1, fillColor, boundaryColor);
-        BoundaryFill(x, y - 1, fillColor, boundaryColor);
+    // 使用栈避免递归栈溢出
+    std::stack<Point2D> pixelStack;
+    pixelStack.push(Point2D(x, y));
+    
+    RECT clientRect;
+    GetClientRect(hwnd, &clientRect);
+    
+    while (!pixelStack.empty()) {
+        Point2D current = pixelStack.top();
+        pixelStack.pop();
+        
+        // 边界检查
+        if (current.x < 0 || current.x >= clientRect.right || 
+            current.y < 0 || current.y >= clientRect.bottom) {
+            continue;
+        }
+        
+        COLORREF currentColor = GetPixel(current.x, current.y);
+        
+        if (currentColor != boundaryColor && currentColor != fillColor) {
+            SetPixel(current.x, current.y, fillColor);
+            
+            // 添加四个方向的邻接点
+            pixelStack.push(Point2D(current.x + 1, current.y));
+            pixelStack.push(Point2D(current.x - 1, current.y));
+            pixelStack.push(Point2D(current.x, current.y + 1));
+            pixelStack.push(Point2D(current.x, current.y - 1));
+        }
     }
 }
 
@@ -377,6 +416,47 @@ void GraphicsEngine::SetPixel(int x, int y, COLORREF color)
 COLORREF GraphicsEngine::GetPixel(int x, int y)
 {
     return ::GetPixel(hdc, x, y);
+}
+
+void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF fillColor)
+{
+    if (polygon.size() < 3) return;
+    
+    // 找到多边形的边界
+    int minY = polygon[0].y, maxY = polygon[0].y;
+    for (const auto& point : polygon) {
+        minY = std::min(minY, point.y);
+        maxY = std::max(maxY, point.y);
+    }
+    
+    // 对每条扫描线
+    for (int y = minY; y <= maxY; y++) {
+        std::vector<int> intersections;
+        
+        // 找到与扫描线的交点
+        for (size_t i = 0; i < polygon.size(); i++) {
+            Point2D p1 = polygon[i];
+            Point2D p2 = polygon[(i + 1) % polygon.size()];
+            
+            if ((p1.y <= y && p2.y > y) || (p2.y <= y && p1.y > y)) {
+                // 计算交点的x坐标
+                int x = p1.x + (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y);
+                intersections.push_back(x);
+            }
+        }
+        
+        // 排序交点
+        std::sort(intersections.begin(), intersections.end());
+        
+        // 填充交点之间的像素
+        for (size_t i = 0; i < intersections.size(); i += 2) {
+            if (i + 1 < intersections.size()) {
+                for (int x = intersections[i]; x <= intersections[i + 1]; x++) {
+                    SetPixel(x, y, fillColor);
+                }
+            }
+        }
+    }
 }
 
 void GraphicsEngine::ClearCanvas()

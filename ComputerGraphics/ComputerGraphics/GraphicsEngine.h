@@ -2,6 +2,8 @@
 #include "framework.h"
 #include <vector>
 #include <cmath>
+#include <stack>
+#include <algorithm>
 
 // Drawing mode enumeration
 enum DrawMode
@@ -63,6 +65,7 @@ public:
 
     // Fill algorithms
     void BoundaryFill(int x, int y, COLORREF fillColor, COLORREF boundaryColor);
+    void ScanlineFill(const std::vector<Point2D>& polygon, COLORREF fillColor);
 
     // Helper functions
     void SetPixel(int x, int y, COLORREF color);
