@@ -195,7 +195,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
     HWND hwnd = CreateWindowEx(
         0,
         CLASS_NAME,
-        L"2023112573-ZhangChunran-Computer Graphics Experiment",
+        L"2023112573-张春冉-计算机图形学实验",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
         NULL, NULL, hInstance, NULL);
