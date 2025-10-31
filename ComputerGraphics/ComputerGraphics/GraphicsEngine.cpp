@@ -422,33 +422,41 @@ void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF 
 {
     if (polygon.size() < 3) return;
     
-    // 找到多边形的边界
+    // Find polygon boundaries
     int minY = polygon[0].y, maxY = polygon[0].y;
-    for (const auto& point : polygon) {
-        minY = std::min(minY, point.y);
-        maxY = std::max(maxY, point.y);
+    for (size_t i = 0; i < polygon.size(); i++) {
+        if (polygon[i].y < minY) minY = polygon[i].y;
+        if (polygon[i].y > maxY) maxY = polygon[i].y;
     }
     
-    // 对每条扫描线
+    // For each scanline
     for (int y = minY; y <= maxY; y++) {
         std::vector<int> intersections;
         
-        // 找到与扫描线的交点
+        // Find intersections with scanline
         for (size_t i = 0; i < polygon.size(); i++) {
             Point2D p1 = polygon[i];
             Point2D p2 = polygon[(i + 1) % polygon.size()];
             
             if ((p1.y <= y && p2.y > y) || (p2.y <= y && p1.y > y)) {
-                // 计算交点的x坐标
+                // Calculate x coordinate of intersection
                 int x = p1.x + (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y);
                 intersections.push_back(x);
             }
         }
         
-        // 排序交点
-        std::sort(intersections.begin(), intersections.end());
+        // Sort intersections
+        for (size_t i = 0; i < intersections.size() - 1; i++) {
+            for (size_t j = i + 1; j < intersections.size(); j++) {
+                if (intersections[i] > intersections[j]) {
+                    int temp = intersections[i];
+                    intersections[i] = intersections[j];
+                    intersections[j] = temp;
+                }
+            }
+        }
         
-        // 填充交点之间的像素
+        // Fill pixels between intersections
         for (size_t i = 0; i < intersections.size(); i += 2) {
             if (i + 1 < intersections.size()) {
                 for (int x = intersections[i]; x <= intersections[i + 1]; x++) {
