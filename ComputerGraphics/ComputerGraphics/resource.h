@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 ComputerGraphics.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by ComputerGraphics.rc
 //
 #define IDC_MYICON                      2
 #define IDD_COMPUTERGRAPHICS_DIALOG     102

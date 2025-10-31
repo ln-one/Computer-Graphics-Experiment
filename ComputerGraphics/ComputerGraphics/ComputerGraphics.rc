@@ -18,7 +18,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -41,15 +41,15 @@ IDI_SMALL               ICON                    "small.ico"
 
 IDC_COMPUTERGRAPHICS MENU
 BEGIN
-    POPUP "文件(&F)"
+    POPUP "&File"
     BEGIN
-        MENUITEM "新建(&N)\tCtrl+N",           ID_FILE_NEW
+        MENUITEM "&New\tCtrl+N",           ID_FILE_NEW
         MENUITEM SEPARATOR
-        MENUITEM "退出(&X)",                   ID_FILE_EXIT
+        MENUITEM "E&xit",                   ID_FILE_EXIT
     END
-    POPUP "帮助(&H)"
+    POPUP "&Help"
     BEGIN
-        MENUITEM "关于 ComputerGraphics(&A)...", ID_HELP_ABOUT
+        MENUITEM "&About ComputerGraphics...", ID_HELP_ABOUT
     END
 END
 
@@ -74,13 +74,13 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "关于 ComputerGraphics"
+CAPTION "About ComputerGraphics"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDI_COMPUTERGRAPHICS,IDC_STATIC,14,14,21,20
-    LTEXT           "ComputerGraphics, 版本 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "版权所有 (C) 2024",IDC_STATIC,42,26,114,8
-    DEFPUSHBUTTON   "确定",IDOK,113,41,50,14,WS_GROUP
+    LTEXT           "ComputerGraphics, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2024",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ BEGIN
     IDC_COMPUTERGRAPHICS   "COMPUTERGRAPHICS"
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
