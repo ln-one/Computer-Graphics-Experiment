@@ -21,3 +21,5 @@
 *.lib
 *.exp
 *.idb
+*/.DS_Store
+DS_Store
