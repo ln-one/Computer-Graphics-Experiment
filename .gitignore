@@ -1,0 +1,23 @@
+# 忽略 VS 自动生成文件
+.vs/
+*.user
+*.suo
+*.ipch
+*.db
+*.opendb
+*.VC.db
+*.ncb
+*.aps
+*.idb
+*.pdb
+*.obj
+*.log
+*.cache
+*.tmp
+*.tlog
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+*.idb
