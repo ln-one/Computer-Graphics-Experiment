@@ -14,35 +14,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         HMENU hMenuBar = CreateMenu();
 
         HMENU hFileMenu = CreatePopupMenu();
-        AppendMenu(hFileMenu, MF_STRING, ID_FILE_NEW, L"New(&N)\tCtrl+N");
+        AppendMenu(hFileMenu, MF_STRING, ID_FILE_NEW, L"新建(&N)\tCtrl+N");
         AppendMenu(hFileMenu, MF_SEPARATOR, 0, NULL);
-        AppendMenu(hFileMenu, MF_STRING, ID_FILE_EXIT, L"Exit(&X)");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"File(&F)");
+        AppendMenu(hFileMenu, MF_STRING, ID_FILE_EXIT, L"退出(&X)");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"文件(&F)");
 
         HMENU hExprMenu = CreatePopupMenu();
-        AppendMenu(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"Experiment 1: Basic Graphics");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"Experiment(&E)");
+        AppendMenu(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"实验一：基本图形绘制");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"实验(&E)");
 
         HMENU hDrawMenu = CreatePopupMenu();
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"Line (DDA Algorithm)");
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"Line (Bresenham Algorithm)");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"直线（DDA算法）");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"直线（Bresenham算法）");
         AppendMenu(hDrawMenu, MF_SEPARATOR, 0, NULL);
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"Circle (Midpoint Algorithm)");
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"Circle (Bresenham Algorithm)");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"圆（中点算法）");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"圆（Bresenham算法）");
         AppendMenu(hDrawMenu, MF_SEPARATOR, 0, NULL);
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"Rectangle");
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"Polyline (Right-click to end)");
-        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_BSPLINE, L"B-Spline Curve (4 control points)");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"Draw(&D)");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"矩形");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"多段线（右键结束）");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_BSPLINE, L"B样条曲线（4个控制点）");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"绘图(&D)");
 
         HMENU hFillMenu = CreatePopupMenu();
-        AppendMenu(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"Scanline Fill");
-        AppendMenu(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"Boundary Fill");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"Fill(&I)");
+        AppendMenu(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"扫描线填充（右键结束）");
+        AppendMenu(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"边界填充");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"填充(&I)");
 
         HMENU hHelpMenu = CreatePopupMenu();
-        AppendMenu(hHelpMenu, MF_STRING, ID_HELP_ABOUT, L"About(&A)");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelpMenu, L"Help(&H)");
+        AppendMenu(hHelpMenu, MF_STRING, ID_HELP_ABOUT, L"关于(&A)");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelpMenu, L"帮助(&H)");
 
         SetMenu(hwnd, hMenuBar);
     }
@@ -155,16 +155,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case ID_HELP_ABOUT:
             MessageBox(hwnd,
-                       L"Computer Graphics Comprehensive Experiment\n"
-                       L"Student ID: 2023112573\n"
-                       L"Name: Zhang Chunran\n\n"
-                       L"Experiment 1: Basic Graphics Drawing\n"
-                       L"Experiment 2: Basic Graphics Generation Algorithms\n"
-                       L"- DDA and Bresenham Line Algorithms\n"
-                       L"- Midpoint and Bresenham Circle Algorithms\n"
-                       L"- Rectangle, Polyline, B-Spline Curve\n"
-                       L"- Scanline Fill and Boundary Fill",
-                       L"About", MB_OK | MB_ICONINFORMATION);
+                       L"计算机图形学综合实验\n\n"
+                       L"学号：2023112573\n"
+                       L"姓名：张春冉\n"
+                       L"学校：西南交通大学\n"
+                       L"学院：计算机与人工智能学院\n"
+                       L"班级：软件工程2023-02班\n\n"
+                       L"实验一：基本图形绘制\n"
+                       L"实验二：基本图形生成算法\n"
+                       L"  - DDA直线算法\n"
+                       L"  - Bresenham直线算法\n"
+                       L"  - 中点圆算法\n"
+                       L"  - Bresenham圆算法\n"
+                       L"  - 矩形、多段线、B样条曲线\n"
+                       L"  - 扫描线填充、边界填充",
+                       L"关于", MB_OK | MB_ICONINFORMATION);
             break;
 
         default:
@@ -195,7 +200,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
     HWND hwnd = CreateWindowEx(
         0,
         CLASS_NAME,
-        L"2023112573-张春冉-计算机图形学实验",
+        L"计算机图形学实验 - 2023112573 张春冉 - 西南交通大学 软件工程2023-02班",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
         NULL, NULL, hInstance, NULL);
