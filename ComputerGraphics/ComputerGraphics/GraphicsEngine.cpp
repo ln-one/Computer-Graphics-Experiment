@@ -377,34 +377,99 @@ Point2D GraphicsEngine::CalculateBSplinePoint(float t, const std::vector<Point2D
 
 void GraphicsEngine::BoundaryFill(int x, int y, COLORREF fillColor, COLORREF boundaryColor)
 {
-    // 使用栈避免递归栈溢出
-    std::stack<Point2D> pixelStack;
-    pixelStack.push(Point2D(x, y));
-    
     RECT clientRect;
     GetClientRect(hwnd, &clientRect);
     
-    while (!pixelStack.empty()) {
-        Point2D current = pixelStack.top();
-        pixelStack.pop();
+    COLORREF startColor = GetPixel(x, y);
+    if (startColor == boundaryColor || startColor == fillColor) {
+        return;
+    }
+    
+    // Use scanline seed fill algorithm
+    std::stack<Point2D> seedStack;
+    seedStack.push(Point2D(x, y));
+    
+    int maxIterations = 100000;
+    int iterations = 0;
+    
+    // Create pen for faster line drawing
+    HPEN hPen = CreatePen(PS_SOLID, 1, fillColor);
+    HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+    
+    while (!seedStack.empty() && iterations < maxIterations) {
+        Point2D seed = seedStack.top();
+        seedStack.pop();
+        iterations++;
         
-        // 边界检查
-        if (current.x < 0 || current.x >= clientRect.right || 
-            current.y < 0 || current.y >= clientRect.bottom) {
+        if (seed.x < 0 || seed.x >= clientRect.right || 
+            seed.y < 0 || seed.y >= clientRect.bottom) {
             continue;
         }
         
-        COLORREF currentColor = GetPixel(current.x, current.y);
-        
-        if (currentColor != boundaryColor && currentColor != fillColor) {
-            SetPixel(current.x, current.y, fillColor);
-            
-            // 添加四个方向的邻接点
-            pixelStack.push(Point2D(current.x + 1, current.y));
-            pixelStack.push(Point2D(current.x - 1, current.y));
-            pixelStack.push(Point2D(current.x, current.y + 1));
-            pixelStack.push(Point2D(current.x, current.y - 1));
+        COLORREF c = GetPixel(seed.x, seed.y);
+        if (c == boundaryColor || c == fillColor) {
+            continue;
         }
+        
+        // Find left and right boundaries
+        int left = seed.x;
+        int right = seed.x;
+        
+        while (left > 0) {
+            c = GetPixel(left - 1, seed.y);
+            if (c == boundaryColor || c == fillColor) break;
+            left--;
+        }
+        
+        while (right < clientRect.right - 1) {
+            c = GetPixel(right + 1, seed.y);
+            if (c == boundaryColor || c == fillColor) break;
+            right++;
+        }
+        
+        // Draw horizontal line (faster than SetPixel)
+        MoveToEx(hdc, left, seed.y, NULL);
+        LineTo(hdc, right + 1, seed.y);
+        
+        // Add seeds for adjacent scanlines
+        bool inSpan = false;
+        for (int i = left; i <= right; i++) {
+            // Check upper line
+            if (seed.y > 0) {
+                c = GetPixel(i, seed.y - 1);
+                if (c != boundaryColor && c != fillColor) {
+                    if (!inSpan) {
+                        seedStack.push(Point2D(i, seed.y - 1));
+                        inSpan = true;
+                    }
+                } else {
+                    inSpan = false;
+                }
+            }
+        }
+        
+        inSpan = false;
+        for (int i = left; i <= right; i++) {
+            // Check lower line
+            if (seed.y < clientRect.bottom - 1) {
+                c = GetPixel(i, seed.y + 1);
+                if (c != boundaryColor && c != fillColor) {
+                    if (!inSpan) {
+                        seedStack.push(Point2D(i, seed.y + 1));
+                        inSpan = true;
+                    }
+                } else {
+                    inSpan = false;
+                }
+            }
+        }
+    }
+    
+    SelectObject(hdc, hOldPen);
+    DeleteObject(hPen);
+    
+    if (iterations >= maxIterations) {
+        MessageBox(hwnd, L"填充区域过大，已停止填充", L"提示", MB_OK | MB_ICONWARNING);
     }
 }
 
@@ -429,6 +494,10 @@ void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF 
         if (polygon[i].y > maxY) maxY = polygon[i].y;
     }
     
+    // Create a pen for faster drawing
+    HPEN hPen = CreatePen(PS_SOLID, 1, fillColor);
+    HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+    
     // For each scanline
     for (int y = minY; y <= maxY; y++) {
         std::vector<int> intersections;
@@ -445,8 +514,8 @@ void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF 
             }
         }
         
-        // Sort intersections
-        for (size_t i = 0; i < intersections.size() - 1; i++) {
+        // Sort intersections (bubble sort)
+        for (size_t i = 0; i < intersections.size(); i++) {
             for (size_t j = i + 1; j < intersections.size(); j++) {
                 if (intersections[i] > intersections[j]) {
                     int temp = intersections[i];
@@ -456,15 +525,15 @@ void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF 
             }
         }
         
-        // Fill pixels between intersections
-        for (size_t i = 0; i < intersections.size(); i += 2) {
-            if (i + 1 < intersections.size()) {
-                for (int x = intersections[i]; x <= intersections[i + 1]; x++) {
-                    SetPixel(x, y, fillColor);
-                }
-            }
+        // Fill pixels between intersections using lines for speed
+        for (size_t i = 0; i + 1 < intersections.size(); i += 2) {
+            MoveToEx(hdc, intersections[i], y, NULL);
+            LineTo(hdc, intersections[i + 1], y);
         }
     }
+    
+    SelectObject(hdc, hOldPen);
+    DeleteObject(hPen);
 }
 
 void GraphicsEngine::ClearCanvas()
