@@ -1,0 +1,25 @@
+@startuml Bresenham直线算法流程图
+start
+:输入起点(x1,y1)和终点(x2,y2);
+:计算dx = |x2 - x1|;
+:计算dy = |y2 - y1|;
+:确定步进方向sx, sy;
+:初始化误差err = dx - dy;
+:x = x1, y = y1;
+repeat
+  :绘制点(x, y);
+  if (到达终点?) then (是)
+    stop
+  endif
+  :e2 = 2 * err;
+  if (e2 > -dy?) then (是)
+    :err -= dy;
+    :x += sx;
+  endif
+  if (e2 < dx?) then (是)
+    :err += dx;
+    :y += sy;
+  endif
+repeat while (继续) is (是)
+stop
+@enduml

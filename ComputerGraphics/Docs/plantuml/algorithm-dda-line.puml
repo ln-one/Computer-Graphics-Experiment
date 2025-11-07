@@ -1,0 +1,20 @@
+@startuml DDA直线算法流程图
+start
+:输入起点(x1,y1)和终点(x2,y2);
+:计算dx = x2 - x1;
+:计算dy = y2 - y1;
+:计算steps = max(|dx|, |dy|);
+if (steps == 0?) then (是)
+  :返回;
+  stop
+endif
+:计算xIncrement = dx / steps;
+:计算yIncrement = dy / steps;
+:x = x1, y = y1;
+repeat
+  :绘制点(round(x), round(y));
+  :x += xIncrement;
+  :y += yIncrement;
+repeat while (绘制完所有点?) is (否)
+stop
+@enduml

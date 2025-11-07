@@ -1,0 +1,17 @@
+@startuml Bresenham圆算法流程图
+start
+:输入圆心(xc, yc)和半径r;
+:初始化x = 0, y = r;
+:初始化判别式d = 3 - 2*r;
+repeat
+  :绘制8个对称点;
+  if (d < 0?) then (是)
+    :d += 4*x + 6;
+  else (否)
+    :d += 4*(x - y) + 10;
+    :y--;
+  endif
+  :x++;
+repeat while (x <= y?) is (是)
+stop
+@enduml

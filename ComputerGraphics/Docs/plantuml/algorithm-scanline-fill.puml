@@ -1,0 +1,22 @@
+@startuml 扫描线填充算法流程图
+start
+:输入多边形顶点集合;
+:找到多边形的最小和最大y坐标;
+:y = minY;
+repeat
+  :初始化交点集合;
+  :遍历多边形的每条边;
+  if (边与扫描线相交?) then (是)
+    :计算交点x坐标;
+    :添加到交点集合;
+  endif
+  :对交点集合排序;
+  :i = 0;
+  repeat
+    :填充从交点[i]到交点[i+1]的像素;
+    :i += 2;
+  repeat while (i < 交点数?) is (是)
+  :y++;
+repeat while (y <= maxY?) is (是)
+stop
+@enduml

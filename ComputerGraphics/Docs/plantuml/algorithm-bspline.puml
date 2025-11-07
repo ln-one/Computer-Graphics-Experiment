@@ -1,0 +1,23 @@
+@startuml B样条曲线算法流程图
+start
+:输入n个控制点;
+if (控制点数 < 4?) then (是)
+  :返回;
+  stop
+endif
+:设置曲线段数segments = 100;
+:初始化曲线点集合;
+:i = 0;
+repeat
+  :计算参数t = i / segments;
+  :计算u = t * (n - 3);
+  :确定当前段索引k = floor(u);
+  :计算局部参数u = u - k;
+  :计算基函数b0, b1, b2, b3;
+  :计算曲线点坐标;
+  :添加到曲线点集合;
+  :i++;
+repeat while (i <= segments?) is (是)
+:连接所有曲线点;
+stop
+@enduml

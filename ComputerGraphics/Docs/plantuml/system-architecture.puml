@@ -1,0 +1,15 @@
+@startuml 系统架构图
+package "图形绘制系统" {
+  [主程序模块] as Main
+  [图形引擎模块] as Engine
+  [绘图算法模块] as Algorithm
+  [填充算法模块] as Fill
+  [用户交互模块] as UI
+}
+
+Main --> Engine : 调用
+Engine --> Algorithm : 使用
+Engine --> Fill : 使用
+UI --> Main : 事件传递
+
+@enduml
