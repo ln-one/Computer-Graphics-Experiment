@@ -312,10 +312,21 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             RenderAll();
             DrawClipWindow(clipWindowStart, clipWindowEnd, false);
             
-            // TODO: Execute clipping algorithm based on current mode
-            // This will be implemented in subsequent tasks
-            MessageBox(hwnd, L"Clipping window defined. Clipping algorithm will be executed in next tasks.", 
-                      L"Clipping Window", MB_OK | MB_ICONINFORMATION);
+            // Execute clipping algorithm based on current mode
+            if (currentMode == MODE_CLIP_COHEN_SUTHERLAND)
+            {
+                ExecuteCohenSutherlandClipping();
+            }
+            else if (currentMode == MODE_CLIP_MIDPOINT)
+            {
+                ExecuteMidpointClipping();
+            }
+            else
+            {
+                // Other clipping algorithms will be implemented in subsequent tasks
+                MessageBox(hwnd, L"Clipping window defined. Other clipping algorithms will be executed in next tasks.", 
+                          L"Clipping Window", MB_OK | MB_ICONINFORMATION);
+            }
         }
         break;
     }
@@ -1466,4 +1477,305 @@ void GraphicsEngine::DrawClipWindow(Point2D p1, Point2D p2, bool isDashed)
         SelectObject(hdc, hOldPen);
         DeleteObject(hPen);
     }
+}
+
+// Cohen-Sutherland line clipping implementation
+
+int GraphicsEngine::ComputeOutCode(Point2D point, int xmin, int ymin, int xmax, int ymax)
+{
+    int code = INSIDE;
+    
+    if (point.x < xmin)
+        code |= LEFT;
+    else if (point.x > xmax)
+        code |= RIGHT;
+    
+    if (point.y < ymin)
+        code |= TOP;
+    else if (point.y > ymax)
+        code |= BOTTOM;
+    
+    return code;
+}
+
+bool GraphicsEngine::ClipLineCohenSutherland(Point2D& p1, Point2D& p2, int xmin, int ymin, int xmax, int ymax)
+{
+    // Compute outcodes for both endpoints
+    int outcode1 = ComputeOutCode(p1, xmin, ymin, xmax, ymax);
+    int outcode2 = ComputeOutCode(p2, xmin, ymin, xmax, ymax);
+    
+    bool accept = false;
+    
+    while (true)
+    {
+        if ((outcode1 | outcode2) == 0)
+        {
+            // Both points inside window - accept line
+            accept = true;
+            break;
+        }
+        else if ((outcode1 & outcode2) != 0)
+        {
+            // Both points share an outside region - reject line
+            break;
+        }
+        else
+        {
+            // Line needs clipping
+            // Pick a point that is outside the window
+            int outcodeOut = outcode1 ? outcode1 : outcode2;
+            
+            // Find intersection point
+            Point2D intersection;
+            
+            if (outcodeOut & TOP)
+            {
+                // Point is above the clip window
+                intersection.x = p1.x + (p2.x - p1.x) * (ymin - p1.y) / (p2.y - p1.y);
+                intersection.y = ymin;
+            }
+            else if (outcodeOut & BOTTOM)
+            {
+                // Point is below the clip window
+                intersection.x = p1.x + (p2.x - p1.x) * (ymax - p1.y) / (p2.y - p1.y);
+                intersection.y = ymax;
+            }
+            else if (outcodeOut & RIGHT)
+            {
+                // Point is to the right of clip window
+                intersection.y = p1.y + (p2.y - p1.y) * (xmax - p1.x) / (p2.x - p1.x);
+                intersection.x = xmax;
+            }
+            else if (outcodeOut & LEFT)
+            {
+                // Point is to the left of clip window
+                intersection.y = p1.y + (p2.y - p1.y) * (xmin - p1.x) / (p2.x - p1.x);
+                intersection.x = xmin;
+            }
+            
+            // Replace the outside point with the intersection point
+            if (outcodeOut == outcode1)
+            {
+                p1 = intersection;
+                outcode1 = ComputeOutCode(p1, xmin, ymin, xmax, ymax);
+            }
+            else
+            {
+                p2 = intersection;
+                outcode2 = ComputeOutCode(p2, xmin, ymin, xmax, ymax);
+            }
+        }
+    }
+    
+    return accept;
+}
+
+void GraphicsEngine::ExecuteCohenSutherlandClipping()
+{
+    if (!hasClipWindow)
+    {
+        MessageBox(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    
+    // Normalize clipping window coordinates
+    int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    
+    // Create a new vector to store clipped shapes
+    std::vector<Shape> clippedShapes;
+    
+    // Process each shape
+    for (Shape& shape : shapes)
+    {
+        if (shape.type == SHAPE_LINE)
+        {
+            // Apply Cohen-Sutherland clipping to lines
+            if (shape.points.size() >= 2)
+            {
+                Point2D p1 = shape.points[0];
+                Point2D p2 = shape.points[1];
+                
+                if (ClipLineCohenSutherland(p1, p2, xmin, ymin, xmax, ymax))
+                {
+                    // Line is at least partially visible - keep the clipped version
+                    Shape clippedLine = shape;
+                    clippedLine.points[0] = p1;
+                    clippedLine.points[1] = p2;
+                    clippedShapes.push_back(clippedLine);
+                }
+                // If ClipLineCohenSutherland returns false, the line is completely outside - don't add it
+            }
+        }
+        else
+        {
+            // Keep other shape types unchanged (circles, rectangles, polygons, etc.)
+            clippedShapes.push_back(shape);
+        }
+    }
+    
+    // Replace the shapes vector with clipped shapes
+    shapes = clippedShapes;
+    
+    // Clear the clipping window
+    hasClipWindow = false;
+    
+    // Redraw the canvas with clipped shapes
+    ClearCanvas();
+    RenderAll();
+    
+    // Show success message
+    MessageBox(hwnd, L"Cohen-Sutherland line clipping completed successfully!", 
+              L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
+}
+
+// Midpoint subdivision line clipping implementation
+
+bool GraphicsEngine::IsInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax)
+{
+    return (point.x >= xmin && point.x <= xmax && point.y >= ymin && point.y <= ymax);
+}
+
+bool GraphicsEngine::IsOutsideSameSide(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax)
+{
+    // Check if both points are outside the window on the same side
+    bool p1Left = (p1.x < xmin);
+    bool p2Left = (p2.x < xmin);
+    bool p1Right = (p1.x > xmax);
+    bool p2Right = (p2.x > xmax);
+    bool p1Top = (p1.y < ymin);
+    bool p2Top = (p2.y < ymin);
+    bool p1Bottom = (p1.y > ymax);
+    bool p2Bottom = (p2.y > ymax);
+    
+    // If both points are on the same side outside the window, return true
+    if ((p1Left && p2Left) || (p1Right && p2Right) || (p1Top && p2Top) || (p1Bottom && p2Bottom))
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+void GraphicsEngine::ClipLineMidpointRecursive(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax,
+                                                std::vector<std::pair<Point2D, Point2D>>& result, int depth)
+{
+    // Maximum recursion depth to prevent stack overflow
+    const int MAX_DEPTH = 20;
+    
+    if (depth > MAX_DEPTH)
+    {
+        // Reached maximum depth, stop recursion
+        return;
+    }
+    
+    // Check if both endpoints are inside the window
+    bool p1Inside = IsInsideWindow(p1, xmin, ymin, xmax, ymax);
+    bool p2Inside = IsInsideWindow(p2, xmin, ymin, xmax, ymax);
+    
+    if (p1Inside && p2Inside)
+    {
+        // Both points inside - accept the line segment
+        result.push_back(std::make_pair(p1, p2));
+        return;
+    }
+    
+    // Check if both points are outside on the same side
+    if (IsOutsideSameSide(p1, p2, xmin, ymin, xmax, ymax))
+    {
+        // Both points outside on same side - reject the line segment
+        return;
+    }
+    
+    // Line segment crosses the window boundary - subdivide at midpoint
+    Point2D midpoint;
+    midpoint.x = (p1.x + p2.x) / 2;
+    midpoint.y = (p1.y + p2.y) / 2;
+    
+    // Check if midpoint is too close to endpoints (avoid infinite recursion)
+    if ((abs(midpoint.x - p1.x) <= 1 && abs(midpoint.y - p1.y) <= 1) ||
+        (abs(midpoint.x - p2.x) <= 1 && abs(midpoint.y - p2.y) <= 1))
+    {
+        // Midpoint is too close to endpoints, check if at least one endpoint is inside
+        if (p1Inside)
+        {
+            result.push_back(std::make_pair(p1, midpoint));
+        }
+        else if (p2Inside)
+        {
+            result.push_back(std::make_pair(midpoint, p2));
+        }
+        return;
+    }
+    
+    // Recursively clip the two halves
+    ClipLineMidpointRecursive(p1, midpoint, xmin, ymin, xmax, ymax, result, depth + 1);
+    ClipLineMidpointRecursive(midpoint, p2, xmin, ymin, xmax, ymax, result, depth + 1);
+}
+
+void GraphicsEngine::ExecuteMidpointClipping()
+{
+    if (!hasClipWindow)
+    {
+        MessageBox(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    
+    // Normalize clipping window coordinates
+    int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    
+    // Create a new vector to store clipped shapes
+    std::vector<Shape> clippedShapes;
+    
+    // Process each shape
+    for (Shape& shape : shapes)
+    {
+        if (shape.type == SHAPE_LINE)
+        {
+            // Apply midpoint subdivision clipping to lines
+            if (shape.points.size() >= 2)
+            {
+                Point2D p1 = shape.points[0];
+                Point2D p2 = shape.points[1];
+                
+                // Use recursive midpoint subdivision to clip the line
+                std::vector<std::pair<Point2D, Point2D>> clippedSegments;
+                ClipLineMidpointRecursive(p1, p2, xmin, ymin, xmax, ymax, clippedSegments, 0);
+                
+                // Add all clipped segments as separate line shapes
+                for (const auto& segment : clippedSegments)
+                {
+                    Shape clippedLine = shape;
+                    clippedLine.points.clear();
+                    clippedLine.points.push_back(segment.first);
+                    clippedLine.points.push_back(segment.second);
+                    clippedShapes.push_back(clippedLine);
+                }
+            }
+        }
+        else
+        {
+            // Keep other shape types unchanged (circles, rectangles, polygons, etc.)
+            clippedShapes.push_back(shape);
+        }
+    }
+    
+    // Replace the shapes vector with clipped shapes
+    shapes = clippedShapes;
+    
+    // Clear the clipping window
+    hasClipWindow = false;
+    
+    // Redraw the canvas with clipped shapes
+    ClearCanvas();
+    RenderAll();
+    
+    // Show success message
+    MessageBox(hwnd, L"Midpoint subdivision line clipping completed successfully!", 
+              L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
 }

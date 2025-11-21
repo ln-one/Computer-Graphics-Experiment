@@ -130,6 +130,12 @@ public:
     
     // Clipping window functions
     void DrawClipWindow(Point2D p1, Point2D p2, bool isDashed = true);
+    
+    // Cohen-Sutherland line clipping
+    void ExecuteCohenSutherlandClipping();
+    
+    // Midpoint subdivision line clipping
+    void ExecuteMidpointClipping();
 
     // Selection functions
     int SelectShapeAt(int x, int y);
@@ -145,6 +151,24 @@ public:
 
 private:
     Point2D CalculateBSplinePoint(float t, const std::vector<Point2D> &controlPoints);
+    
+    // Cohen-Sutherland clipping helper functions
+    enum OutCode {
+        INSIDE = 0,  // 0000
+        LEFT = 1,    // 0001
+        RIGHT = 2,   // 0010
+        BOTTOM = 4,  // 0100
+        TOP = 8      // 1000
+    };
+    
+    int ComputeOutCode(Point2D point, int xmin, int ymin, int xmax, int ymax);
+    bool ClipLineCohenSutherland(Point2D& p1, Point2D& p2, int xmin, int ymin, int xmax, int ymax);
+    
+    // Midpoint subdivision clipping helper functions
+    bool IsInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax);
+    bool IsOutsideSameSide(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax);
+    void ClipLineMidpointRecursive(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax,
+                                    std::vector<std::pair<Point2D, Point2D>>& result, int depth = 0);
     
     // Hit test helper functions
     bool HitTestLine(Point2D point, Point2D p1, Point2D p2, int tolerance = 5);
