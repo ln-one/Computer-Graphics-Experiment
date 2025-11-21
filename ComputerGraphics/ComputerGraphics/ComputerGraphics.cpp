@@ -214,26 +214,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case ID_HELP_ABOUT:
             MessageBox(hwnd,
-                       L"计算机图形学综合实验\n\n"
-                       L"学号：2023112573\n"
-                       L"姓名：张春冉\n"
-                       L"学校：西南交通大学\n"
-                       L"学院：计算机与人工智能学院\n"
-                       L"班级：软件工程2023-02班\n\n"
-                       L"实验一：基本图形绘制\n"
-                       L"实验二：基本图形生成算法\n"
-                       L"  - DDA直线算法\n"
-                       L"  - Bresenham直线算法\n"
-                       L"  - 中点圆算法\n"
-                       L"  - Bresenham圆算法\n"
-                       L"  - 矩形、多段线、B样条曲线\n"
-                       L"  - 扫描线填充、边界填充\n"
-                       L"实验三：几何变换与裁剪\n"
-                       L"  - 多边形绘制\n"
-                       L"  - 图形选择与变换（平移、缩放、旋转）\n"
-                       L"  - 直线裁剪（Cohen-Sutherland、中点分割）\n"
-                       L"  - 多边形裁剪（Sutherland-Hodgman、Weiler-Atherton）",
-                       L"关于", MB_OK | MB_ICONINFORMATION);
+                       L"Computer Graphics Experiment\n\n"
+                       L"Student ID: 2023112573\n"
+                       L"Name: Zhang Chunran\n"
+                       L"School: Southwest Jiaotong University\n"
+                       L"College: Computer and AI\n"
+                       L"Class: Software Engineering 2023-02\n\n"
+                       L"Experiment 1: Basic Graphics Drawing\n"
+                       L"Experiment 2: Basic Graphics Algorithms\n"
+                       L"  - DDA Line Algorithm\n"
+                       L"  - Bresenham Line Algorithm\n"
+                       L"  - Midpoint Circle Algorithm\n"
+                       L"  - Bresenham Circle Algorithm\n"
+                       L"  - Rectangle, Polyline, B-spline\n"
+                       L"  - Scanline Fill, Boundary Fill\n"
+                       L"Experiment 3: Transformations and Clipping\n"
+                       L"  - Polygon Drawing\n"
+                       L"  - Shape Selection and Transformation\n"
+                       L"  - Line Clipping (Cohen-Sutherland, Midpoint)\n"
+                       L"  - Polygon Clipping (Sutherland-Hodgman, Weiler-Atherton)",
+                       L"About", MB_OK | MB_ICONINFORMATION);
             break;
 
         default:

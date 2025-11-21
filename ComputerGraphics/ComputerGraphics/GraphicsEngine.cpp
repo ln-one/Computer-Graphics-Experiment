@@ -124,9 +124,9 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
         if (!isDrawing) {
             isDrawing = true;
         }
-        // 需要至少3个点形成多边形
+        // Need at least 3 points to form a polygon
         if (tempPoints.size() >= 3) {
-            // 可以实时显示当前多边形轮廓
+            // Show current polygon outline in real-time
             DrawPolyline(tempPoints, RGB(0, 0, 0));
         }
         break;
@@ -187,10 +187,10 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
     }
     else if (currentMode == MODE_FILL_SCANLINE && tempPoints.size() >= 3)
     {
-        // 闭合多边形并填充
+        // Close polygon and fill
         std::vector<Point2D> polygon = tempPoints;
-        DrawPolyline(polygon, RGB(0, 0, 0)); // 绘制边界
-        ScanlineFill(polygon, RGB(255, 0, 0)); // 填充
+        DrawPolyline(polygon, RGB(0, 0, 0)); // Draw boundary
+        ScanlineFill(polygon, RGB(255, 0, 0)); // Fill
         tempPoints.clear();
         isDrawing = false;
     }
@@ -213,7 +213,7 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
     else if (currentMode == MODE_POLYGON && tempPoints.size() < 3)
     {
         // Show error message if less than 3 vertices
-        MessageBox(hwnd, L"多边形至少需要3个顶点", L"提示", MB_OK | MB_ICONWARNING);
+        MessageBox(hwnd, L"Polygon requires at least 3 vertices", L"Warning", MB_OK | MB_ICONWARNING);
         tempPoints.clear();
         isDrawing = false;
     }
@@ -579,7 +579,7 @@ void GraphicsEngine::BoundaryFill(int x, int y, COLORREF fillColor, COLORREF bou
     DeleteObject(hPen);
     
     if (iterations >= maxIterations) {
-        MessageBox(hwnd, L"填充区域过大，已停止填充", L"提示", MB_OK | MB_ICONWARNING);
+        MessageBox(hwnd, L"Fill area too large, stopped filling", L"Warning", MB_OK | MB_ICONWARNING);
     }
 }
 
