@@ -321,11 +321,13 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             {
                 ExecuteMidpointClipping();
             }
-            else
+            else if (currentMode == MODE_CLIP_SUTHERLAND_HODGMAN)
             {
-                // Other clipping algorithms will be implemented in subsequent tasks
-                MessageBox(hwnd, L"Clipping window defined. Other clipping algorithms will be executed in next tasks.", 
-                          L"Clipping Window", MB_OK | MB_ICONINFORMATION);
+                ExecuteSutherlandHodgmanClipping();
+            }
+            else if (currentMode == MODE_CLIP_WEILER_ATHERTON)
+            {
+                ExecuteWeilerAthertonClipping();
             }
         }
         break;
@@ -1777,5 +1779,669 @@ void GraphicsEngine::ExecuteMidpointClipping()
     
     // Show success message
     MessageBox(hwnd, L"Midpoint subdivision line clipping completed successfully!", 
+              L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
+}
+
+// Sutherland-Hodgman polygon clipping implementation
+
+bool GraphicsEngine::IsInsideEdge(Point2D point, ClipEdge edge, int xmin, int ymin, int xmax, int ymax)
+{
+    // Determine if a point is on the inside of a clipping edge
+    switch (edge)
+    {
+    case CLIP_LEFT:
+        return point.x >= xmin;
+    case CLIP_RIGHT:
+        return point.x <= xmax;
+    case CLIP_BOTTOM:
+        return point.y <= ymax;
+    case CLIP_TOP:
+        return point.y >= ymin;
+    default:
+        return false;
+    }
+}
+
+Point2D GraphicsEngine::ComputeIntersection(Point2D p1, Point2D p2, ClipEdge edge, 
+                                            int xmin, int ymin, int xmax, int ymax)
+{
+    // Compute the intersection point of line segment (p1, p2) with a clipping edge
+    Point2D intersection;
+    
+    // Calculate the intersection based on which edge we're clipping against
+    switch (edge)
+    {
+    case CLIP_LEFT:
+        // Intersect with left edge (x = xmin)
+        if (p2.x != p1.x)
+        {
+            intersection.x = xmin;
+            intersection.y = p1.y + (p2.y - p1.y) * (xmin - p1.x) / (p2.x - p1.x);
+        }
+        else
+        {
+            intersection = p1;
+        }
+        break;
+        
+    case CLIP_RIGHT:
+        // Intersect with right edge (x = xmax)
+        if (p2.x != p1.x)
+        {
+            intersection.x = xmax;
+            intersection.y = p1.y + (p2.y - p1.y) * (xmax - p1.x) / (p2.x - p1.x);
+        }
+        else
+        {
+            intersection = p1;
+        }
+        break;
+        
+    case CLIP_BOTTOM:
+        // Intersect with bottom edge (y = ymax)
+        if (p2.y != p1.y)
+        {
+            intersection.y = ymax;
+            intersection.x = p1.x + (p2.x - p1.x) * (ymax - p1.y) / (p2.y - p1.y);
+        }
+        else
+        {
+            intersection = p1;
+        }
+        break;
+        
+    case CLIP_TOP:
+        // Intersect with top edge (y = ymin)
+        if (p2.y != p1.y)
+        {
+            intersection.y = ymin;
+            intersection.x = p1.x + (p2.x - p1.x) * (ymin - p1.y) / (p2.y - p1.y);
+        }
+        else
+        {
+            intersection = p1;
+        }
+        break;
+    }
+    
+    return intersection;
+}
+
+std::vector<Point2D> GraphicsEngine::ClipPolygonAgainstEdge(const std::vector<Point2D>& polygon, 
+                                                             ClipEdge edge, 
+                                                             int xmin, int ymin, int xmax, int ymax)
+{
+    // Clip a polygon against a single edge using Sutherland-Hodgman algorithm
+    std::vector<Point2D> outputList;
+    
+    if (polygon.empty())
+    {
+        return outputList;
+    }
+    
+    // Process each edge of the polygon
+    for (size_t i = 0; i < polygon.size(); i++)
+    {
+        Point2D currentVertex = polygon[i];
+        Point2D previousVertex = polygon[(i + polygon.size() - 1) % polygon.size()];
+        
+        bool currentInside = IsInsideEdge(currentVertex, edge, xmin, ymin, xmax, ymax);
+        bool previousInside = IsInsideEdge(previousVertex, edge, xmin, ymin, xmax, ymax);
+        
+        // Four cases based on Sutherland-Hodgman algorithm:
+        if (previousInside && currentInside)
+        {
+            // Case 1: Both vertices inside - output current vertex
+            outputList.push_back(currentVertex);
+        }
+        else if (previousInside && !currentInside)
+        {
+            // Case 2: Previous inside, current outside - output intersection point
+            Point2D intersection = ComputeIntersection(previousVertex, currentVertex, edge, 
+                                                       xmin, ymin, xmax, ymax);
+            outputList.push_back(intersection);
+        }
+        else if (!previousInside && currentInside)
+        {
+            // Case 3: Previous outside, current inside - output intersection and current vertex
+            Point2D intersection = ComputeIntersection(previousVertex, currentVertex, edge, 
+                                                       xmin, ymin, xmax, ymax);
+            outputList.push_back(intersection);
+            outputList.push_back(currentVertex);
+        }
+        // Case 4: Both vertices outside - output nothing
+    }
+    
+    return outputList;
+}
+
+void GraphicsEngine::ExecuteSutherlandHodgmanClipping()
+{
+    if (!hasClipWindow)
+    {
+        MessageBox(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    
+    // Normalize clipping window coordinates
+    int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    
+    // Create a new vector to store clipped shapes
+    std::vector<Shape> clippedShapes;
+    
+    // Process each shape
+    for (Shape& shape : shapes)
+    {
+        if (shape.type == SHAPE_POLYGON)
+        {
+            // Apply Sutherland-Hodgman clipping to polygons
+            if (shape.points.size() >= 3)
+            {
+                // Start with the original polygon
+                std::vector<Point2D> clippedPolygon = shape.points;
+                
+                // Clip against each edge of the clipping window in sequence
+                // The order is: left, right, bottom, top
+                clippedPolygon = ClipPolygonAgainstEdge(clippedPolygon, CLIP_LEFT, xmin, ymin, xmax, ymax);
+                
+                if (!clippedPolygon.empty())
+                {
+                    clippedPolygon = ClipPolygonAgainstEdge(clippedPolygon, CLIP_RIGHT, xmin, ymin, xmax, ymax);
+                }
+                
+                if (!clippedPolygon.empty())
+                {
+                    clippedPolygon = ClipPolygonAgainstEdge(clippedPolygon, CLIP_BOTTOM, xmin, ymin, xmax, ymax);
+                }
+                
+                if (!clippedPolygon.empty())
+                {
+                    clippedPolygon = ClipPolygonAgainstEdge(clippedPolygon, CLIP_TOP, xmin, ymin, xmax, ymax);
+                }
+                
+                // Only add the polygon if it has at least 3 vertices after clipping
+                if (clippedPolygon.size() >= 3)
+                {
+                    Shape clippedShape = shape;
+                    clippedShape.points = clippedPolygon;
+                    clippedShapes.push_back(clippedShape);
+                }
+                // If the polygon has fewer than 3 vertices, it's completely outside or degenerate - don't add it
+            }
+        }
+        else
+        {
+            // Keep other shape types unchanged (lines, circles, rectangles, etc.)
+            clippedShapes.push_back(shape);
+        }
+    }
+    
+    // Replace the shapes vector with clipped shapes
+    shapes = clippedShapes;
+    
+    // Clear the clipping window
+    hasClipWindow = false;
+    
+    // Redraw the canvas with clipped shapes
+    ClearCanvas();
+    RenderAll();
+    
+    // Show success message
+    MessageBox(hwnd, L"Sutherland-Hodgman polygon clipping completed successfully!", 
+              L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
+}
+
+// Weiler-Atherton polygon clipping implementation
+
+bool GraphicsEngine::SegmentIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4, 
+                                         Point2D& intersection, double& t1, double& t2)
+{
+    // Calculate intersection of line segments (p1,p2) and (p3,p4)
+    // Returns true if segments intersect, false otherwise
+    // t1 and t2 are the parametric values along each segment (0 to 1)
+    
+    double dx1 = p2.x - p1.x;
+    double dy1 = p2.y - p1.y;
+    double dx2 = p4.x - p3.x;
+    double dy2 = p4.y - p3.y;
+    
+    double denominator = dx1 * dy2 - dy1 * dx2;
+    
+    // Check if lines are parallel
+    if (abs(denominator) < 1e-10)
+    {
+        return false;
+    }
+    
+    double dx3 = p1.x - p3.x;
+    double dy3 = p1.y - p3.y;
+    
+    t1 = (dx3 * dy2 - dy3 * dx2) / denominator;
+    t2 = (dx3 * dy1 - dy3 * dx1) / denominator;
+    
+    // Check if intersection is within both segments
+    if (t1 >= 0.0 && t1 <= 1.0 && t2 >= 0.0 && t2 <= 1.0)
+    {
+        intersection.x = static_cast<int>(p1.x + t1 * dx1);
+        intersection.y = static_cast<int>(p1.y + t1 * dy1);
+        return true;
+    }
+    
+    return false;
+}
+
+bool GraphicsEngine::IsPointInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax)
+{
+    return (point.x >= xmin && point.x <= xmax && point.y >= ymin && point.y <= ymax);
+}
+
+std::vector<GraphicsEngine::WAVertex*> GraphicsEngine::BuildPolygonVertexList(
+    const std::vector<Point2D>& polygon, int xmin, int ymin, int xmax, int ymax)
+{
+    std::vector<WAVertex*> vertexList;
+    
+    for (size_t i = 0; i < polygon.size(); i++)
+    {
+        WAVertex* vertex = new WAVertex(polygon[i]);
+        vertex->id = static_cast<int>(i);
+        vertexList.push_back(vertex);
+    }
+    
+    // Link vertices in circular list
+    for (size_t i = 0; i < vertexList.size(); i++)
+    {
+        vertexList[i]->next = vertexList[(i + 1) % vertexList.size()];
+    }
+    
+    return vertexList;
+}
+
+std::vector<GraphicsEngine::WAVertex*> GraphicsEngine::BuildClipWindowVertexList(
+    int xmin, int ymin, int xmax, int ymax)
+{
+    std::vector<WAVertex*> vertexList;
+    
+    // Create vertices for clip window corners in clockwise order
+    WAVertex* v1 = new WAVertex(Point2D(xmin, ymin)); // top-left
+    WAVertex* v2 = new WAVertex(Point2D(xmax, ymin)); // top-right
+    WAVertex* v3 = new WAVertex(Point2D(xmax, ymax)); // bottom-right
+    WAVertex* v4 = new WAVertex(Point2D(xmin, ymax)); // bottom-left
+    
+    v1->id = 1000;
+    v2->id = 1001;
+    v3->id = 1002;
+    v4->id = 1003;
+    
+    vertexList.push_back(v1);
+    vertexList.push_back(v2);
+    vertexList.push_back(v3);
+    vertexList.push_back(v4);
+    
+    // Link vertices in circular list
+    v1->next = v2;
+    v2->next = v3;
+    v3->next = v4;
+    v4->next = v1;
+    
+    return vertexList;
+}
+
+void GraphicsEngine::InsertIntersections(std::vector<WAVertex*>& polyList, 
+                                         std::vector<WAVertex*>& clipList,
+                                         int xmin, int ymin, int xmax, int ymax)
+{
+    // Find all intersections between polygon edges and clip window edges
+    // Store: (vertex before intersection, t value, poly intersection vertex, clip intersection vertex)
+    struct IntersectionInfo {
+        WAVertex* beforeVertex;
+        double t;
+        WAVertex* polyIntersect;
+        WAVertex* clipIntersect;
+    };
+    
+    std::vector<IntersectionInfo> polyIntersections;
+    std::vector<IntersectionInfo> clipIntersections;
+    
+    // For each polygon edge
+    WAVertex* polyStart = polyList[0];
+    WAVertex* polyCurrent = polyStart;
+    
+    do
+    {
+        Point2D p1 = polyCurrent->point;
+        Point2D p2 = polyCurrent->next->point;
+        
+        // Check intersection with each clip window edge
+        WAVertex* clipStart = clipList[0];
+        WAVertex* clipCurrent = clipStart;
+        
+        do
+        {
+            Point2D p3 = clipCurrent->point;
+            Point2D p4 = clipCurrent->next->point;
+            
+            Point2D intersection;
+            double t1, t2;
+            
+            if (SegmentIntersection(p1, p2, p3, p4, intersection, t1, t2))
+            {
+                // Avoid duplicates at endpoints
+                if (t1 > 0.001 && t1 < 0.999 && t2 > 0.001 && t2 < 0.999)
+                {
+                    // Create intersection vertices
+                    WAVertex* polyIntersect = new WAVertex(intersection);
+                    polyIntersect->isIntersection = true;
+                    
+                    WAVertex* clipIntersect = new WAVertex(intersection);
+                    clipIntersect->isIntersection = true;
+                    
+                    // Link them as neighbors
+                    polyIntersect->neighbor = clipIntersect;
+                    clipIntersect->neighbor = polyIntersect;
+                    
+                    polyIntersect->id = 2000 + static_cast<int>(polyIntersections.size());
+                    clipIntersect->id = 3000 + static_cast<int>(clipIntersections.size());
+                    
+                    // Store intersection info
+                    IntersectionInfo polyInfo;
+                    polyInfo.beforeVertex = polyCurrent;
+                    polyInfo.t = t1;
+                    polyInfo.polyIntersect = polyIntersect;
+                    polyInfo.clipIntersect = clipIntersect;
+                    polyIntersections.push_back(polyInfo);
+                    
+                    IntersectionInfo clipInfo;
+                    clipInfo.beforeVertex = clipCurrent;
+                    clipInfo.t = t2;
+                    clipInfo.polyIntersect = polyIntersect;
+                    clipInfo.clipIntersect = clipIntersect;
+                    clipIntersections.push_back(clipInfo);
+                }
+            }
+            
+            clipCurrent = clipCurrent->next;
+        } while (clipCurrent != clipStart);
+        
+        polyCurrent = polyCurrent->next;
+    } while (polyCurrent != polyStart);
+    
+    // Sort polygon intersections by edge and t value
+    for (size_t i = 0; i < polyIntersections.size(); i++)
+    {
+        for (size_t j = i + 1; j < polyIntersections.size(); j++)
+        {
+            if (polyIntersections[i].beforeVertex == polyIntersections[j].beforeVertex &&
+                polyIntersections[i].t > polyIntersections[j].t)
+            {
+                std::swap(polyIntersections[i], polyIntersections[j]);
+            }
+        }
+    }
+    
+    // Insert intersection vertices into polygon list in reverse order
+    for (int i = static_cast<int>(polyIntersections.size()) - 1; i >= 0; i--)
+    {
+        WAVertex* before = polyIntersections[i].beforeVertex;
+        WAVertex* intersect = polyIntersections[i].polyIntersect;
+        
+        // Insert after 'before'
+        intersect->next = before->next;
+        before->next = intersect;
+        
+        polyList.push_back(intersect);
+    }
+    
+    // Sort clip intersections by edge and t value
+    for (size_t i = 0; i < clipIntersections.size(); i++)
+    {
+        for (size_t j = i + 1; j < clipIntersections.size(); j++)
+        {
+            if (clipIntersections[i].beforeVertex == clipIntersections[j].beforeVertex &&
+                clipIntersections[i].t > clipIntersections[j].t)
+            {
+                std::swap(clipIntersections[i], clipIntersections[j]);
+            }
+        }
+    }
+    
+    // Insert intersection vertices into clip window list in reverse order
+    for (int i = static_cast<int>(clipIntersections.size()) - 1; i >= 0; i--)
+    {
+        WAVertex* before = clipIntersections[i].beforeVertex;
+        WAVertex* intersect = clipIntersections[i].clipIntersect;
+        
+        // Insert after 'before'
+        intersect->next = before->next;
+        before->next = intersect;
+        
+        clipList.push_back(intersect);
+    }
+}
+
+void GraphicsEngine::MarkEntryExit(std::vector<WAVertex*>& polyList, 
+                                   int xmin, int ymin, int xmax, int ymax)
+{
+    // Mark intersection points as entry or exit points
+    WAVertex* start = polyList[0];
+    WAVertex* current = start;
+    
+    // Find the first non-intersection vertex to determine initial state
+    while (current->isIntersection && current->next != start)
+    {
+        current = current->next;
+    }
+    
+    if (current->isIntersection)
+    {
+        // All vertices are intersections (shouldn't happen normally)
+        return;
+    }
+    
+    // Determine if we're currently inside or outside the clip window
+    bool inside = IsPointInsideWindow(current->point, xmin, ymin, xmax, ymax);
+    
+    // Traverse the polygon and mark intersections
+    start = current;
+    do
+    {
+        if (current->isIntersection)
+        {
+            // This is an intersection point
+            if (inside)
+            {
+                // We're inside, so this is an exit point
+                current->isEntry = false;
+                inside = false;
+            }
+            else
+            {
+                // We're outside, so this is an entry point
+                current->isEntry = true;
+                inside = true;
+            }
+        }
+        
+        current = current->next;
+    } while (current != start);
+}
+
+std::vector<std::vector<Point2D>> GraphicsEngine::TraceClippedPolygons(std::vector<WAVertex*>& polyList)
+{
+    std::vector<std::vector<Point2D>> resultPolygons;
+    
+    // Reset visited flags
+    for (WAVertex* v : polyList)
+    {
+        v->visited = false;
+    }
+    
+    // Find all unvisited entry points and trace polygons
+    for (WAVertex* v : polyList)
+    {
+        if (v->isIntersection && v->isEntry && !v->visited)
+        {
+            // Start tracing a new polygon from this entry point
+            std::vector<Point2D> polygon;
+            WAVertex* current = v;
+            bool onPolygon = true; // true if following polygon edges, false if following clip window edges
+            
+            int maxIterations = 1000; // Prevent infinite loops
+            int iterations = 0;
+            
+            do
+            {
+                polygon.push_back(current->point);
+                current->visited = true;
+                
+                if (current->isIntersection)
+                {
+                    // At an intersection, switch between polygon and clip window
+                    if (current->isEntry)
+                    {
+                        // Entry point - follow polygon edges
+                        onPolygon = true;
+                    }
+                    else
+                    {
+                        // Exit point - follow clip window edges
+                        onPolygon = false;
+                        current = current->neighbor; // Switch to clip window list
+                        if (current)
+                        {
+                            current->visited = true;
+                        }
+                    }
+                }
+                
+                // Move to next vertex
+                if (current)
+                {
+                    current = current->next;
+                }
+                
+                iterations++;
+                if (iterations >= maxIterations || current == nullptr)
+                {
+                    break;
+                }
+                
+            } while (current != v);
+            
+            // Add polygon if it has at least 3 vertices
+            if (polygon.size() >= 3)
+            {
+                resultPolygons.push_back(polygon);
+            }
+        }
+    }
+    
+    return resultPolygons;
+}
+
+void GraphicsEngine::CleanupVertexList(std::vector<WAVertex*>& vertexList)
+{
+    for (WAVertex* v : vertexList)
+    {
+        delete v;
+    }
+    vertexList.clear();
+}
+
+void GraphicsEngine::ExecuteWeilerAthertonClipping()
+{
+    if (!hasClipWindow)
+    {
+        MessageBox(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    
+    // Normalize clipping window coordinates
+    int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    
+    // Create a new vector to store clipped shapes
+    std::vector<Shape> clippedShapes;
+    
+    // Process each shape
+    for (Shape& shape : shapes)
+    {
+        if (shape.type == SHAPE_POLYGON)
+        {
+            // Apply Weiler-Atherton clipping to polygons
+            if (shape.points.size() >= 3)
+            {
+                // Build vertex lists for polygon and clip window
+                std::vector<WAVertex*> polyList = BuildPolygonVertexList(shape.points, xmin, ymin, xmax, ymax);
+                std::vector<WAVertex*> clipList = BuildClipWindowVertexList(xmin, ymin, xmax, ymax);
+                
+                // Find and insert intersection points
+                InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
+                
+                // Mark entry/exit points
+                MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
+                
+                // Trace clipped polygons
+                std::vector<std::vector<Point2D>> clippedPolygons = TraceClippedPolygons(polyList);
+                
+                // Add clipped polygons to result
+                for (const std::vector<Point2D>& poly : clippedPolygons)
+                {
+                    if (poly.size() >= 3)
+                    {
+                        Shape clippedShape = shape;
+                        clippedShape.points = poly;
+                        clippedShapes.push_back(clippedShape);
+                    }
+                }
+                
+                // If no clipped polygons were generated, check if original polygon is completely inside
+                if (clippedPolygons.empty())
+                {
+                    bool allInside = true;
+                    for (const Point2D& pt : shape.points)
+                    {
+                        if (!IsPointInsideWindow(pt, xmin, ymin, xmax, ymax))
+                        {
+                            allInside = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allInside)
+                    {
+                        // Polygon is completely inside - keep it
+                        clippedShapes.push_back(shape);
+                    }
+                }
+                
+                // Cleanup
+                CleanupVertexList(polyList);
+                CleanupVertexList(clipList);
+            }
+        }
+        else
+        {
+            // Keep other shape types unchanged (lines, circles, rectangles, etc.)
+            clippedShapes.push_back(shape);
+        }
+    }
+    
+    // Replace the shapes vector with clipped shapes
+    shapes = clippedShapes;
+    
+    // Clear the clipping window
+    hasClipWindow = false;
+    
+    // Redraw the canvas with clipped shapes
+    ClearCanvas();
+    RenderAll();
+    
+    // Show success message
+    MessageBox(hwnd, L"Weiler-Atherton polygon clipping completed successfully!", 
               L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
 }

@@ -136,6 +136,9 @@ public:
     
     // Midpoint subdivision line clipping
     void ExecuteMidpointClipping();
+    
+    // Sutherland-Hodgman polygon clipping
+    void ExecuteSutherlandHodgmanClipping();
 
     // Selection functions
     int SelectShapeAt(int x, int y);
@@ -169,6 +172,40 @@ private:
     bool IsOutsideSameSide(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax);
     void ClipLineMidpointRecursive(Point2D p1, Point2D p2, int xmin, int ymin, int xmax, int ymax,
                                     std::vector<std::pair<Point2D, Point2D>>& result, int depth = 0);
+    
+    // Sutherland-Hodgman clipping helper functions
+    enum ClipEdge { CLIP_LEFT, CLIP_RIGHT, CLIP_BOTTOM, CLIP_TOP };
+    bool IsInsideEdge(Point2D point, ClipEdge edge, int xmin, int ymin, int xmax, int ymax);
+    Point2D ComputeIntersection(Point2D p1, Point2D p2, ClipEdge edge, int xmin, int ymin, int xmax, int ymax);
+    std::vector<Point2D> ClipPolygonAgainstEdge(const std::vector<Point2D>& polygon, ClipEdge edge, 
+                                                 int xmin, int ymin, int xmax, int ymax);
+    
+    // Weiler-Atherton clipping helper functions
+    struct WAVertex {
+        Point2D point;
+        bool isIntersection;
+        bool isEntry;           // true if entering clip window, false if leaving
+        WAVertex* next;         // next vertex in polygon list
+        WAVertex* neighbor;     // corresponding vertex in clip window list
+        bool visited;
+        int id;                 // for debugging
+        
+        WAVertex() : isIntersection(false), isEntry(false), next(nullptr), 
+                     neighbor(nullptr), visited(false), id(0) {}
+        WAVertex(Point2D p) : point(p), isIntersection(false), isEntry(false), 
+                              next(nullptr), neighbor(nullptr), visited(false), id(0) {}
+    };
+    
+    void ExecuteWeilerAthertonClipping();
+    bool SegmentIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4, Point2D& intersection, double& t1, double& t2);
+    std::vector<WAVertex*> BuildPolygonVertexList(const std::vector<Point2D>& polygon, int xmin, int ymin, int xmax, int ymax);
+    std::vector<WAVertex*> BuildClipWindowVertexList(int xmin, int ymin, int xmax, int ymax);
+    void InsertIntersections(std::vector<WAVertex*>& polyList, std::vector<WAVertex*>& clipList, 
+                            int xmin, int ymin, int xmax, int ymax);
+    void MarkEntryExit(std::vector<WAVertex*>& polyList, int xmin, int ymin, int xmax, int ymax);
+    std::vector<std::vector<Point2D>> TraceClippedPolygons(std::vector<WAVertex*>& polyList);
+    void CleanupVertexList(std::vector<WAVertex*>& vertexList);
+    bool IsPointInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax);
     
     // Hit test helper functions
     bool HitTestLine(Point2D point, Point2D p1, Point2D p2, int tolerance = 5);
