@@ -84,6 +84,12 @@ private:
     double initialDistance;              // Initial distance for scaling
     double initialAngle;                 // Initial angle for rotation
 
+    // Clipping state variables
+    Point2D clipWindowStart;             // Starting point for clipping window
+    Point2D clipWindowEnd;               // Ending point for clipping window
+    bool isDefiningClipWindow;           // Flag indicating if defining clipping window
+    bool hasClipWindow;                  // Flag indicating if clipping window is defined
+
 public:
     GraphicsEngine();
     ~GraphicsEngine();
@@ -121,6 +127,9 @@ public:
     COLORREF GetPixel(int x, int y);
     void ClearCanvas();
     void RenderAll();
+    
+    // Clipping window functions
+    void DrawClipWindow(Point2D p1, Point2D p2, bool isDashed = true);
 
     // Selection functions
     int SelectShapeAt(int x, int y);

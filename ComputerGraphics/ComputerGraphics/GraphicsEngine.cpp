@@ -4,7 +4,8 @@
 GraphicsEngine::GraphicsEngine() : hdc(nullptr), hwnd(nullptr),
                                    currentMode(MODE_NONE), isDrawing(false),
                                    selectedShapeIndex(-1), hasSelection(false),
-                                   isTransforming(false), initialDistance(0.0), initialAngle(0.0)
+                                   isTransforming(false), initialDistance(0.0), initialAngle(0.0),
+                                   isDefiningClipWindow(false), hasClipWindow(false)
 {
 }
 
@@ -285,6 +286,36 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             isTransforming = false;
             ClearCanvas();
             RenderAll();
+        }
+        break;
+
+    case MODE_CLIP_COHEN_SUTHERLAND:
+    case MODE_CLIP_MIDPOINT:
+    case MODE_CLIP_SUTHERLAND_HODGMAN:
+    case MODE_CLIP_WEILER_ATHERTON:
+        // Handle clipping window definition
+        if (!isDefiningClipWindow)
+        {
+            // Start defining clipping window
+            clipWindowStart = clickPoint;
+            isDefiningClipWindow = true;
+        }
+        else
+        {
+            // Complete clipping window definition
+            clipWindowEnd = clickPoint;
+            isDefiningClipWindow = false;
+            hasClipWindow = true;
+            
+            // Redraw with final clipping window
+            ClearCanvas();
+            RenderAll();
+            DrawClipWindow(clipWindowStart, clipWindowEnd, false);
+            
+            // TODO: Execute clipping algorithm based on current mode
+            // This will be implemented in subsequent tasks
+            MessageBox(hwnd, L"Clipping window defined. Clipping algorithm will be executed in next tasks.", 
+                      L"Clipping Window", MB_OK | MB_ICONINFORMATION);
         }
         break;
     }
@@ -579,6 +610,21 @@ void GraphicsEngine::OnMouseMove(int x, int y)
         
         // Draw line from center to current mouse position
         DrawLineBresenham(transformAnchorPoint, currentPoint, RGB(255, 0, 0));
+    }
+
+    // Handle clipping window preview
+    if (isDefiningClipWindow && 
+        (currentMode == MODE_CLIP_COHEN_SUTHERLAND ||
+         currentMode == MODE_CLIP_MIDPOINT ||
+         currentMode == MODE_CLIP_SUTHERLAND_HODGMAN ||
+         currentMode == MODE_CLIP_WEILER_ATHERTON))
+    {
+        // Redraw all shapes first
+        ClearCanvas();
+        RenderAll();
+        
+        // Draw clipping window preview with dashed lines
+        DrawClipWindow(clipWindowStart, currentPoint, true);
     }
 }
 
@@ -1372,4 +1418,52 @@ Shape GraphicsEngine::CreateTransformedPreview(const Shape& shape)
 {
     // Create a copy of the shape for preview
     return shape;
+}
+// Cl
+ipping window drawing function
+void GraphicsEngine::DrawClipWindow(Point2D p1, Point2D p2, bool isDashed)
+{
+    // Normalize coordinates to ensure p1 is top-left and p2 is bottom-right
+    int xmin = (p1.x < p2.x) ? p1.x : p2.x;
+    int ymin = (p1.y < p2.y) ? p1.y : p2.y;
+    int xmax = (p1.x > p2.x) ? p1.x : p2.x;
+    int ymax = (p1.y > p2.y) ? p1.y : p2.y;
+    
+    Point2D topLeft(xmin, ymin);
+    Point2D topRight(xmax, ymin);
+    Point2D bottomRight(xmax, ymax);
+    Point2D bottomLeft(xmin, ymax);
+    
+    if (isDashed)
+    {
+        // Draw dashed rectangle for preview
+        HPEN hPen = CreatePen(PS_DOT, 1, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        
+        // Draw four edges
+        MoveToEx(hdc, topLeft.x, topLeft.y, NULL);
+        LineTo(hdc, topRight.x, topRight.y);
+        LineTo(hdc, bottomRight.x, bottomRight.y);
+        LineTo(hdc, bottomLeft.x, bottomLeft.y);
+        LineTo(hdc, topLeft.x, topLeft.y);
+        
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+    }
+    else
+    {
+        // Draw solid rectangle for final clipping window
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        
+        // Draw four edges
+        MoveToEx(hdc, topLeft.x, topLeft.y, NULL);
+        LineTo(hdc, topRight.x, topRight.y);
+        LineTo(hdc, bottomRight.x, bottomRight.y);
+        LineTo(hdc, bottomLeft.x, bottomLeft.y);
+        LineTo(hdc, topLeft.x, topLeft.y);
+        
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+    }
 }
