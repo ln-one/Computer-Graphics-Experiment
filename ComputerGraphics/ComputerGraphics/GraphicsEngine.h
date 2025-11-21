@@ -76,6 +76,14 @@ private:
     int selectedShapeIndex;              // Index of currently selected shape (-1 if none)
     bool hasSelection;                   // Flag indicating if a shape is selected
 
+    // Transformation state variables
+    Point2D transformStartPoint;         // Starting point for transformation
+    Point2D transformAnchorPoint;        // Anchor point (e.g., rotation center)
+    bool isTransforming;                 // Flag indicating if transformation is in progress
+    Shape previewShape;                  // Preview of transformed shape
+    double initialDistance;              // Initial distance for scaling
+    double initialAngle;                 // Initial angle for rotation
+
 public:
     GraphicsEngine();
     ~GraphicsEngine();
@@ -118,6 +126,13 @@ public:
     int SelectShapeAt(int x, int y);
     void DeselectAll();
     void DrawSelectionIndicator(const Shape& shape);
+
+    // Transformation helper functions
+    Point2D CalculateShapeCenter(const Shape& shape);
+    void ApplyTranslation(Shape& shape, int dx, int dy);
+    void ApplyScaling(Shape& shape, double scale, Point2D center);
+    void ApplyRotation(Shape& shape, double angle, Point2D center);
+    Shape CreateTransformedPreview(const Shape& shape);
 
 private:
     Point2D CalculateBSplinePoint(float t, const std::vector<Point2D> &controlPoints);

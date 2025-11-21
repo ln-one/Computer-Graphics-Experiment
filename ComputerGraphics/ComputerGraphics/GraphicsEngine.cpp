@@ -3,7 +3,8 @@
 
 GraphicsEngine::GraphicsEngine() : hdc(nullptr), hwnd(nullptr),
                                    currentMode(MODE_NONE), isDrawing(false),
-                                   selectedShapeIndex(-1), hasSelection(false)
+                                   selectedShapeIndex(-1), hasSelection(false),
+                                   isTransforming(false), initialDistance(0.0), initialAngle(0.0)
 {
 }
 
@@ -174,6 +175,118 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             }
         }
         break;
+
+    case MODE_TRANSLATE:
+        // Handle translation
+        if (!hasSelection)
+        {
+            MessageBox(hwnd, L"Please select a shape first", L"Translation", MB_OK | MB_ICONINFORMATION);
+            break;
+        }
+        
+        if (!isTransforming)
+        {
+            // Start translation - record starting point
+            transformStartPoint = clickPoint;
+            isTransforming = true;
+        }
+        else
+        {
+            // End translation - apply the transformation
+            int dx = clickPoint.x - transformStartPoint.x;
+            int dy = clickPoint.y - transformStartPoint.y;
+            
+            ApplyTranslation(shapes[selectedShapeIndex], dx, dy);
+            
+            isTransforming = false;
+            ClearCanvas();
+            RenderAll();
+        }
+        break;
+
+    case MODE_SCALE:
+        // Handle scaling
+        if (!hasSelection)
+        {
+            MessageBox(hwnd, L"Please select a shape first", L"Scaling", MB_OK | MB_ICONINFORMATION);
+            break;
+        }
+        
+        if (!isTransforming)
+        {
+            // Start scaling - record anchor point (shape center) and initial distance
+            transformAnchorPoint = CalculateShapeCenter(shapes[selectedShapeIndex]);
+            transformStartPoint = clickPoint;
+            
+            int dx = clickPoint.x - transformAnchorPoint.x;
+            int dy = clickPoint.y - transformAnchorPoint.y;
+            initialDistance = sqrt(dx * dx + dy * dy);
+            
+            if (initialDistance < 1.0)
+            {
+                initialDistance = 1.0; // Avoid division by zero
+            }
+            
+            isTransforming = true;
+        }
+        else
+        {
+            // End scaling - apply the transformation
+            int dx = clickPoint.x - transformAnchorPoint.x;
+            int dy = clickPoint.y - transformAnchorPoint.y;
+            double currentDistance = sqrt(dx * dx + dy * dy);
+            
+            double scale = currentDistance / initialDistance;
+            
+            ApplyScaling(shapes[selectedShapeIndex], scale, transformAnchorPoint);
+            
+            isTransforming = false;
+            ClearCanvas();
+            RenderAll();
+        }
+        break;
+
+    case MODE_ROTATE:
+        // Handle rotation
+        if (!hasSelection)
+        {
+            MessageBox(hwnd, L"Please select a shape first", L"Rotation", MB_OK | MB_ICONINFORMATION);
+            break;
+        }
+        
+        if (!isTransforming)
+        {
+            // First click - set rotation center
+            transformAnchorPoint = clickPoint;
+            isTransforming = true;
+            
+            // Draw a marker at rotation center
+            ClearCanvas();
+            RenderAll();
+            
+            // Draw rotation center marker
+            HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+            HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+            
+            int markerSize = 5;
+            MoveToEx(hdc, clickPoint.x - markerSize, clickPoint.y, NULL);
+            LineTo(hdc, clickPoint.x + markerSize, clickPoint.y);
+            MoveToEx(hdc, clickPoint.x, clickPoint.y - markerSize, NULL);
+            LineTo(hdc, clickPoint.x, clickPoint.y + markerSize);
+            
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+        }
+        else
+        {
+            // Second click - calculate and apply rotation
+            // Calculate initial angle (from first click after setting center)
+            // This is handled in mouse move, so we just finalize here
+            isTransforming = false;
+            ClearCanvas();
+            RenderAll();
+        }
+        break;
     }
 }
 
@@ -217,17 +330,31 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
         tempPoints.clear();
         isDrawing = false;
     }
+    else if (currentMode == MODE_ROTATE && isTransforming && hasSelection)
+    {
+        // Complete rotation with right click
+        Point2D currentPoint(x, y);
+        
+        // Calculate angle from anchor to current point
+        int dx = currentPoint.x - transformAnchorPoint.x;
+        int dy = currentPoint.y - transformAnchorPoint.y;
+        double angle = atan2(dy, dx);
+        
+        // Apply rotation
+        ApplyRotation(shapes[selectedShapeIndex], angle - initialAngle, transformAnchorPoint);
+        
+        isTransforming = false;
+        ClearCanvas();
+        RenderAll();
+    }
 }
 
 void GraphicsEngine::OnMouseMove(int x, int y)
 {
-    if (!isDrawing)
-        return;
-
     Point2D currentPoint(x, y);
 
-    // Real-time preview for polygon drawing
-    if (currentMode == MODE_POLYGON && tempPoints.size() >= 1)
+    // Handle polygon drawing preview
+    if (isDrawing && currentMode == MODE_POLYGON && tempPoints.size() >= 1)
     {
         // Redraw all shapes first
         ClearCanvas();
@@ -263,6 +390,195 @@ void GraphicsEngine::OnMouseMove(int x, int y)
                 }
             }
         }
+        return;
+    }
+
+    // Handle transformation previews
+    if (!isTransforming || !hasSelection)
+        return;
+
+    // Translation preview
+    if (currentMode == MODE_TRANSLATE)
+    {
+        ClearCanvas();
+        RenderAll();
+        
+        // Calculate translation offset
+        int dx = currentPoint.x - transformStartPoint.x;
+        int dy = currentPoint.y - transformStartPoint.y;
+        
+        // Create preview shape
+        Shape preview = shapes[selectedShapeIndex];
+        ApplyTranslation(preview, dx, dy);
+        
+        // Draw preview with different color (semi-transparent effect using gray)
+        COLORREF previewColor = RGB(128, 128, 255);
+        
+        switch (preview.type)
+        {
+        case SHAPE_LINE:
+            if (preview.points.size() >= 2)
+                DrawLineBresenham(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_CIRCLE:
+            if (preview.points.size() >= 1)
+                DrawCircleBresenham(preview.points[0], preview.radius, previewColor);
+            break;
+        case SHAPE_RECTANGLE:
+            if (preview.points.size() >= 2)
+                DrawRectangle(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_POLYLINE:
+            if (preview.points.size() >= 2)
+                DrawPolyline(preview.points, previewColor);
+            break;
+        case SHAPE_POLYGON:
+            if (preview.points.size() >= 3)
+                DrawPolygon(preview.points, previewColor);
+            break;
+        case SHAPE_BSPLINE:
+            if (preview.points.size() >= 4)
+                DrawBSpline(preview.points, previewColor);
+            break;
+        }
+    }
+    // Scaling preview
+    else if (currentMode == MODE_SCALE)
+    {
+        ClearCanvas();
+        RenderAll();
+        
+        // Calculate scale factor
+        int dx = currentPoint.x - transformAnchorPoint.x;
+        int dy = currentPoint.y - transformAnchorPoint.y;
+        double currentDistance = sqrt(dx * dx + dy * dy);
+        double scale = currentDistance / initialDistance;
+        
+        // Create preview shape
+        Shape preview = shapes[selectedShapeIndex];
+        ApplyScaling(preview, scale, transformAnchorPoint);
+        
+        // Draw preview
+        COLORREF previewColor = RGB(128, 128, 255);
+        
+        switch (preview.type)
+        {
+        case SHAPE_LINE:
+            if (preview.points.size() >= 2)
+                DrawLineBresenham(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_CIRCLE:
+            if (preview.points.size() >= 1)
+                DrawCircleBresenham(preview.points[0], preview.radius, previewColor);
+            break;
+        case SHAPE_RECTANGLE:
+            if (preview.points.size() >= 2)
+                DrawRectangle(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_POLYLINE:
+            if (preview.points.size() >= 2)
+                DrawPolyline(preview.points, previewColor);
+            break;
+        case SHAPE_POLYGON:
+            if (preview.points.size() >= 3)
+                DrawPolygon(preview.points, previewColor);
+            break;
+        case SHAPE_BSPLINE:
+            if (preview.points.size() >= 4)
+                DrawBSpline(preview.points, previewColor);
+            break;
+        }
+        
+        // Draw scaling center marker
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        
+        int markerSize = 5;
+        MoveToEx(hdc, transformAnchorPoint.x - markerSize, transformAnchorPoint.y, NULL);
+        LineTo(hdc, transformAnchorPoint.x + markerSize, transformAnchorPoint.y);
+        MoveToEx(hdc, transformAnchorPoint.x, transformAnchorPoint.y - markerSize, NULL);
+        LineTo(hdc, transformAnchorPoint.x, transformAnchorPoint.y + markerSize);
+        
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+    }
+    // Rotation preview
+    else if (currentMode == MODE_ROTATE)
+    {
+        ClearCanvas();
+        RenderAll();
+        
+        // Draw rotation center marker
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        
+        int markerSize = 5;
+        MoveToEx(hdc, transformAnchorPoint.x - markerSize, transformAnchorPoint.y, NULL);
+        LineTo(hdc, transformAnchorPoint.x + markerSize, transformAnchorPoint.y);
+        MoveToEx(hdc, transformAnchorPoint.x, transformAnchorPoint.y - markerSize, NULL);
+        LineTo(hdc, transformAnchorPoint.x, transformAnchorPoint.y + markerSize);
+        
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+        
+        // Calculate and show rotation angle
+        int dx = currentPoint.x - transformAnchorPoint.x;
+        int dy = currentPoint.y - transformAnchorPoint.y;
+        double currentAngle = atan2(dy, dx);
+        
+        // On first mouse move after setting center, record initial angle
+        static bool firstMove = true;
+        if (firstMove)
+        {
+            initialAngle = currentAngle;
+            firstMove = false;
+        }
+        
+        // Reset firstMove when not transforming
+        if (!isTransforming)
+        {
+            firstMove = true;
+        }
+        
+        double rotationAngle = currentAngle - initialAngle;
+        
+        // Create preview shape
+        Shape preview = shapes[selectedShapeIndex];
+        ApplyRotation(preview, rotationAngle, transformAnchorPoint);
+        
+        // Draw preview
+        COLORREF previewColor = RGB(128, 128, 255);
+        
+        switch (preview.type)
+        {
+        case SHAPE_LINE:
+            if (preview.points.size() >= 2)
+                DrawLineBresenham(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_CIRCLE:
+            if (preview.points.size() >= 1)
+                DrawCircleBresenham(preview.points[0], preview.radius, previewColor);
+            break;
+        case SHAPE_RECTANGLE:
+            if (preview.points.size() >= 2)
+                DrawRectangle(preview.points[0], preview.points[1], previewColor);
+            break;
+        case SHAPE_POLYLINE:
+            if (preview.points.size() >= 2)
+                DrawPolyline(preview.points, previewColor);
+            break;
+        case SHAPE_POLYGON:
+            if (preview.points.size() >= 3)
+                DrawPolygon(preview.points, previewColor);
+            break;
+        case SHAPE_BSPLINE:
+            if (preview.points.size() >= 4)
+                DrawBSpline(preview.points, previewColor);
+            break;
+        }
+        
+        // Draw line from center to current mouse position
+        DrawLineBresenham(transformAnchorPoint, currentPoint, RGB(255, 0, 0));
     }
 }
 
@@ -978,4 +1294,82 @@ double GraphicsEngine::PointToLineDistance(Point2D point, Point2D lineStart, Poi
     double distY = point.y - closestY;
     
     return sqrt(distX * distX + distY * distY);
+}
+
+// Transformation helper functions implementation
+
+Point2D GraphicsEngine::CalculateShapeCenter(const Shape& shape)
+{
+    if (shape.points.empty())
+    {
+        return Point2D(0, 0);
+    }
+    
+    // Calculate centroid
+    int sumX = 0, sumY = 0;
+    for (const Point2D& pt : shape.points)
+    {
+        sumX += pt.x;
+        sumY += pt.y;
+    }
+    
+    return Point2D(sumX / static_cast<int>(shape.points.size()), 
+                   sumY / static_cast<int>(shape.points.size()));
+}
+
+void GraphicsEngine::ApplyTranslation(Shape& shape, int dx, int dy)
+{
+    // Translate all points
+    for (Point2D& pt : shape.points)
+    {
+        pt.x += dx;
+        pt.y += dy;
+    }
+}
+
+void GraphicsEngine::ApplyScaling(Shape& shape, double scale, Point2D center)
+{
+    // Scale all points relative to center
+    for (Point2D& pt : shape.points)
+    {
+        int dx = pt.x - center.x;
+        int dy = pt.y - center.y;
+        
+        pt.x = center.x + static_cast<int>(dx * scale);
+        pt.y = center.y + static_cast<int>(dy * scale);
+    }
+    
+    // For circles, also scale the radius
+    if (shape.type == SHAPE_CIRCLE)
+    {
+        shape.radius = static_cast<int>(shape.radius * scale);
+    }
+}
+
+void GraphicsEngine::ApplyRotation(Shape& shape, double angle, Point2D center)
+{
+    // Rotate all points around center
+    double cosAngle = cos(angle);
+    double sinAngle = sin(angle);
+    
+    for (Point2D& pt : shape.points)
+    {
+        // Translate to origin
+        int dx = pt.x - center.x;
+        int dy = pt.y - center.y;
+        
+        // Rotate
+        int newX = static_cast<int>(dx * cosAngle - dy * sinAngle);
+        int newY = static_cast<int>(dx * sinAngle + dy * cosAngle);
+        
+        // Translate back
+        pt.x = center.x + newX;
+        pt.y = center.y + newY;
+    }
+}
+
+Shape GraphicsEngine::CreateTransformedPreview(const Shape& shape)
+{
+    // Create a copy of the shape for preview
+    return shape;
 }
