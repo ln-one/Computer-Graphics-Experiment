@@ -130,6 +130,50 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             DrawPolyline(tempPoints, RGB(0, 0, 0));
         }
         break;
+
+    case MODE_POLYGON:
+        tempPoints.push_back(clickPoint);
+        if (!isDrawing)
+        {
+            isDrawing = true;
+        }
+        // Draw current polygon edges as preview
+        if (tempPoints.size() >= 2)
+        {
+            DrawPolyline(tempPoints, RGB(0, 0, 0));
+        }
+        break;
+
+    case MODE_SELECT:
+        // Handle shape selection
+        {
+            int hitIndex = SelectShapeAt(x, y);
+            if (hitIndex >= 0)
+            {
+                // Deselect all shapes first
+                DeselectAll();
+                
+                // Select the clicked shape
+                shapes[hitIndex].selected = true;
+                selectedShapeIndex = hitIndex;
+                hasSelection = true;
+                
+                // Redraw to show selection
+                ClearCanvas();
+                RenderAll();
+            }
+            else
+            {
+                // Clicked on empty area, deselect all
+                if (hasSelection)
+                {
+                    DeselectAll();
+                    ClearCanvas();
+                    RenderAll();
+                }
+            }
+        }
+        break;
     }
 }
 
@@ -150,11 +194,76 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
         tempPoints.clear();
         isDrawing = false;
     }
+    else if (currentMode == MODE_POLYGON && tempPoints.size() >= 3)
+    {
+        // Complete polygon and save to shapes list
+        DrawPolygon(tempPoints, RGB(0, 0, 0));
+        
+        // Save polygon to shapes vector
+        Shape polygon;
+        polygon.type = SHAPE_POLYGON;
+        polygon.points = tempPoints;
+        polygon.color = RGB(0, 0, 0);
+        polygon.selected = false;
+        shapes.push_back(polygon);
+        
+        tempPoints.clear();
+        isDrawing = false;
+    }
+    else if (currentMode == MODE_POLYGON && tempPoints.size() < 3)
+    {
+        // Show error message if less than 3 vertices
+        MessageBox(hwnd, L"多边形至少需要3个顶点", L"提示", MB_OK | MB_ICONWARNING);
+        tempPoints.clear();
+        isDrawing = false;
+    }
 }
 
 void GraphicsEngine::OnMouseMove(int x, int y)
 {
-    // Real-time preview functionality
+    if (!isDrawing)
+        return;
+
+    Point2D currentPoint(x, y);
+
+    // Real-time preview for polygon drawing
+    if (currentMode == MODE_POLYGON && tempPoints.size() >= 1)
+    {
+        // Redraw all shapes first
+        ClearCanvas();
+        RenderAll();
+        
+        // Draw existing polygon edges
+        if (tempPoints.size() >= 2)
+        {
+            DrawPolyline(tempPoints, RGB(0, 0, 0));
+        }
+        
+        // Draw preview line from last point to current mouse position
+        DrawLineBresenham(tempPoints.back(), currentPoint, RGB(128, 128, 128));
+        
+        // Draw preview closing line (dashed effect by drawing every other pixel)
+        if (tempPoints.size() >= 2)
+        {
+            Point2D first = tempPoints.front();
+            int dx = abs(currentPoint.x - first.x);
+            int dy = abs(currentPoint.y - first.y);
+            int steps = (dx > dy) ? dx : dy;
+            
+            if (steps > 0)
+            {
+                float xInc = (float)(currentPoint.x - first.x) / steps;
+                float yInc = (float)(currentPoint.y - first.y) / steps;
+                
+                for (int i = 0; i <= steps; i += 2)
+                {
+                    int px = first.x + (int)(i * xInc);
+                    int py = first.y + (int)(i * yInc);
+                    SetPixel(px, py, RGB(128, 128, 128));
+                }
+            }
+        }
+    }
 }
 
 void GraphicsEngine::DrawExpr1Graphics()
@@ -537,9 +646,336 @@ void GraphicsEngine::ScanlineFill(const std::vector<Point2D>& polygon, COLORREF 
     DeleteObject(hPen);
 }
 
+void GraphicsEngine::DrawPolygon(const std::vector<Point2D>& points, COLORREF color)
+{
+    if (points.size() < 3)
+        return;
+
+    // Draw all edges of the polygon
+    for (size_t i = 0; i < points.size(); i++)
+    {
+        Point2D p1 = points[i];
+        Point2D p2 = points[(i + 1) % points.size()];  // Wrap around to close the polygon
+        DrawLineBresenham(p1, p2, color);
+    }
+}
+
+void GraphicsEngine::RenderAll()
+{
+    // Redraw all saved shapes
+    for (const Shape& shape : shapes)
+    {
+        switch (shape.type)
+        {
+        case SHAPE_LINE:
+            if (shape.points.size() >= 2)
+            {
+                DrawLineBresenham(shape.points[0], shape.points[1], shape.color);
+            }
+            break;
+
+        case SHAPE_CIRCLE:
+            if (shape.points.size() >= 1)
+            {
+                DrawCircleBresenham(shape.points[0], shape.radius, shape.color);
+            }
+            break;
+
+        case SHAPE_RECTANGLE:
+            if (shape.points.size() >= 2)
+            {
+                DrawRectangle(shape.points[0], shape.points[1], shape.color);
+            }
+            break;
+
+        case SHAPE_POLYLINE:
+            if (shape.points.size() >= 2)
+            {
+                DrawPolyline(shape.points, shape.color);
+            }
+            break;
+
+        case SHAPE_POLYGON:
+            if (shape.points.size() >= 3)
+            {
+                DrawPolygon(shape.points, shape.color);
+            }
+            break;
+
+        case SHAPE_BSPLINE:
+            if (shape.points.size() >= 4)
+            {
+                DrawBSpline(shape.points, shape.color);
+            }
+            break;
+        }
+
+        // Draw selection indicator if shape is selected
+        if (shape.selected)
+        {
+            DrawSelectionIndicator(shape);
+        }
+    }
+}
+
 void GraphicsEngine::ClearCanvas()
 {
     RECT rect;
     GetClientRect(hwnd, &rect);
     FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW + 1));
+}
+
+// Selection functions implementation
+int GraphicsEngine::SelectShapeAt(int x, int y)
+{
+    Point2D clickPoint(x, y);
+    
+    // Search from back to front (most recently drawn shapes first)
+    for (int i = static_cast<int>(shapes.size()) - 1; i >= 0; i--)
+    {
+        const Shape& shape = shapes[i];
+        
+        switch (shape.type)
+        {
+        case SHAPE_LINE:
+            if (shape.points.size() >= 2)
+            {
+                if (HitTestLine(clickPoint, shape.points[0], shape.points[1]))
+                {
+                    return i;
+                }
+            }
+            break;
+
+        case SHAPE_CIRCLE:
+            if (shape.points.size() >= 1)
+            {
+                if (HitTestCircle(clickPoint, shape.points[0], shape.radius))
+                {
+                    return i;
+                }
+            }
+            break;
+
+        case SHAPE_RECTANGLE:
+            if (shape.points.size() >= 2)
+            {
+                // Test all four edges of the rectangle
+                Point2D p1 = shape.points[0];
+                Point2D p2 = shape.points[1];
+                
+                if (HitTestLine(clickPoint, Point2D(p1.x, p1.y), Point2D(p2.x, p1.y)) ||
+                    HitTestLine(clickPoint, Point2D(p2.x, p1.y), Point2D(p2.x, p2.y)) ||
+                    HitTestLine(clickPoint, Point2D(p2.x, p2.y), Point2D(p1.x, p2.y)) ||
+                    HitTestLine(clickPoint, Point2D(p1.x, p2.y), Point2D(p1.x, p1.y)))
+                {
+                    return i;
+                }
+            }
+            break;
+
+        case SHAPE_POLYLINE:
+            if (shape.points.size() >= 2)
+            {
+                for (size_t j = 1; j < shape.points.size(); j++)
+                {
+                    if (HitTestLine(clickPoint, shape.points[j - 1], shape.points[j]))
+                    {
+                        return i;
+                    }
+                }
+            }
+            break;
+
+        case SHAPE_POLYGON:
+            if (shape.points.size() >= 3)
+            {
+                // First check if point is inside polygon
+                if (HitTestPolygon(clickPoint, shape.points))
+                {
+                    return i;
+                }
+                
+                // Also check edges
+                for (size_t j = 0; j < shape.points.size(); j++)
+                {
+                    Point2D p1 = shape.points[j];
+                    Point2D p2 = shape.points[(j + 1) % shape.points.size()];
+                    if (HitTestLine(clickPoint, p1, p2))
+                    {
+                        return i;
+                    }
+                }
+            }
+            break;
+
+        case SHAPE_BSPLINE:
+            // For B-spline, check proximity to control points or curve
+            if (shape.points.size() >= 4)
+            {
+                // Check control points
+                for (const Point2D& pt : shape.points)
+                {
+                    int dx = clickPoint.x - pt.x;
+                    int dy = clickPoint.y - pt.y;
+                    if (dx * dx + dy * dy <= 25) // 5 pixel radius
+                    {
+                        return i;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    
+    return -1; // No shape found
+}
+
+void GraphicsEngine::DeselectAll()
+{
+    for (Shape& shape : shapes)
+    {
+        shape.selected = false;
+    }
+    selectedShapeIndex = -1;
+    hasSelection = false;
+}
+
+void GraphicsEngine::DrawSelectionIndicator(const Shape& shape)
+{
+    // Create a dashed pen for selection indicator
+    HPEN hDashedPen = CreatePen(PS_DASH, 1, RGB(0, 0, 255));
+    HPEN hOldPen = (HPEN)SelectObject(hdc, hDashedPen);
+    
+    // Calculate bounding box
+    if (shape.points.empty())
+    {
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hDashedPen);
+        return;
+    }
+    
+    int minX = shape.points[0].x;
+    int maxX = shape.points[0].x;
+    int minY = shape.points[0].y;
+    int maxY = shape.points[0].y;
+    
+    for (const Point2D& pt : shape.points)
+    {
+        if (pt.x < minX) minX = pt.x;
+        if (pt.x > maxX) maxX = pt.x;
+        if (pt.y < minY) minY = pt.y;
+        if (pt.y > maxY) maxY = pt.y;
+    }
+    
+    // For circles, adjust bounding box
+    if (shape.type == SHAPE_CIRCLE)
+    {
+        minX -= shape.radius;
+        maxX += shape.radius;
+        minY -= shape.radius;
+        maxY += shape.radius;
+    }
+    
+    // Add padding
+    int padding = 5;
+    minX -= padding;
+    minY -= padding;
+    maxX += padding;
+    maxY += padding;
+    
+    // Draw dashed bounding box
+    MoveToEx(hdc, minX, minY, NULL);
+    LineTo(hdc, maxX, minY);
+    LineTo(hdc, maxX, maxY);
+    LineTo(hdc, minX, maxY);
+    LineTo(hdc, minX, minY);
+    
+    // Draw control points (small squares at corners)
+    int cpSize = 3;
+    HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 255));
+    HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, hBrush);
+    
+    Rectangle(hdc, minX - cpSize, minY - cpSize, minX + cpSize, minY + cpSize);
+    Rectangle(hdc, maxX - cpSize, minY - cpSize, maxX + cpSize, minY + cpSize);
+    Rectangle(hdc, maxX - cpSize, maxY - cpSize, maxX + cpSize, maxY + cpSize);
+    Rectangle(hdc, minX - cpSize, maxY - cpSize, minX + cpSize, maxY + cpSize);
+    
+    SelectObject(hdc, hOldBrush);
+    DeleteObject(hBrush);
+    SelectObject(hdc, hOldPen);
+    DeleteObject(hDashedPen);
+}
+
+// Hit test helper functions
+bool GraphicsEngine::HitTestLine(Point2D point, Point2D p1, Point2D p2, int tolerance)
+{
+    double distance = PointToLineDistance(point, p1, p2);
+    return distance <= tolerance;
+}
+
+bool GraphicsEngine::HitTestCircle(Point2D point, Point2D center, int radius, int tolerance)
+{
+    int dx = point.x - center.x;
+    int dy = point.y - center.y;
+    double distance = sqrt(dx * dx + dy * dy);
+    
+    // Check if point is near the circle's circumference
+    return abs(distance - radius) <= tolerance;
+}
+
+bool GraphicsEngine::HitTestPolygon(Point2D point, const std::vector<Point2D>& polygon)
+{
+    // Ray casting algorithm to check if point is inside polygon
+    int n = static_cast<int>(polygon.size());
+    bool inside = false;
+    
+    for (int i = 0, j = n - 1; i < n; j = i++)
+    {
+        int xi = polygon[i].x, yi = polygon[i].y;
+        int xj = polygon[j].x, yj = polygon[j].y;
+        
+        bool intersect = ((yi > point.y) != (yj > point.y)) &&
+                        (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+        
+        if (intersect)
+        {
+            inside = !inside;
+        }
+    }
+    
+    return inside;
+}
+
+double GraphicsEngine::PointToLineDistance(Point2D point, Point2D lineStart, Point2D lineEnd)
+{
+    // Calculate distance from point to line segment
+    int dx = lineEnd.x - lineStart.x;
+    int dy = lineEnd.y - lineStart.y;
+    
+    if (dx == 0 && dy == 0)
+    {
+        // Line segment is a point
+        int px = point.x - lineStart.x;
+        int py = point.y - lineStart.y;
+        return sqrt(px * px + py * py);
+    }
+    
+    // Calculate parameter t for projection onto line
+    double t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / 
+               (double)(dx * dx + dy * dy);
+    
+    // Clamp t to [0, 1] to stay within line segment
+    if (t < 0.0) t = 0.0;
+    if (t > 1.0) t = 1.0;
+    
+    // Calculate closest point on line segment
+    double closestX = lineStart.x + t * dx;
+    double closestY = lineStart.y + t * dy;
+    
+    // Calculate distance
+    double distX = point.x - closestX;
+    double distY = point.y - closestY;
+    
+    return sqrt(distX * distX + distY * distY);
 }

@@ -105,13 +105,28 @@ public:
     void BoundaryFill(int x, int y, COLORREF fillColor, COLORREF boundaryColor);
     void ScanlineFill(const std::vector<Point2D>& polygon, COLORREF fillColor);
 
+    // Experiment 3: Polygon drawing
+    void DrawPolygon(const std::vector<Point2D>& points, COLORREF color = RGB(0, 0, 0));
+
     // Helper functions
     void SetPixel(int x, int y, COLORREF color);
     COLORREF GetPixel(int x, int y);
     void ClearCanvas();
+    void RenderAll();
+
+    // Selection functions
+    int SelectShapeAt(int x, int y);
+    void DeselectAll();
+    void DrawSelectionIndicator(const Shape& shape);
 
 private:
     Point2D CalculateBSplinePoint(float t, const std::vector<Point2D> &controlPoints);
+    
+    // Hit test helper functions
+    bool HitTestLine(Point2D point, Point2D p1, Point2D p2, int tolerance = 5);
+    bool HitTestCircle(Point2D point, Point2D center, int radius, int tolerance = 5);
+    bool HitTestPolygon(Point2D point, const std::vector<Point2D>& polygon);
+    double PointToLineDistance(Point2D point, Point2D lineStart, Point2D lineEnd);
 };
 
 // Menu ID definitions
