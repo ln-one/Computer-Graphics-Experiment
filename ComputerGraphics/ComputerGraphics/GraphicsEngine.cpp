@@ -2,7 +2,8 @@
 #include <algorithm>
 
 GraphicsEngine::GraphicsEngine() : hdc(nullptr), hwnd(nullptr),
-                                   currentMode(MODE_NONE), isDrawing(false)
+                                   currentMode(MODE_NONE), isDrawing(false),
+                                   selectedShapeIndex(-1), hasSelection(false)
 {
 }
 

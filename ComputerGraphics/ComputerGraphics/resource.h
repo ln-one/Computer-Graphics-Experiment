@@ -34,6 +34,21 @@
 #define ID_FILL_SCANLINE                40301
 #define ID_FILL_BOUNDARY                40302
 
+// Experiment 3: Transformation menu IDs
+#define ID_TRANSFORM_SELECT             40501
+#define ID_TRANSFORM_TRANSLATE          40502
+#define ID_TRANSFORM_SCALE              40503
+#define ID_TRANSFORM_ROTATE             40504
+
+// Experiment 3: Clipping menu IDs
+#define ID_CLIP_COHEN_SUTHERLAND        40601
+#define ID_CLIP_MIDPOINT                40602
+#define ID_CLIP_SUTHERLAND_HODGMAN      40603
+#define ID_CLIP_WEILER_ATHERTON         40604
+
+// Experiment 3: Drawing menu IDs
+#define ID_DRAW_POLYGON                 40208
+
 #define ID_HELP_ABOUT                   40401
 // Next default values for new objects
 //

@@ -32,6 +32,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         AppendMenu(hDrawMenu, MF_SEPARATOR, 0, NULL);
         AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"矩形");
         AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"多段线（右键结束）");
+        AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYGON, L"多边形（右键结束）");
         AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_BSPLINE, L"B样条曲线（4个控制点）");
         AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"绘图(&D)");
 
@@ -39,6 +40,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         AppendMenu(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"扫描线填充（右键结束）");
         AppendMenu(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"边界填充");
         AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"填充(&I)");
+
+        // Transformation menu (Experiment 3)
+        HMENU hTransformMenu = CreatePopupMenu();
+        AppendMenu(hTransformMenu, MF_STRING, ID_TRANSFORM_SELECT, L"选择图形");
+        AppendMenu(hTransformMenu, MF_SEPARATOR, 0, NULL);
+        AppendMenu(hTransformMenu, MF_STRING, ID_TRANSFORM_TRANSLATE, L"平移");
+        AppendMenu(hTransformMenu, MF_STRING, ID_TRANSFORM_SCALE, L"缩放");
+        AppendMenu(hTransformMenu, MF_STRING, ID_TRANSFORM_ROTATE, L"旋转");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hTransformMenu, L"变换(&T)");
+
+        // Clipping menu (Experiment 3)
+        HMENU hClipMenu = CreatePopupMenu();
+        HMENU hLineClipMenu = CreatePopupMenu();
+        AppendMenu(hLineClipMenu, MF_STRING, ID_CLIP_COHEN_SUTHERLAND, L"Cohen-Sutherland算法");
+        AppendMenu(hLineClipMenu, MF_STRING, ID_CLIP_MIDPOINT, L"中点分割算法");
+        AppendMenu(hClipMenu, MF_POPUP, (UINT_PTR)hLineClipMenu, L"直线裁剪");
+        
+        HMENU hPolyClipMenu = CreatePopupMenu();
+        AppendMenu(hPolyClipMenu, MF_STRING, ID_CLIP_SUTHERLAND_HODGMAN, L"Sutherland-Hodgman算法");
+        AppendMenu(hPolyClipMenu, MF_STRING, ID_CLIP_WEILER_ATHERTON, L"Weiler-Atherton算法");
+        AppendMenu(hClipMenu, MF_POPUP, (UINT_PTR)hPolyClipMenu, L"多边形裁剪");
+        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hClipMenu, L"裁剪(&C)");
 
         HMENU hHelpMenu = CreatePopupMenu();
         AppendMenu(hHelpMenu, MF_STRING, ID_HELP_ABOUT, L"关于(&A)");
@@ -153,6 +176,42 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             g_engine.SetMode(MODE_FILL_BOUNDARY);
             break;
 
+        case ID_DRAW_POLYGON:
+            g_engine.SetMode(MODE_POLYGON);
+            break;
+
+        case ID_TRANSFORM_SELECT:
+            g_engine.SetMode(MODE_SELECT);
+            break;
+
+        case ID_TRANSFORM_TRANSLATE:
+            g_engine.SetMode(MODE_TRANSLATE);
+            break;
+
+        case ID_TRANSFORM_SCALE:
+            g_engine.SetMode(MODE_SCALE);
+            break;
+
+        case ID_TRANSFORM_ROTATE:
+            g_engine.SetMode(MODE_ROTATE);
+            break;
+
+        case ID_CLIP_COHEN_SUTHERLAND:
+            g_engine.SetMode(MODE_CLIP_COHEN_SUTHERLAND);
+            break;
+
+        case ID_CLIP_MIDPOINT:
+            g_engine.SetMode(MODE_CLIP_MIDPOINT);
+            break;
+
+        case ID_CLIP_SUTHERLAND_HODGMAN:
+            g_engine.SetMode(MODE_CLIP_SUTHERLAND_HODGMAN);
+            break;
+
+        case ID_CLIP_WEILER_ATHERTON:
+            g_engine.SetMode(MODE_CLIP_WEILER_ATHERTON);
+            break;
+
         case ID_HELP_ABOUT:
             MessageBox(hwnd,
                        L"计算机图形学综合实验\n\n"
@@ -168,7 +227,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                        L"  - 中点圆算法\n"
                        L"  - Bresenham圆算法\n"
                        L"  - 矩形、多段线、B样条曲线\n"
-                       L"  - 扫描线填充、边界填充",
+                       L"  - 扫描线填充、边界填充\n"
+                       L"实验三：几何变换与裁剪\n"
+                       L"  - 多边形绘制\n"
+                       L"  - 图形选择与变换（平移、缩放、旋转）\n"
+                       L"  - 直线裁剪（Cohen-Sutherland、中点分割）\n"
+                       L"  - 多边形裁剪（Sutherland-Hodgman、Weiler-Atherton）",
                        L"关于", MB_OK | MB_ICONINFORMATION);
             break;
 
