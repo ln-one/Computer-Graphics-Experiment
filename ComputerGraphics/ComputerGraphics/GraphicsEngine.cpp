@@ -1419,8 +1419,8 @@ Shape GraphicsEngine::CreateTransformedPreview(const Shape& shape)
     // Create a copy of the shape for preview
     return shape;
 }
-// Cl
-ipping window drawing function
+
+// Clipping window drawing function
 void GraphicsEngine::DrawClipWindow(Point2D p1, Point2D p2, bool isDashed)
 {
     // Normalize coordinates to ensure p1 is top-left and p2 is bottom-right
