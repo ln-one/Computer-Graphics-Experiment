@@ -1,41 +1,10 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\",
+  "WorkspaceRootPath": "C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\ComputerGraphics.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.ico||{177559E0-D141-11D0-92DF-00A0C9138C45}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\ComputerGraphics.ico||{177559E0-D141-11D0-92DF-00A0C9138C45}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\Resource.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\Resource.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\GraphicsEngine.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\framework.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\framework.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\GraphicsEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\ComputerGraphics.rc||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\targetver.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{93CFE739-FA10-4F34-82CC-02158A66AD8C}|ComputerGraphics\\ComputerGraphics.vcxproj|solutionrelative:ComputerGraphics\\targetver.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -45,119 +14,20 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ComputerGraphics.ico - Icon [256x256, 32 bit, PNG]",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.ico",
-              "RelativeDocumentMoniker": "ComputerGraphics\\ComputerGraphics.ico",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.ico - Icon [256x256, 32 bit, PNG]",
-              "RelativeToolTip": "ComputerGraphics\\ComputerGraphics.ico - Icon [256x256, 32 bit, PNG]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001525|",
-              "WhenOpened": "2025-10-31T13:41:17.949Z",
-              "EditorCaption": " - Icon [256x256, 32 bit, PNG]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "framework.h",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\framework.h",
-              "RelativeDocumentMoniker": "ComputerGraphics\\framework.h",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\framework.h",
-              "RelativeToolTip": "ComputerGraphics\\framework.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-31T13:41:07.752Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "targetver.h",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\targetver.h",
-              "RelativeDocumentMoniker": "ComputerGraphics\\targetver.h",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\targetver.h",
-              "RelativeToolTip": "ComputerGraphics\\targetver.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-31T13:14:55.838Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Resource.h",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\Resource.h",
-              "RelativeDocumentMoniker": "ComputerGraphics\\Resource.h",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\Resource.h",
-              "RelativeToolTip": "ComputerGraphics\\Resource.h",
-              "ViewState": "AgIAAB8AAADA//////8gwAwAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-31T13:04:52.99Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ComputerGraphics.cpp",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp",
-              "RelativeDocumentMoniker": "ComputerGraphics\\ComputerGraphics.cpp",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp*",
-              "RelativeToolTip": "ComputerGraphics\\ComputerGraphics.cpp*",
-              "ViewState": "AgIAALMAAAAAZ2ZmZmYkwMUAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-10-31T12:58:40.318Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
               "Title": "ComputerGraphics.rc",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc",
+              "DocumentMoniker": "C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc",
               "RelativeDocumentMoniker": "ComputerGraphics\\ComputerGraphics.rc",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc",
+              "ToolTip": "C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.rc",
               "RelativeToolTip": "ComputerGraphics\\ComputerGraphics.rc",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIQAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAEwB0AAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
-              "WhenOpened": "2025-10-31T13:15:17.206Z",
+              "WhenOpened": "2025-11-21T12:03:25.634Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "GraphicsEngine.h",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.h",
-              "RelativeDocumentMoniker": "ComputerGraphics\\GraphicsEngine.h",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.h",
-              "RelativeToolTip": "ComputerGraphics\\GraphicsEngine.h",
-              "ViewState": "AgIAAEIAAAAAZmZmZiYwwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-10-31T13:02:41.391Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "GraphicsEngine.cpp",
-              "DocumentMoniker": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.cpp",
-              "RelativeDocumentMoniker": "ComputerGraphics\\GraphicsEngine.cpp",
-              "ToolTip": "D:\\CG-expr-2\\new\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\GraphicsEngine.cpp",
-              "RelativeToolTip": "ComputerGraphics\\GraphicsEngine.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHkBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-10-31T13:01:50.892Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ComputerGraphics.cpp",
-              "DocumentMoniker": "C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp",
-              "ToolTip": "C:\\Users\\chron\\Documents\\Computer-Graphics-Experiment\\ComputerGraphics\\ComputerGraphics\\ComputerGraphics.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAABIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-10-31T12:59:00.934Z"
             }
           ]
         }
