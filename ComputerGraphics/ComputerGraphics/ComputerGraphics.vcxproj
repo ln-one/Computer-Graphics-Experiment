@@ -123,15 +123,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ComputerGraphics.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="GraphicsEngine.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="src\core\Point2D.h" />
+    <ClInclude Include="src\core\Shape.h" />
+    <ClInclude Include="src\core\DrawMode.h" />
+    <ClInclude Include="src\algorithms\LineDrawer.h" />
+    <ClInclude Include="src\algorithms\CircleDrawer.h" />
+    <ClInclude Include="src\algorithms\FillAlgorithms.h" />
+    <ClInclude Include="src\engine\GraphicsEngine.h" />
+    <ClInclude Include="src\ui\MenuIDs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ComputerGraphics.cpp" />
-    <ClCompile Include="GraphicsEngine.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\algorithms\LineDrawer.cpp" />
+    <ClCompile Include="src\algorithms\CircleDrawer.cpp" />
+    <ClCompile Include="src\algorithms\FillAlgorithms.cpp" />
+    <ClCompile Include="src\engine\GraphicsEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ComputerGraphics.rc" />
