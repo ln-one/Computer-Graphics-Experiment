@@ -132,7 +132,11 @@
     <ClInclude Include="src\algorithms\LineDrawer.h" />
     <ClInclude Include="src\algorithms\CircleDrawer.h" />
     <ClInclude Include="src\algorithms\FillAlgorithms.h" />
+    <ClInclude Include="src\algorithms\TransformAlgorithms.h" />
+    <ClInclude Include="src\algorithms\ClippingAlgorithms.h" />
     <ClInclude Include="src\engine\GraphicsEngine.h" />
+    <ClInclude Include="src\engine\ShapeRenderer.h" />
+    <ClInclude Include="src\engine\ShapeSelector.h" />
     <ClInclude Include="src\ui\MenuIDs.h" />
   </ItemGroup>
   <ItemGroup>
@@ -140,7 +144,11 @@
     <ClCompile Include="src\algorithms\LineDrawer.cpp" />
     <ClCompile Include="src\algorithms\CircleDrawer.cpp" />
     <ClCompile Include="src\algorithms\FillAlgorithms.cpp" />
+    <ClCompile Include="src\algorithms\TransformAlgorithms.cpp" />
+    <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine.cpp" />
+    <ClCompile Include="src\engine\ShapeRenderer.cpp" />
+    <ClCompile Include="src\engine\ShapeSelector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ComputerGraphics.rc" />

@@ -50,19 +50,21 @@ private:
     bool isDefiningClipWindow;
     bool hasClipWindow;
 
-    // 辅助方法
-    void DrawShape(const Shape& shape, COLORREF color);
-    int SelectShapeAt(int x, int y);
-    void DeselectAll();
-    Point2D CalculateShapeCenter(const Shape& shape);
-    void ApplyTranslation(Shape& shape, int dx, int dy);
-    void ApplyScaling(Shape& shape, double scale, Point2D center);
-    void ApplyRotation(Shape& shape, double angle, Point2D center);
+    // 私有辅助方法 - 处理不同绘图模式
+    void HandleLineDrawing(Point2D clickPoint);
+    void HandleCircleDrawing(Point2D clickPoint);
+    void HandleRectangleDrawing(Point2D clickPoint);
+    void HandlePolyDrawing(Point2D clickPoint);
+    void HandleScanlineFillDrawing(Point2D clickPoint);
+    void HandleSelection(Point2D clickPoint);
+    void HandleTranslation(Point2D clickPoint);
+    void HandleScaling(Point2D clickPoint);
+    void HandleRotation(Point2D clickPoint);
+    void HandleClippingWindow(Point2D clickPoint);
     
     // 裁剪算法
     void ExecuteCohenSutherlandClipping();
     void ExecuteMidpointClipping();
     void ExecuteSutherlandHodgmanClipping();
-    void ExecuteWeilerAthertonClipping();
-    void DrawClipWindow(Point2D p1, Point2D p2, bool isDashed);
+    void DrawClipWindow(Point2D p1, Point2D p2);
 };
