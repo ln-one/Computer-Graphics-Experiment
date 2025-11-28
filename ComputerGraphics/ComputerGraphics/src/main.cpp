@@ -88,7 +88,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
             g_engine.Initialize(hwnd, hdc);
-            if (g_engine.GetMode() == MODE_EXPR1) g_engine.DrawExpr1Graphics();
+            if (g_engine.GetMode() == MODE_EXPR1) {
+                g_engine.DrawExpr1Graphics();
+            } else {
+                g_engine.RenderAll();
+            }
             EndPaint(hwnd, &ps);
             return 0;
         }
