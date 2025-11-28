@@ -321,27 +321,33 @@ void ClippingAlgorithms::InsertIntersections(std::vector<WAVertex*>& polyList,
 
 void ClippingAlgorithms::MarkEntryExit(std::vector<WAVertex*>& polyList, 
                                         int xmin, int ymin, int xmax, int ymax) {
+    if (polyList.empty()) return;
+    
     WAVertex* start = polyList[0];
     WAVertex* current = start;
     
+    // Find first non-intersection vertex
     while (current->isIntersection && current->next != start) {
         current = current->next;
     }
-    if (current->isIntersection) return;
     
+    if (current->isIntersection) {
+        // All vertices are intersections, shouldn't happen
+        return;
+    }
+    
+    // Determine if we're inside or outside
     bool inside = IsPointInsideWindow(current->point, xmin, ymin, xmax, ymax);
     start = current;
+    
     do {
         if (current->isIntersection) {
-            if (inside) {
-                current->isEntry = false;
-                inside = false;
-            } else {
-                current->isEntry = true;
-                inside = true;
-            }
+            // Mark as entry or exit based on current state
+            current->isEntry = !inside;
+            inside = !inside; // Toggle state
         }
         current = current->next;
+        if (!current) break; // Safety check
     } while (current != start);
 }
 

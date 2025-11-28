@@ -533,35 +533,68 @@ void GraphicsEngine::DrawPolygon(const std::vector<Point2D>& points, COLORREF co
 
 
 void GraphicsEngine::ExecuteWeilerAthertonClipping() {
+    if (!hasClipWindow) {
+        MessageBoxW(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    
     int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
     int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
     int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
     int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
 
     std::vector<Shape> clippedShapes;
+    
     for (Shape& shape : shapes) {
         if (shape.type == SHAPE_POLYGON && shape.points.size() >= 3) {
-            std::vector<std::vector<Point2D>> clippedPolygons = 
-                ClippingAlgorithms::ClipPolygonWeilerAtherton(shape.points, xmin, ymin, xmax, ymax);
-            
-            for (const auto& poly : clippedPolygons) {
-                if (poly.size() >= 3) {
-                    Shape clippedShape = shape;
-                    clippedShape.points = poly;
-                    clippedShapes.push_back(clippedShape);
+            // Check if completely inside
+            bool allInside = true;
+            for (const Point2D& pt : shape.points) {
+                if (pt.x < xmin || pt.x > xmax || pt.y < ymin || pt.y > ymax) {
+                    allInside = false;
+                    break;
                 }
             }
             
-            // If no clipped polygons, check if completely inside
-            if (clippedPolygons.empty()) {
-                bool allInside = true;
-                for (const Point2D& pt : shape.points) {
-                    if (pt.x < xmin || pt.x > xmax || pt.y < ymin || pt.y > ymax) {
-                        allInside = false;
-                        break;
+            if (allInside) {
+                clippedShapes.push_back(shape);
+                continue;
+            }
+            
+            // Check if completely outside
+            bool allOutside = true;
+            for (const Point2D& pt : shape.points) {
+                if (pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax) {
+                    allOutside = false;
+                    break;
+                }
+            }
+            
+            if (allOutside) {
+                continue; // Skip this polygon
+            }
+            
+            // Polygon intersects - apply Weiler-Atherton
+            std::vector<std::vector<Point2D>> clippedPolygons = 
+                ClippingAlgorithms::ClipPolygonWeilerAtherton(shape.points, xmin, ymin, xmax, ymax);
+            
+            if (!clippedPolygons.empty()) {
+                for (const auto& poly : clippedPolygons) {
+                    if (poly.size() >= 3) {
+                        Shape clippedShape = shape;
+                        clippedShape.points = poly;
+                        clippedShapes.push_back(clippedShape);
                     }
                 }
-                if (allInside) {
+            } else {
+                // Fallback: if algorithm fails, keep original if mostly inside
+                int insideCount = 0;
+                for (const Point2D& pt : shape.points) {
+                    if (pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax) {
+                        insideCount++;
+                    }
+                }
+                if (insideCount > (int)shape.points.size() / 2) {
                     clippedShapes.push_back(shape);
                 }
             }
