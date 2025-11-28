@@ -233,15 +233,12 @@ void GraphicsEngine::HandleSelection(Point2D clickPoint) {
         shapes[hitIndex].selected = true;
         selectedShapeIndex = hitIndex;
         hasSelection = true;
-        ClearCanvas();
-        RenderAll();
     } else if (hasSelection) {
         for (auto& shape : shapes) shape.selected = false;
         hasSelection = false;
         selectedShapeIndex = -1;
-        ClearCanvas();
-        RenderAll();
     }
+    InvalidateRect(hwnd, NULL, TRUE);
 }
 
 void GraphicsEngine::HandleTranslation(Point2D clickPoint) {
@@ -257,8 +254,7 @@ void GraphicsEngine::HandleTranslation(Point2D clickPoint) {
         int dy = clickPoint.y - transformStartPoint.y;
         TransformAlgorithms::ApplyTranslation(shapes[selectedShapeIndex], dx, dy);
         isTransforming = false;
-        ClearCanvas();
-        RenderAll();
+        InvalidateRect(hwnd, NULL, TRUE);
     }
 }
 
@@ -282,8 +278,7 @@ void GraphicsEngine::HandleScaling(Point2D clickPoint) {
         double scale = currentDistance / initialDistance;
         TransformAlgorithms::ApplyScaling(shapes[selectedShapeIndex], scale, transformAnchorPoint);
         isTransforming = false;
-        ClearCanvas();
-        RenderAll();
+        InvalidateRect(hwnd, NULL, TRUE);
     }
 }
 
@@ -295,12 +290,10 @@ void GraphicsEngine::HandleRotation(Point2D clickPoint) {
     if (!isTransforming) {
         transformAnchorPoint = clickPoint;
         isTransforming = true;
-        ClearCanvas();
-        RenderAll();
+        InvalidateRect(hwnd, NULL, TRUE);
     } else {
         isTransforming = false;
-        ClearCanvas();
-        RenderAll();
+        InvalidateRect(hwnd, NULL, TRUE);
     }
 }
 
@@ -312,9 +305,6 @@ void GraphicsEngine::HandleClippingWindow(Point2D clickPoint) {
         clipWindowEnd = clickPoint;
         isDefiningClipWindow = false;
         hasClipWindow = true;
-        ClearCanvas();
-        RenderAll();
-        DrawClipWindow(clipWindowStart, clipWindowEnd);
         
         if (currentMode == MODE_CLIP_COHEN_SUTHERLAND)
             ExecuteCohenSutherlandClipping();
@@ -364,8 +354,7 @@ void GraphicsEngine::ExecuteCohenSutherlandClipping() {
     }
     shapes = clippedShapes;
     hasClipWindow = false;
-    ClearCanvas();
-    RenderAll();
+    InvalidateRect(hwnd, NULL, TRUE);
     MessageBoxW(hwnd, L"Cohen-Sutherland clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
 
@@ -393,8 +382,7 @@ void GraphicsEngine::ExecuteMidpointClipping() {
     }
     shapes = clippedShapes;
     hasClipWindow = false;
-    ClearCanvas();
-    RenderAll();
+    InvalidateRect(hwnd, NULL, TRUE);
     MessageBoxW(hwnd, L"Midpoint clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
 
@@ -420,7 +408,6 @@ void GraphicsEngine::ExecuteSutherlandHodgmanClipping() {
     }
     shapes = clippedShapes;
     hasClipWindow = false;
-    ClearCanvas();
-    RenderAll();
+    InvalidateRect(hwnd, NULL, TRUE);
     MessageBoxW(hwnd, L"Sutherland-Hodgman clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
