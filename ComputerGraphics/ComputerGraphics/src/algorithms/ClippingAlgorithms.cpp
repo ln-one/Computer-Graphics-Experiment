@@ -364,53 +364,23 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
             std::vector<Point2D> polygon;
             WAVertex* start = v;
             WAVertex* current = v;
+            bool onSubjectPolygon = true;
             int maxIterations = 1000;
             int iterations = 0;
             
             do {
-                polygon.push_back(current->point);
                 current->visited = true;
-                current = current->next;
+                polygon.push_back(current->point);
                 
-                // Follow edges until next intersection
-                while (current && !current->isIntersection && current != start) {
-                    polygon.push_back(current->point);
-                    current->visited = true;
-                    current = current->next;
-                    iterations++;
-                    if (iterations >= maxIterations) break;
-                }
-                
-                // Hit an intersection
-                if (current && current->isIntersection && current != start) {
-                    polygon.push_back(current->point);
-                    current->visited = true;
-                    
-                    // Switch to neighbor (clip window)
+                if (current->isIntersection) {
+                    // At intersection, switch between subject and clip
                     if (current->neighbor) {
                         current = current->neighbor;
-                        current->visited = true;
-                        current = current->next;
-                        
-                        // Follow clip window until next intersection
-                        while (current && !current->isIntersection) {
-                            polygon.push_back(current->point);
-                            current->visited = true;
-                            current = current->next;
-                            iterations++;
-                            if (iterations >= maxIterations) break;
-                        }
-                        
-                        // Switch back to polygon
-                        if (current && current->isIntersection && current != start) {
-                            if (current->neighbor) {
-                                current = current->neighbor;
-                                current->visited = true;
-                            }
-                        }
+                        onSubjectPolygon = !onSubjectPolygon;
                     }
                 }
                 
+                current = current->next;
                 iterations++;
                 if (iterations >= maxIterations || !current) break;
                 
