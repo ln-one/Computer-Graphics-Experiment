@@ -2318,6 +2318,22 @@ std::vector<std::vector<Point2D>> GraphicsEngine::TraceClippedPolygons(std::vect
 {
     std::vector<std::vector<Point2D>> resultPolygons;
     
+    // If no intersections, return empty
+    bool hasIntersections = false;
+    for (WAVertex* v : polyList)
+    {
+        if (v->isIntersection)
+        {
+            hasIntersections = true;
+            break;
+        }
+    }
+    
+    if (!hasIntersections)
+    {
+        return resultPolygons;
+    }
+    
     // Reset visited flags
     for (WAVertex* v : polyList)
     {
@@ -2331,50 +2347,69 @@ std::vector<std::vector<Point2D>> GraphicsEngine::TraceClippedPolygons(std::vect
         {
             // Start tracing a new polygon from this entry point
             std::vector<Point2D> polygon;
+            WAVertex* start = v;
             WAVertex* current = v;
-            bool onPolygon = true; // true if following polygon edges, false if following clip window edges
+            bool followingPolygon = true; // true = polygon list, false = clip list
             
             int maxIterations = 1000; // Prevent infinite loops
             int iterations = 0;
             
             do
             {
+                // Add current vertex to polygon
                 polygon.push_back(current->point);
                 current->visited = true;
                 
+                // If at an intersection, decide whether to switch lists
                 if (current->isIntersection)
                 {
-                    // At an intersection, switch between polygon and clip window
-                    if (current->isEntry)
+                    if (followingPolygon)
                     {
-                        // Entry point - follow polygon edges
-                        onPolygon = true;
+                        // We're on polygon list
+                        if (!current->isEntry)
+                        {
+                            // This is an exit point - switch to clip window
+                            if (current->neighbor)
+                            {
+                                current = current->neighbor;
+                                current->visited = true;
+                                followingPolygon = false;
+                            }
+                        }
                     }
                     else
                     {
-                        // Exit point - follow clip window edges
-                        onPolygon = false;
-                        current = current->neighbor; // Switch to clip window list
-                        if (current)
+                        // We're on clip window list
+                        if (current->isEntry)
                         {
-                            current->visited = true;
+                            // This is an entry point - switch back to polygon
+                            if (current->neighbor)
+                            {
+                                current = current->neighbor;
+                                current->visited = true;
+                                followingPolygon = true;
+                            }
                         }
                     }
                 }
                 
-                // Move to next vertex
-                if (current)
+                // Move to next vertex in current list
+                if (current && current->next)
                 {
                     current = current->next;
                 }
-                
-                iterations++;
-                if (iterations >= maxIterations || current == nullptr)
+                else
                 {
                     break;
                 }
                 
-            } while (current != v);
+                iterations++;
+                if (iterations >= maxIterations)
+                {
+                    break;
+                }
+                
+            } while (current != start);
             
             // Add polygon if it has at least 3 vertices
             if (polygon.size() >= 3)
@@ -2412,62 +2447,83 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping()
     
     // Create a new vector to store clipped shapes
     std::vector<Shape> clippedShapes;
+    int processedCount = 0;
+    int resultCount = 0;
     
     // Process each shape
     for (Shape& shape : shapes)
     {
         if (shape.type == SHAPE_POLYGON)
         {
+            processedCount++;
+            
             // Apply Weiler-Atherton clipping to polygons
             if (shape.points.size() >= 3)
             {
-                // Build vertex lists for polygon and clip window
-                std::vector<WAVertex*> polyList = BuildPolygonVertexList(shape.points, xmin, ymin, xmax, ymax);
-                std::vector<WAVertex*> clipList = BuildClipWindowVertexList(xmin, ymin, xmax, ymax);
-                
-                // Find and insert intersection points
-                InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
-                
-                // Mark entry/exit points
-                MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
-                
-                // Trace clipped polygons
-                std::vector<std::vector<Point2D>> clippedPolygons = TraceClippedPolygons(polyList);
-                
-                // Add clipped polygons to result
-                for (const std::vector<Point2D>& poly : clippedPolygons)
+                // First check if polygon is completely inside
+                bool allInside = true;
+                for (const Point2D& pt : shape.points)
                 {
-                    if (poly.size() >= 3)
+                    if (!IsPointInsideWindow(pt, xmin, ymin, xmax, ymax))
                     {
-                        Shape clippedShape = shape;
-                        clippedShape.points = poly;
-                        clippedShapes.push_back(clippedShape);
+                        allInside = false;
+                        break;
                     }
                 }
                 
-                // If no clipped polygons were generated, check if original polygon is completely inside
-                if (clippedPolygons.empty())
+                if (allInside)
                 {
-                    bool allInside = true;
+                    // Polygon is completely inside - keep it
+                    clippedShapes.push_back(shape);
+                    resultCount++;
+                }
+                else
+                {
+                    // Check if polygon is completely outside
+                    bool allOutside = true;
                     for (const Point2D& pt : shape.points)
                     {
-                        if (!IsPointInsideWindow(pt, xmin, ymin, xmax, ymax))
+                        if (IsPointInsideWindow(pt, xmin, ymin, xmax, ymax))
                         {
-                            allInside = false;
+                            allOutside = false;
                             break;
                         }
                     }
                     
-                    if (allInside)
+                    if (!allOutside)
                     {
-                        // Polygon is completely inside - keep it
-                        clippedShapes.push_back(shape);
+                        // Polygon intersects window - need to clip
+                        // Build vertex lists for polygon and clip window
+                        std::vector<WAVertex*> polyList = BuildPolygonVertexList(shape.points, xmin, ymin, xmax, ymax);
+                        std::vector<WAVertex*> clipList = BuildClipWindowVertexList(xmin, ymin, xmax, ymax);
+                        
+                        // Find and insert intersection points
+                        InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
+                        
+                        // Mark entry/exit points
+                        MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
+                        
+                        // Trace clipped polygons
+                        std::vector<std::vector<Point2D>> clippedPolygons = TraceClippedPolygons(polyList);
+                        
+                        // Add clipped polygons to result
+                        for (const std::vector<Point2D>& poly : clippedPolygons)
+                        {
+                            if (poly.size() >= 3)
+                            {
+                                Shape clippedShape = shape;
+                                clippedShape.points = poly;
+                                clippedShapes.push_back(clippedShape);
+                                resultCount++;
+                            }
+                        }
+                        
+                        // Cleanup
+                        CleanupVertexList(polyList);
+                        CleanupVertexList(clipList);
                     }
+                    // If allOutside is true, don't add the polygon
                 }
-                
-                // Cleanup
-                CleanupVertexList(polyList);
-                CleanupVertexList(clipList);
             }
         }
         else
@@ -2488,6 +2544,8 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping()
     RenderAll();
     
     // Show success message
-    MessageBox(hwnd, L"Weiler-Atherton polygon clipping completed successfully!", 
-              L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
+    wchar_t message[256];
+    swprintf_s(message, 256, L"Weiler-Atherton polygon clipping completed!\n\nProcessed: %d polygons\nResult: %d polygons", 
+               processedCount, resultCount);
+    MessageBox(hwnd, message, L"Clipping Complete", MB_OK | MB_ICONINFORMATION);
 }
