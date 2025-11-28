@@ -17,7 +17,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(0, CLASS_NAME, L"计算机图形学实验",
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, L"Computer Graphics Experiment",
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
         NULL, NULL, hInstance, NULL);
 
@@ -34,33 +34,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE: {
-            // 创建菜单
             HMENU hMenuBar = CreateMenu();
             HMENU hFileMenu = CreatePopupMenu();
-            AppendMenu(hFileMenu, MF_STRING, ID_FILE_NEW, L"新建");
-            AppendMenu(hFileMenu, MF_STRING, ID_FILE_EXIT, L"退出");
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"文件");
+            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_NEW, L"New");
+            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_EXIT, L"Exit");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"File");
             
             HMENU hExprMenu = CreatePopupMenu();
-            AppendMenu(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"实验一：基本图形");
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"实验");
+            AppendMenuW(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"Experiment 1");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"Experiment");
             
             HMENU hDrawMenu = CreatePopupMenu();
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"直线(DDA)");
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"直线(Bresenham)");
-            AppendMenu(hDrawMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"圆(中点)");
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"圆(Bresenham)");
-            AppendMenu(hDrawMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"矩形");
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"多段线(右键结束)");
-            AppendMenu(hDrawMenu, MF_STRING, ID_DRAW_POLYGON, L"多边形(右键结束)");
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"绘图");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"Line (DDA)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"Line (Bresenham)");
+            AppendMenuW(hDrawMenu, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"Circle (Midpoint)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"Circle (Bresenham)");
+            AppendMenuW(hDrawMenu, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"Rectangle");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"Polyline (Right-click to end)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYGON, L"Polygon (Right-click to end)");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"Draw");
             
             HMENU hFillMenu = CreatePopupMenu();
-            AppendMenu(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"边界填充");
-            AppendMenu(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"扫描线填充");
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"填充");
+            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"Boundary Fill");
+            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"Scanline Fill");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"Fill");
             
             SetMenu(hwnd, hMenuBar);
             return 0;
