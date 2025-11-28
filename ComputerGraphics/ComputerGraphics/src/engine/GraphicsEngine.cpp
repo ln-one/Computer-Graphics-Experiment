@@ -92,7 +92,51 @@ void GraphicsEngine::OnLButtonDown(int x, int y) {
 }
 
 void GraphicsEngine::OnMouseMove(int x, int y) {
-    // Preview functionality
+    Point2D currentPoint(x, y);
+    
+    // Handle rotation preview
+    if (currentMode == MODE_ROTATE && isTransforming && hasSelection) {
+        // Redraw everything
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW + 1));
+        RenderAll();
+        
+        // Draw rotation center marker
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        int markerSize = 5;
+        MoveToEx(hdc, transformAnchorPoint.x - markerSize, transformAnchorPoint.y, NULL);
+        LineTo(hdc, transformAnchorPoint.x + markerSize, transformAnchorPoint.y);
+        MoveToEx(hdc, transformAnchorPoint.x, transformAnchorPoint.y - markerSize, NULL);
+        LineTo(hdc, transformAnchorPoint.x, transformAnchorPoint.y + markerSize);
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
+        
+        // Calculate rotation angle
+        int dx = currentPoint.x - transformAnchorPoint.x;
+        int dy = currentPoint.y - transformAnchorPoint.y;
+        double currentAngle = atan2(dy, dx);
+        
+        // On first mouse move, record initial angle
+        static bool firstMove = true;
+        static Point2D lastAnchor;
+        if (firstMove || lastAnchor.x != transformAnchorPoint.x || lastAnchor.y != transformAnchorPoint.y) {
+            initialAngle = currentAngle;
+            firstMove = false;
+            lastAnchor = transformAnchorPoint;
+        }
+        
+        double rotationAngle = currentAngle - initialAngle;
+        
+        // Create and draw preview
+        Shape preview = shapes[selectedShapeIndex];
+        TransformAlgorithms::ApplyRotation(preview, rotationAngle, transformAnchorPoint);
+        ShapeRenderer::DrawShape(hdc, preview, RGB(128, 128, 255));
+        
+        // Draw line from center to current mouse
+        DrawLineBresenham(transformAnchorPoint, currentPoint, RGB(255, 0, 0));
+    }
 }
 
 void GraphicsEngine::OnRButtonDown(int x, int y) {
@@ -122,6 +166,19 @@ void GraphicsEngine::OnRButtonDown(int x, int y) {
         FillAlgorithms::ScanlineFill(hdc, tempPoints, RGB(255, 0, 0));
         tempPoints.clear();
         isDrawing = false;
+    }
+    else if (currentMode == MODE_ROTATE && isTransforming && hasSelection) {
+        // Complete rotation with right click
+        Point2D currentPoint(x, y);
+        int dx = currentPoint.x - transformAnchorPoint.x;
+        int dy = currentPoint.y - transformAnchorPoint.y;
+        double angle = atan2(dy, dx);
+        
+        // Apply rotation
+        TransformAlgorithms::ApplyRotation(shapes[selectedShapeIndex], angle - initialAngle, transformAnchorPoint);
+        
+        isTransforming = false;
+        InvalidateRect(hwnd, NULL, TRUE);
     }
 }
 
@@ -294,12 +351,25 @@ void GraphicsEngine::HandleRotation(Point2D clickPoint) {
         return;
     }
     if (!isTransforming) {
+        // First click - set rotation center
         transformAnchorPoint = clickPoint;
         isTransforming = true;
-        InvalidateRect(hwnd, NULL, TRUE);
-    } else {
-        isTransforming = false;
-        InvalidateRect(hwnd, NULL, TRUE);
+        
+        // Redraw and show rotation center marker
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW + 1));
+        RenderAll();
+        
+        HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+        HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+        int markerSize = 5;
+        MoveToEx(hdc, clickPoint.x - markerSize, clickPoint.y, NULL);
+        LineTo(hdc, clickPoint.x + markerSize, clickPoint.y);
+        MoveToEx(hdc, clickPoint.x, clickPoint.y - markerSize, NULL);
+        LineTo(hdc, clickPoint.x, clickPoint.y + markerSize);
+        SelectObject(hdc, hOldPen);
+        DeleteObject(hPen);
     }
 }
 
