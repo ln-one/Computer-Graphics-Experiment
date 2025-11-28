@@ -51,6 +51,15 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             {
                 DrawLineBresenham(tempPoints[0], tempPoints[1]);
             }
+            
+            // Save line to shapes vector
+            Shape line;
+            line.type = SHAPE_LINE;
+            line.points = tempPoints;
+            line.color = RGB(0, 0, 0);
+            line.selected = false;
+            shapes.push_back(line);
+            
             isDrawing = false;
         }
         break;
@@ -76,6 +85,16 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
             {
                 DrawCircleBresenham(tempPoints[0], radius);
             }
+            
+            // Save circle to shapes vector
+            Shape circle;
+            circle.type = SHAPE_CIRCLE;
+            circle.points.push_back(tempPoints[0]); // Center
+            circle.radius = radius;
+            circle.color = RGB(0, 0, 0);
+            circle.selected = false;
+            shapes.push_back(circle);
+            
             isDrawing = false;
         }
         break;
@@ -91,6 +110,15 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
         {
             tempPoints.push_back(clickPoint);
             DrawRectangle(tempPoints[0], tempPoints[1]);
+            
+            // Save rectangle to shapes vector
+            Shape rectangle;
+            rectangle.type = SHAPE_RECTANGLE;
+            rectangle.points = tempPoints;
+            rectangle.color = RGB(0, 0, 0);
+            rectangle.selected = false;
+            shapes.push_back(rectangle);
+            
             isDrawing = false;
         }
         break;
@@ -112,6 +140,15 @@ void GraphicsEngine::OnLButtonDown(int x, int y)
         if (tempPoints.size() >= 4)
         {
             DrawBSpline(tempPoints);
+            
+            // Save B-spline to shapes vector
+            Shape bspline;
+            bspline.type = SHAPE_BSPLINE;
+            bspline.points = tempPoints;
+            bspline.color = RGB(0, 0, 0);
+            bspline.selected = false;
+            shapes.push_back(bspline);
+            
             tempPoints.clear();
             isDrawing = false;
         }
@@ -339,6 +376,15 @@ void GraphicsEngine::OnRButtonDown(int x, int y)
     if (currentMode == MODE_POLYLINE && tempPoints.size() >= 2)
     {
         DrawPolyline(tempPoints);
+        
+        // Save polyline to shapes vector
+        Shape polyline;
+        polyline.type = SHAPE_POLYLINE;
+        polyline.points = tempPoints;
+        polyline.color = RGB(0, 0, 0);
+        polyline.selected = false;
+        shapes.push_back(polyline);
+        
         tempPoints.clear();
         isDrawing = false;
     }
