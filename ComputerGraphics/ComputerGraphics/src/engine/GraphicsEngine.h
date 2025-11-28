@@ -24,6 +24,15 @@ public:
     void ClearCanvas();
     void RenderAll();
     void DrawExpr1Graphics();
+    
+    // 基础绘图方法（包装算法类）
+    void DrawLineDDA(Point2D p1, Point2D p2, COLORREF color = RGB(0, 0, 0));
+    void DrawLineBresenham(Point2D p1, Point2D p2, COLORREF color = RGB(0, 0, 0));
+    void DrawCircleMidpoint(Point2D center, int radius, COLORREF color = RGB(0, 0, 0));
+    void DrawCircleBresenham(Point2D center, int radius, COLORREF color = RGB(0, 0, 0));
+    void DrawRectangle(Point2D p1, Point2D p2, COLORREF color = RGB(0, 0, 0));
+    void DrawPolyline(const std::vector<Point2D>& points, COLORREF color = RGB(0, 0, 0));
+    void DrawPolygon(const std::vector<Point2D>& points, COLORREF color = RGB(0, 0, 0));
 
 private:
     HDC hdc;

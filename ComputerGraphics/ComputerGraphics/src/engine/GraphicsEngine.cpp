@@ -100,21 +100,25 @@ void GraphicsEngine::OnRButtonDown(int x, int y) {
         Shape polyline;
         polyline.type = SHAPE_POLYLINE;
         polyline.points = tempPoints;
+        polyline.color = RGB(0, 0, 0);
+        polyline.selected = false;
         shapes.push_back(polyline);
         tempPoints.clear();
         isDrawing = false;
     }
     else if (currentMode == MODE_POLYGON && tempPoints.size() >= 3) {
+        DrawPolygon(tempPoints);
         Shape polygon;
         polygon.type = SHAPE_POLYGON;
         polygon.points = tempPoints;
-        LineDrawer::DrawBresenham(hdc, tempPoints.back(), tempPoints.front());
+        polygon.color = RGB(0, 0, 0);
+        polygon.selected = false;
         shapes.push_back(polygon);
         tempPoints.clear();
         isDrawing = false;
     }
     else if (currentMode == MODE_FILL_SCANLINE && tempPoints.size() >= 3) {
-        LineDrawer::DrawBresenham(hdc, tempPoints.back(), tempPoints.front());
+        DrawLineBresenham(tempPoints.back(), tempPoints.front());
         FillAlgorithms::ScanlineFill(hdc, tempPoints, RGB(255, 0, 0));
         tempPoints.clear();
         isDrawing = false;
@@ -154,13 +158,15 @@ void GraphicsEngine::HandleLineDrawing(Point2D clickPoint) {
     } else {
         tempPoints.push_back(clickPoint);
         if (currentMode == MODE_LINE_DDA)
-            LineDrawer::DrawDDA(hdc, tempPoints[0], tempPoints[1]);
+            DrawLineDDA(tempPoints[0], tempPoints[1]);
         else
-            LineDrawer::DrawBresenham(hdc, tempPoints[0], tempPoints[1]);
+            DrawLineBresenham(tempPoints[0], tempPoints[1]);
         
         Shape line;
         line.type = SHAPE_LINE;
         line.points = tempPoints;
+        line.color = RGB(0, 0, 0);
+        line.selected = false;
         shapes.push_back(line);
         isDrawing = false;
     }
@@ -176,14 +182,16 @@ void GraphicsEngine::HandleCircleDrawing(Point2D clickPoint) {
         int radius = (int)sqrt(pow(tempPoints[1].x - tempPoints[0].x, 2) +
                              pow(tempPoints[1].y - tempPoints[0].y, 2));
         if (currentMode == MODE_CIRCLE_MIDPOINT)
-            CircleDrawer::DrawMidpoint(hdc, tempPoints[0], radius);
+            DrawCircleMidpoint(tempPoints[0], radius);
         else
-            CircleDrawer::DrawBresenham(hdc, tempPoints[0], radius);
+            DrawCircleBresenham(tempPoints[0], radius);
         
         Shape circle;
         circle.type = SHAPE_CIRCLE;
         circle.points.push_back(tempPoints[0]);
         circle.radius = radius;
+        circle.color = RGB(0, 0, 0);
+        circle.selected = false;
         shapes.push_back(circle);
         isDrawing = false;
     }
@@ -196,15 +204,13 @@ void GraphicsEngine::HandleRectangleDrawing(Point2D clickPoint) {
         isDrawing = true;
     } else {
         tempPoints.push_back(clickPoint);
-        Point2D p1 = tempPoints[0], p2 = tempPoints[1];
-        LineDrawer::DrawBresenham(hdc, Point2D(p1.x, p1.y), Point2D(p2.x, p1.y));
-        LineDrawer::DrawBresenham(hdc, Point2D(p2.x, p1.y), Point2D(p2.x, p2.y));
-        LineDrawer::DrawBresenham(hdc, Point2D(p2.x, p2.y), Point2D(p1.x, p2.y));
-        LineDrawer::DrawBresenham(hdc, Point2D(p1.x, p2.y), Point2D(p1.x, p1.y));
+        DrawRectangle(tempPoints[0], tempPoints[1]);
         
         Shape rectangle;
         rectangle.type = SHAPE_RECTANGLE;
         rectangle.points = tempPoints;
+        rectangle.color = RGB(0, 0, 0);
+        rectangle.selected = false;
         shapes.push_back(rectangle);
         isDrawing = false;
     }
@@ -214,7 +220,7 @@ void GraphicsEngine::HandlePolyDrawing(Point2D clickPoint) {
     tempPoints.push_back(clickPoint);
     if (!isDrawing) isDrawing = true;
     if (tempPoints.size() >= 2) {
-        LineDrawer::DrawBresenham(hdc, tempPoints[tempPoints.size()-2], tempPoints.back());
+        DrawLineBresenham(tempPoints[tempPoints.size()-2], tempPoints.back());
     }
 }
 
@@ -222,7 +228,7 @@ void GraphicsEngine::HandleScanlineFillDrawing(Point2D clickPoint) {
     tempPoints.push_back(clickPoint);
     if (!isDrawing) isDrawing = true;
     if (tempPoints.size() >= 2) {
-        LineDrawer::DrawBresenham(hdc, tempPoints[tempPoints.size()-2], tempPoints.back());
+        DrawLineBresenham(tempPoints[tempPoints.size()-2], tempPoints.back());
     }
 }
 
@@ -410,4 +416,44 @@ void GraphicsEngine::ExecuteSutherlandHodgmanClipping() {
     hasClipWindow = false;
     InvalidateRect(hwnd, NULL, TRUE);
     MessageBoxW(hwnd, L"Sutherland-Hodgman clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
+}
+
+
+// 基础绘图方法包装
+void GraphicsEngine::DrawLineDDA(Point2D p1, Point2D p2, COLORREF color) {
+    LineDrawer::DrawDDA(hdc, p1, p2, color);
+}
+
+void GraphicsEngine::DrawLineBresenham(Point2D p1, Point2D p2, COLORREF color) {
+    LineDrawer::DrawBresenham(hdc, p1, p2, color);
+}
+
+void GraphicsEngine::DrawCircleMidpoint(Point2D center, int radius, COLORREF color) {
+    CircleDrawer::DrawMidpoint(hdc, center, radius, color);
+}
+
+void GraphicsEngine::DrawCircleBresenham(Point2D center, int radius, COLORREF color) {
+    CircleDrawer::DrawBresenham(hdc, center, radius, color);
+}
+
+void GraphicsEngine::DrawRectangle(Point2D p1, Point2D p2, COLORREF color) {
+    LineDrawer::DrawBresenham(hdc, Point2D(p1.x, p1.y), Point2D(p2.x, p1.y), color);
+    LineDrawer::DrawBresenham(hdc, Point2D(p2.x, p1.y), Point2D(p2.x, p2.y), color);
+    LineDrawer::DrawBresenham(hdc, Point2D(p2.x, p2.y), Point2D(p1.x, p2.y), color);
+    LineDrawer::DrawBresenham(hdc, Point2D(p1.x, p2.y), Point2D(p1.x, p1.y), color);
+}
+
+void GraphicsEngine::DrawPolyline(const std::vector<Point2D>& points, COLORREF color) {
+    for (size_t i = 1; i < points.size(); i++) {
+        LineDrawer::DrawBresenham(hdc, points[i-1], points[i], color);
+    }
+}
+
+void GraphicsEngine::DrawPolygon(const std::vector<Point2D>& points, COLORREF color) {
+    if (points.size() < 3) return;
+    for (size_t i = 0; i < points.size(); i++) {
+        Point2D p1 = points[i];
+        Point2D p2 = points[(i + 1) % points.size()];
+        LineDrawer::DrawBresenham(hdc, p1, p2, color);
+    }
 }
