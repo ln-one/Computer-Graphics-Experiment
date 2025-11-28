@@ -356,6 +356,7 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
     for (WAVertex* v : polyList) {
         if (v->isIntersection && v->isEntry && !v->visited) {
             std::vector<Point2D> polygon;
+            WAVertex* start = v;
             WAVertex* current = v;
             int maxIterations = 1000;
             int iterations = 0;
@@ -363,21 +364,51 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
             do {
                 polygon.push_back(current->point);
                 current->visited = true;
+                current = current->next;
                 
-                if (current->isIntersection) {
-                    if (current->isEntry) {
-                        // Follow polygon edges
-                    } else {
-                        // Switch to clip window
+                // Follow edges until next intersection
+                while (current && !current->isIntersection && current != start) {
+                    polygon.push_back(current->point);
+                    current->visited = true;
+                    current = current->next;
+                    iterations++;
+                    if (iterations >= maxIterations) break;
+                }
+                
+                // Hit an intersection
+                if (current && current->isIntersection && current != start) {
+                    polygon.push_back(current->point);
+                    current->visited = true;
+                    
+                    // Switch to neighbor (clip window)
+                    if (current->neighbor) {
                         current = current->neighbor;
-                        if (current) current->visited = true;
+                        current->visited = true;
+                        current = current->next;
+                        
+                        // Follow clip window until next intersection
+                        while (current && !current->isIntersection) {
+                            polygon.push_back(current->point);
+                            current->visited = true;
+                            current = current->next;
+                            iterations++;
+                            if (iterations >= maxIterations) break;
+                        }
+                        
+                        // Switch back to polygon
+                        if (current && current->isIntersection && current != start) {
+                            if (current->neighbor) {
+                                current = current->neighbor;
+                                current->visited = true;
+                            }
+                        }
                     }
                 }
                 
-                if (current) current = current->next;
                 iterations++;
-                if (iterations >= maxIterations || current == nullptr) break;
-            } while (current != v);
+                if (iterations >= maxIterations || !current) break;
+                
+            } while (current != start);
             
             if (polygon.size() >= 3) {
                 resultPolygons.push_back(polygon);
