@@ -164,3 +164,247 @@ std::vector<Point2D> ClippingAlgorithms::ClipPolygonSutherlandHodgman(const std:
     if (!clipped.empty()) clipped = ClipPolygonAgainstEdge(clipped, CLIP_TOP, xmin, ymin, xmax, ymax);
     return clipped;
 }
+
+
+// Weiler-Atherton polygon clipping implementation
+bool ClippingAlgorithms::SegmentIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4,
+                                              Point2D& intersection, double& t1, double& t2) {
+    double dx1 = p2.x - p1.x;
+    double dy1 = p2.y - p1.y;
+    double dx2 = p4.x - p3.x;
+    double dy2 = p4.y - p3.y;
+    double denominator = dx1 * dy2 - dy1 * dx2;
+    
+    if (abs(denominator) < 1e-10) return false;
+    
+    double dx3 = p1.x - p3.x;
+    double dy3 = p1.y - p3.y;
+    t1 = (dx3 * dy2 - dy3 * dx2) / denominator;
+    t2 = (dx3 * dy1 - dy3 * dx1) / denominator;
+    
+    if (t1 >= 0.0 && t1 <= 1.0 && t2 >= 0.0 && t2 <= 1.0) {
+        intersection.x = static_cast<int>(p1.x + t1 * dx1);
+        intersection.y = static_cast<int>(p1.y + t1 * dy1);
+        return true;
+    }
+    return false;
+}
+
+bool ClippingAlgorithms::IsPointInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax) {
+    return (point.x >= xmin && point.x <= xmax && point.y >= ymin && point.y <= ymax);
+}
+
+std::vector<ClippingAlgorithms::WAVertex*> ClippingAlgorithms::BuildPolygonVertexList(
+    const std::vector<Point2D>& polygon) {
+    std::vector<WAVertex*> vertexList;
+    for (size_t i = 0; i < polygon.size(); i++) {
+        WAVertex* vertex = new WAVertex(polygon[i]);
+        vertex->id = static_cast<int>(i);
+        vertexList.push_back(vertex);
+    }
+    for (size_t i = 0; i < vertexList.size(); i++) {
+        vertexList[i]->next = vertexList[(i + 1) % vertexList.size()];
+    }
+    return vertexList;
+}
+
+std::vector<ClippingAlgorithms::WAVertex*> ClippingAlgorithms::BuildClipWindowVertexList(
+    int xmin, int ymin, int xmax, int ymax) {
+    std::vector<WAVertex*> vertexList;
+    WAVertex* v1 = new WAVertex(Point2D(xmin, ymin));
+    WAVertex* v2 = new WAVertex(Point2D(xmax, ymin));
+    WAVertex* v3 = new WAVertex(Point2D(xmax, ymax));
+    WAVertex* v4 = new WAVertex(Point2D(xmin, ymax));
+    
+    v1->id = 1000; v2->id = 1001; v3->id = 1002; v4->id = 1003;
+    vertexList.push_back(v1); vertexList.push_back(v2);
+    vertexList.push_back(v3); vertexList.push_back(v4);
+    
+    v1->next = v2; v2->next = v3; v3->next = v4; v4->next = v1;
+    return vertexList;
+}
+
+void ClippingAlgorithms::InsertIntersections(std::vector<WAVertex*>& polyList, 
+                                              std::vector<WAVertex*>& clipList,
+                                              int xmin, int ymin, int xmax, int ymax) {
+    struct IntersectionInfo {
+        WAVertex* beforeVertex;
+        double t;
+        WAVertex* polyIntersect;
+        WAVertex* clipIntersect;
+    };
+    
+    std::vector<IntersectionInfo> polyIntersections;
+    std::vector<IntersectionInfo> clipIntersections;
+    
+    WAVertex* polyStart = polyList[0];
+    WAVertex* polyCurrent = polyStart;
+    do {
+        Point2D p1 = polyCurrent->point;
+        Point2D p2 = polyCurrent->next->point;
+        
+        WAVertex* clipStart = clipList[0];
+        WAVertex* clipCurrent = clipStart;
+        do {
+            Point2D p3 = clipCurrent->point;
+            Point2D p4 = clipCurrent->next->point;
+            Point2D intersection;
+            double t1, t2;
+            
+            if (SegmentIntersection(p1, p2, p3, p4, intersection, t1, t2)) {
+                if (t1 > 0.001 && t1 < 0.999 && t2 > 0.001 && t2 < 0.999) {
+                    WAVertex* polyIntersect = new WAVertex(intersection);
+                    polyIntersect->isIntersection = true;
+                    WAVertex* clipIntersect = new WAVertex(intersection);
+                    clipIntersect->isIntersection = true;
+                    
+                    polyIntersect->neighbor = clipIntersect;
+                    clipIntersect->neighbor = polyIntersect;
+                    polyIntersect->id = 2000 + static_cast<int>(polyIntersections.size());
+                    clipIntersect->id = 3000 + static_cast<int>(clipIntersections.size());
+                    
+                    IntersectionInfo polyInfo;
+                    polyInfo.beforeVertex = polyCurrent;
+                    polyInfo.t = t1;
+                    polyInfo.polyIntersect = polyIntersect;
+                    polyInfo.clipIntersect = clipIntersect;
+                    polyIntersections.push_back(polyInfo);
+                    
+                    IntersectionInfo clipInfo;
+                    clipInfo.beforeVertex = clipCurrent;
+                    clipInfo.t = t2;
+                    clipInfo.polyIntersect = polyIntersect;
+                    clipInfo.clipIntersect = clipIntersect;
+                    clipIntersections.push_back(clipInfo);
+                }
+            }
+            clipCurrent = clipCurrent->next;
+        } while (clipCurrent != clipStart);
+        polyCurrent = polyCurrent->next;
+    } while (polyCurrent != polyStart);
+    
+    // Sort and insert
+    for (size_t i = 0; i < polyIntersections.size(); i++) {
+        for (size_t j = i + 1; j < polyIntersections.size(); j++) {
+            if (polyIntersections[i].beforeVertex == polyIntersections[j].beforeVertex &&
+                polyIntersections[i].t > polyIntersections[j].t) {
+                std::swap(polyIntersections[i], polyIntersections[j]);
+            }
+        }
+    }
+    
+    for (int i = static_cast<int>(polyIntersections.size()) - 1; i >= 0; i--) {
+        WAVertex* before = polyIntersections[i].beforeVertex;
+        WAVertex* intersect = polyIntersections[i].polyIntersect;
+        intersect->next = before->next;
+        before->next = intersect;
+        polyList.push_back(intersect);
+    }
+    
+    for (size_t i = 0; i < clipIntersections.size(); i++) {
+        for (size_t j = i + 1; j < clipIntersections.size(); j++) {
+            if (clipIntersections[i].beforeVertex == clipIntersections[j].beforeVertex &&
+                clipIntersections[i].t > clipIntersections[j].t) {
+                std::swap(clipIntersections[i], clipIntersections[j]);
+            }
+        }
+    }
+    
+    for (int i = static_cast<int>(clipIntersections.size()) - 1; i >= 0; i--) {
+        WAVertex* before = clipIntersections[i].beforeVertex;
+        WAVertex* intersect = clipIntersections[i].clipIntersect;
+        intersect->next = before->next;
+        before->next = intersect;
+        clipList.push_back(intersect);
+    }
+}
+
+void ClippingAlgorithms::MarkEntryExit(std::vector<WAVertex*>& polyList, 
+                                        int xmin, int ymin, int xmax, int ymax) {
+    WAVertex* start = polyList[0];
+    WAVertex* current = start;
+    
+    while (current->isIntersection && current->next != start) {
+        current = current->next;
+    }
+    if (current->isIntersection) return;
+    
+    bool inside = IsPointInsideWindow(current->point, xmin, ymin, xmax, ymax);
+    start = current;
+    do {
+        if (current->isIntersection) {
+            if (inside) {
+                current->isEntry = false;
+                inside = false;
+            } else {
+                current->isEntry = true;
+                inside = true;
+            }
+        }
+        current = current->next;
+    } while (current != start);
+}
+
+std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
+    std::vector<WAVertex*>& polyList) {
+    std::vector<std::vector<Point2D>> resultPolygons;
+    
+    for (WAVertex* v : polyList) {
+        v->visited = false;
+    }
+    
+    for (WAVertex* v : polyList) {
+        if (v->isIntersection && v->isEntry && !v->visited) {
+            std::vector<Point2D> polygon;
+            WAVertex* current = v;
+            int maxIterations = 1000;
+            int iterations = 0;
+            
+            do {
+                polygon.push_back(current->point);
+                current->visited = true;
+                
+                if (current->isIntersection) {
+                    if (current->isEntry) {
+                        // Follow polygon edges
+                    } else {
+                        // Switch to clip window
+                        current = current->neighbor;
+                        if (current) current->visited = true;
+                    }
+                }
+                
+                if (current) current = current->next;
+                iterations++;
+                if (iterations >= maxIterations || current == nullptr) break;
+            } while (current != v);
+            
+            if (polygon.size() >= 3) {
+                resultPolygons.push_back(polygon);
+            }
+        }
+    }
+    return resultPolygons;
+}
+
+void ClippingAlgorithms::CleanupVertexList(std::vector<WAVertex*>& vertexList) {
+    for (WAVertex* v : vertexList) {
+        delete v;
+    }
+    vertexList.clear();
+}
+
+std::vector<std::vector<Point2D>> ClippingAlgorithms::ClipPolygonWeilerAtherton(
+    const std::vector<Point2D>& polygon, int xmin, int ymin, int xmax, int ymax) {
+    std::vector<WAVertex*> polyList = BuildPolygonVertexList(polygon);
+    std::vector<WAVertex*> clipList = BuildClipWindowVertexList(xmin, ymin, xmax, ymax);
+    
+    InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
+    MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
+    std::vector<std::vector<Point2D>> result = TraceClippedPolygons(polyList);
+    
+    CleanupVertexList(polyList);
+    CleanupVertexList(clipList);
+    
+    return result;
+}

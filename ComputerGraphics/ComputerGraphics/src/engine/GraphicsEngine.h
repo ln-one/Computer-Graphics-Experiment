@@ -75,5 +75,6 @@ private:
     void ExecuteCohenSutherlandClipping();
     void ExecuteMidpointClipping();
     void ExecuteSutherlandHodgmanClipping();
+    void ExecuteWeilerAthertonClipping();
     void DrawClipWindow(Point2D p1, Point2D p2);
 };

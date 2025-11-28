@@ -77,6 +77,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             
             HMENU hPolyClipMenu = CreatePopupMenu();
             AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_SUTHERLAND_HODGMAN, L"Sutherland-Hodgman");
+            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_WEILER_ATHERTON, L"Weiler-Atherton");
             AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hPolyClipMenu, L"Polygon Clipping");
             AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hClipMenu, L"Clipping");
             
@@ -187,6 +188,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     break;
                 case ID_CLIP_SUTHERLAND_HODGMAN:
                     g_engine.SetMode(MODE_CLIP_SUTHERLAND_HODGMAN);
+                    break;
+                case ID_CLIP_WEILER_ATHERTON:
+                    g_engine.SetMode(MODE_CLIP_WEILER_ATHERTON);
                     break;
             }
             return 0;

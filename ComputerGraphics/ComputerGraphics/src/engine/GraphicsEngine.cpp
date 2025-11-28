@@ -86,6 +86,7 @@ void GraphicsEngine::OnLButtonDown(int x, int y) {
         case MODE_CLIP_COHEN_SUTHERLAND:
         case MODE_CLIP_MIDPOINT:
         case MODE_CLIP_SUTHERLAND_HODGMAN:
+        case MODE_CLIP_WEILER_ATHERTON:
             HandleClippingWindow(clickPoint);
             break;
     }
@@ -388,6 +389,8 @@ void GraphicsEngine::HandleClippingWindow(Point2D clickPoint) {
             ExecuteMidpointClipping();
         else if (currentMode == MODE_CLIP_SUTHERLAND_HODGMAN)
             ExecuteSutherlandHodgmanClipping();
+        else if (currentMode == MODE_CLIP_WEILER_ATHERTON)
+            ExecuteWeilerAthertonClipping();
     }
 }
 
@@ -526,4 +529,49 @@ void GraphicsEngine::DrawPolygon(const std::vector<Point2D>& points, COLORREF co
         Point2D p2 = points[(i + 1) % points.size()];
         LineDrawer::DrawBresenham(hdc, p1, p2, color);
     }
+}
+
+
+void GraphicsEngine::ExecuteWeilerAthertonClipping() {
+    int xmin = (clipWindowStart.x < clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymin = (clipWindowStart.y < clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+    int xmax = (clipWindowStart.x > clipWindowEnd.x) ? clipWindowStart.x : clipWindowEnd.x;
+    int ymax = (clipWindowStart.y > clipWindowEnd.y) ? clipWindowStart.y : clipWindowEnd.y;
+
+    std::vector<Shape> clippedShapes;
+    for (Shape& shape : shapes) {
+        if (shape.type == SHAPE_POLYGON && shape.points.size() >= 3) {
+            std::vector<std::vector<Point2D>> clippedPolygons = 
+                ClippingAlgorithms::ClipPolygonWeilerAtherton(shape.points, xmin, ymin, xmax, ymax);
+            
+            for (const auto& poly : clippedPolygons) {
+                if (poly.size() >= 3) {
+                    Shape clippedShape = shape;
+                    clippedShape.points = poly;
+                    clippedShapes.push_back(clippedShape);
+                }
+            }
+            
+            // If no clipped polygons, check if completely inside
+            if (clippedPolygons.empty()) {
+                bool allInside = true;
+                for (const Point2D& pt : shape.points) {
+                    if (pt.x < xmin || pt.x > xmax || pt.y < ymin || pt.y > ymax) {
+                        allInside = false;
+                        break;
+                    }
+                }
+                if (allInside) {
+                    clippedShapes.push_back(shape);
+                }
+            }
+        } else {
+            clippedShapes.push_back(shape);
+        }
+    }
+    
+    shapes = clippedShapes;
+    hasClipWindow = false;
+    InvalidateRect(hwnd, NULL, TRUE);
+    MessageBoxW(hwnd, L"Weiler-Atherton clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
