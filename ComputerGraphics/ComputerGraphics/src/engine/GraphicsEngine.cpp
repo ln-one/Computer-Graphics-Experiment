@@ -383,6 +383,14 @@ void GraphicsEngine::HandleClippingWindow(Point2D clickPoint) {
         isDefiningClipWindow = false;
         hasClipWindow = true;
         
+        // Redraw with clipping window
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        FillRect(hdc, &rect, (HBRUSH)(COLOR_WINDOW + 1));
+        RenderAll();
+        DrawClipWindow(clipWindowStart, clipWindowEnd);
+        
+        // Execute clipping
         if (currentMode == MODE_CLIP_COHEN_SUTHERLAND)
             ExecuteCohenSutherlandClipping();
         else if (currentMode == MODE_CLIP_MIDPOINT)
