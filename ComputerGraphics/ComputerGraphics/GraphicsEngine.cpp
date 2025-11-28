@@ -2318,7 +2318,7 @@ std::vector<std::vector<Point2D>> GraphicsEngine::TraceClippedPolygons(std::vect
 {
     std::vector<std::vector<Point2D>> resultPolygons;
     
-    // If no intersections, return empty
+    // Check if there are any intersections
     bool hasIntersections = false;
     for (WAVertex* v : polyList)
     {
@@ -2345,73 +2345,83 @@ std::vector<std::vector<Point2D>> GraphicsEngine::TraceClippedPolygons(std::vect
     {
         if (v->isIntersection && v->isEntry && !v->visited)
         {
-            // Start tracing a new polygon from this entry point
+            // Start tracing from this entry point
             std::vector<Point2D> polygon;
             WAVertex* start = v;
             WAVertex* current = v;
-            bool followingPolygon = true; // true = polygon list, false = clip list
             
-            int maxIterations = 1000; // Prevent infinite loops
+            int maxIterations = 1000;
             int iterations = 0;
             
             do
             {
-                // Add current vertex to polygon
+                // Add current point
                 polygon.push_back(current->point);
                 current->visited = true;
                 
-                // If at an intersection, decide whether to switch lists
-                if (current->isIntersection)
+                // Move to next vertex
+                current = current->next;
+                
+                // Keep adding vertices until we hit an intersection
+                while (current && !current->isIntersection && current != start)
                 {
-                    if (followingPolygon)
-                    {
-                        // We're on polygon list
-                        if (!current->isEntry)
-                        {
-                            // This is an exit point - switch to clip window
-                            if (current->neighbor)
-                            {
-                                current = current->neighbor;
-                                current->visited = true;
-                                followingPolygon = false;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // We're on clip window list
-                        if (current->isEntry)
-                        {
-                            // This is an entry point - switch back to polygon
-                            if (current->neighbor)
-                            {
-                                current = current->neighbor;
-                                current->visited = true;
-                                followingPolygon = true;
-                            }
-                        }
-                    }
+                    polygon.push_back(current->point);
+                    current->visited = true;
+                    current = current->next;
+                    
+                    iterations++;
+                    if (iterations >= maxIterations)
+                        break;
                 }
                 
-                // Move to next vertex in current list
-                if (current && current->next)
+                // If we hit an intersection that's not the start
+                if (current && current->isIntersection && current != start)
                 {
-                    current = current->next;
-                }
-                else
-                {
-                    break;
+                    polygon.push_back(current->point);
+                    current->visited = true;
+                    
+                    // Switch to the neighbor (clip window)
+                    if (current->neighbor)
+                    {
+                        current = current->neighbor;
+                        current->visited = true;
+                        
+                        // Move to next on clip window
+                        current = current->next;
+                        
+                        // Keep following clip window until next intersection
+                        while (current && !current->isIntersection)
+                        {
+                            polygon.push_back(current->point);
+                            current->visited = true;
+                            current = current->next;
+                            
+                            iterations++;
+                            if (iterations >= maxIterations)
+                                break;
+                        }
+                        
+                        // Hit another intersection, switch back to polygon
+                        if (current && current->isIntersection && current != start)
+                        {
+                            if (current->neighbor)
+                            {
+                                current = current->neighbor;
+                                current->visited = true;
+                            }
+                        }
+                    }
                 }
                 
                 iterations++;
-                if (iterations >= maxIterations)
+                if (iterations >= maxIterations || !current)
                 {
                     break;
                 }
                 
             } while (current != start);
             
-            // Add polygon if it has at least 3 vertices
+            // Add polygon if valid
             if (polygon.size() >= 3)
             {
                 resultPolygons.push_back(polygon);
@@ -2493,32 +2503,35 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping()
                     if (!allOutside)
                     {
                         // Polygon intersects window - need to clip
-                        // Build vertex lists for polygon and clip window
                         std::vector<WAVertex*> polyList = BuildPolygonVertexList(shape.points, xmin, ymin, xmax, ymax);
                         std::vector<WAVertex*> clipList = BuildClipWindowVertexList(xmin, ymin, xmax, ymax);
                         
-                        // Find and insert intersection points
                         InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
-                        
-                        // Mark entry/exit points
                         MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
                         
-                        // Trace clipped polygons
                         std::vector<std::vector<Point2D>> clippedPolygons = TraceClippedPolygons(polyList);
                         
-                        // Add clipped polygons to result
-                        for (const std::vector<Point2D>& poly : clippedPolygons)
+                        // If tracing produced results, use them
+                        if (!clippedPolygons.empty())
                         {
-                            if (poly.size() >= 3)
+                            for (const std::vector<Point2D>& poly : clippedPolygons)
                             {
-                                Shape clippedShape = shape;
-                                clippedShape.points = poly;
-                                clippedShapes.push_back(clippedShape);
-                                resultCount++;
+                                if (poly.size() >= 3)
+                                {
+                                    Shape clippedShape = shape;
+                                    clippedShape.points = poly;
+                                    clippedShapes.push_back(clippedShape);
+                                    resultCount++;
+                                }
                             }
                         }
+                        else
+                        {
+                            // Fallback: keep original polygon if tracing failed
+                            clippedShapes.push_back(shape);
+                            resultCount++;
+                        }
                         
-                        // Cleanup
                         CleanupVertexList(polyList);
                         CleanupVertexList(clipList);
                     }
