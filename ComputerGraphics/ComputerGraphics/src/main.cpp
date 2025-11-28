@@ -61,6 +61,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             AppendMenuW(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"Scanline Fill");
             AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"Fill");
             
+            HMENU hTransformMenu = CreatePopupMenu();
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SELECT, L"Select Shape");
+            AppendMenuW(hTransformMenu, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_TRANSLATE, L"Translate");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SCALE, L"Scale");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_ROTATE, L"Rotate");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hTransformMenu, L"Transform");
+            
+            HMENU hClipMenu = CreatePopupMenu();
+            HMENU hLineClipMenu = CreatePopupMenu();
+            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_COHEN_SUTHERLAND, L"Cohen-Sutherland");
+            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_MIDPOINT, L"Midpoint Subdivision");
+            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hLineClipMenu, L"Line Clipping");
+            
+            HMENU hPolyClipMenu = CreatePopupMenu();
+            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_SUTHERLAND_HODGMAN, L"Sutherland-Hodgman");
+            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hPolyClipMenu, L"Polygon Clipping");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hClipMenu, L"Clipping");
+            
             SetMenu(hwnd, hMenuBar);
             return 0;
         }
@@ -143,6 +162,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     break;
                 case ID_FILL_SCANLINE:
                     g_engine.SetMode(MODE_FILL_SCANLINE);
+                    break;
+                case ID_TRANSFORM_SELECT:
+                    g_engine.SetMode(MODE_SELECT);
+                    break;
+                case ID_TRANSFORM_TRANSLATE:
+                    g_engine.SetMode(MODE_TRANSLATE);
+                    break;
+                case ID_TRANSFORM_SCALE:
+                    g_engine.SetMode(MODE_SCALE);
+                    break;
+                case ID_TRANSFORM_ROTATE:
+                    g_engine.SetMode(MODE_ROTATE);
+                    break;
+                case ID_CLIP_COHEN_SUTHERLAND:
+                    g_engine.SetMode(MODE_CLIP_COHEN_SUTHERLAND);
+                    break;
+                case ID_CLIP_MIDPOINT:
+                    g_engine.SetMode(MODE_CLIP_MIDPOINT);
+                    break;
+                case ID_CLIP_SUTHERLAND_HODGMAN:
+                    g_engine.SetMode(MODE_CLIP_SUTHERLAND_HODGMAN);
                     break;
             }
             return 0;
