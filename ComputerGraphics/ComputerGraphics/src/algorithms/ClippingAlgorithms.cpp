@@ -285,17 +285,21 @@ void ClippingAlgorithms::InsertIntersections(std::vector<WAVertex*>& polyList,
         polyCurrent = polyCurrent->next;
     } while (polyCurrent != polyStart);
     
-    // 按边和参数t排序多边形交点
+    // Sort by beforeVertex and t value for polygon intersections
     for (size_t i = 0; i < polyIntersections.size(); i++) {
         for (size_t j = i + 1; j < polyIntersections.size(); j++) {
-            if (polyIntersections[i].beforeVertex == polyIntersections[j].beforeVertex &&
-                polyIntersections[i].t > polyIntersections[j].t) {
+            bool shouldSwap = false;
+            if (polyIntersections[i].beforeVertex == polyIntersections[j].beforeVertex) {
+                shouldSwap = polyIntersections[i].t > polyIntersections[j].t;
+            }
+            if (shouldSwap) {
                 std::swap(polyIntersections[i], polyIntersections[j]);
             }
         }
     }
     
-    // 倒序插入交点，避免影响后续插入位置
+    // Group by beforeVertex and insert in reverse order of t (largest t first)
+    // This way, inserting doesn't affect the positions of earlier intersections
     for (int i = static_cast<int>(polyIntersections.size()) - 1; i >= 0; i--) {
         WAVertex* before = polyIntersections[i].beforeVertex;
         WAVertex* intersect = polyIntersections[i].polyIntersect;
@@ -304,11 +308,14 @@ void ClippingAlgorithms::InsertIntersections(std::vector<WAVertex*>& polyList,
         polyList.push_back(intersect);
     }
     
-    // 按边和参数t排序裁剪窗口交点
+    // Sort by beforeVertex and t value for clip intersections  
     for (size_t i = 0; i < clipIntersections.size(); i++) {
         for (size_t j = i + 1; j < clipIntersections.size(); j++) {
-            if (clipIntersections[i].beforeVertex == clipIntersections[j].beforeVertex &&
-                clipIntersections[i].t > clipIntersections[j].t) {
+            bool shouldSwap = false;
+            if (clipIntersections[i].beforeVertex == clipIntersections[j].beforeVertex) {
+                shouldSwap = clipIntersections[i].t > clipIntersections[j].t;
+            }
+            if (shouldSwap) {
                 std::swap(clipIntersections[i], clipIntersections[j]);
             }
         }
@@ -327,39 +334,55 @@ void ClippingAlgorithms::MarkEntryExit(std::vector<WAVertex*>& polyList,
                                         int xmin, int ymin, int xmax, int ymax) {
     if (polyList.empty()) return;
     
-    WAVertex* current = polyList[0];
+    // 从第一个原始顶点开始遍历（不是交点）
+    WAVertex* start = polyList[0];
+    WAVertex* current = start;
     
-    // 找到第一个非交点顶点
+    // 找到第一个非交点的顶点
     int searchLimit = static_cast<int>(polyList.size()) * 2;
-    for (int i = 0; i < searchLimit && current->isIntersection; i++) {
+    int searchCount = 0;
+    while (current->isIntersection && searchCount < searchLimit) {
         current = current->next;
-        if (current == polyList[0]) return;  // 全是交点
+        searchCount++;
+        if (current == start) break;
     }
     
-    // 确定起始状态并标记交点
-    bool inside = IsPointInsideWindow(current->point, xmin, ymin, xmax, ymax);
-    WAVertex* start = current;
-    int maxIterations = static_cast<int>(polyList.size()) * 2;
+    if (current->isIntersection) {
+        // 所有顶点都是交点，这种情况不应该发生
+        return;
+    }
     
-    for (int i = 0; i < maxIterations; i++) {
+    // 确定起始状态：当前顶点是否在裁剪窗口内
+    bool inside = IsPointInsideWindow(current->point, xmin, ymin, xmax, ymax);
+    start = current;
+    
+    // 遍历整个链表并标记每个交点
+    int maxIterations = static_cast<int>(polyList.size()) * 2;
+    int iterations = 0;
+    
+    do {
         current = current->next;
-        if (!current || current == start) break;
+        iterations++;
+        if (!current || iterations >= maxIterations) break;
         
         if (current->isIntersection) {
+            // 如果当前在外面，这个交点是入点；如果在里面，是出点
             current->isEntry = !inside;
-            inside = !inside;
+            inside = !inside; // 穿过交点后状态翻转
         }
-    }
+    } while (current != start);
 }
 
 std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
     std::vector<WAVertex*>& polyList, int xmin, int ymin, int xmax, int ymax) {
     std::vector<std::vector<Point2D>> resultPolygons;
     
-    // 重置访问标记
+    // Reset visited flags for all vertices
     for (WAVertex* v : polyList) {
         v->visited = false;
-        if (v->neighbor) v->neighbor->visited = false;
+        if (v->neighbor) {
+            v->neighbor->visited = false;
+        }
     }
     
     // 检查是否有入点
@@ -371,13 +394,17 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
         }
     }
     
-    // 无入点情况：多边形起点在窗口内
+    // 如果没有入点但有交点，说明多边形起点在窗口内部
+    // 需要收集窗口内的顶点，从第一个在窗口内的顶点开始，到出点结束
     if (!hasEntryPoint) {
         std::vector<Point2D> polygon;
         WAVertex* start = nullptr;
         
+        // 找到第一个在窗口内的非交点顶点
         for (WAVertex* v : polyList) {
-            if (!v->isIntersection && IsPointInsideWindow(v->point, xmin, ymin, xmax, ymax)) {
+            if (!v->isIntersection && 
+                v->point.x >= xmin && v->point.x <= xmax &&
+                v->point.y >= ymin && v->point.y <= ymax) {
                 start = v;
                 break;
             }
@@ -393,65 +420,109 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
                 current = current->next;
                 iterations++;
                 
+                // 遇到出点（isEntry=false的交点），添加它然后停止
                 if (current->isIntersection && !current->isEntry) {
                     polygon.push_back(current->point);
+                    // 切换到裁剪窗口，沿着窗口走到下一个交点
                     if (current->neighbor) {
                         current = current->neighbor->next;
                         while (current && !current->isIntersection && iterations < maxIterations) {
+                            // 裁剪窗口的顶点
                             polygon.push_back(current->point);
                             current = current->next;
                             iterations++;
                         }
                         if (current && current->isIntersection) {
                             polygon.push_back(current->point);
-                            if (current->neighbor) current = current->neighbor->next;
+                            if (current->neighbor) {
+                                current = current->neighbor->next;
+                            }
                         }
                     }
                 }
             } while (current && current != start && iterations < maxIterations);
             
-            if (polygon.size() >= 3) resultPolygons.push_back(polygon);
+            if (polygon.size() >= 3) {
+                resultPolygons.push_back(polygon);
+            }
         }
         return resultPolygons;
     }
     
-    // 从所有入点追踪多边形
+    // Find all entry points and trace polygons
     for (WAVertex* v : polyList) {
         if (v->isIntersection && v->isEntry && !v->visited) {
             std::vector<Point2D> polygon;
             WAVertex* start = v;
             WAVertex* current = v;
-            bool onSubjectPolygon = true;
+            int maxIterations = 1000;
+            int iterations = 0;
+            bool onSubjectPolygon = true; // 开始在主多边形上，从入点进入
+            bool firstPoint = true;
             
-            for (int i = 0; i < 1000; i++) {
+            while (iterations < maxIterations) {
+                // 标记当前交点为已访问
                 if (current->isIntersection) {
                     current->visited = true;
-                    if (current->neighbor) current->neighbor->visited = true;
+                    if (current->neighbor) {
+                        current->neighbor->visited = true;
+                    }
                 }
                 
-                if (polygon.empty() || polygon.back().x != current->point.x || polygon.back().y != current->point.y) {
+                // 添加当前点到多边形（避免重复）
+                if (polygon.empty() || 
+                    polygon.back().x != current->point.x || 
+                    polygon.back().y != current->point.y) {
                     polygon.push_back(current->point);
                 }
                 
-                if (current->isIntersection && current->neighbor) {
-                    current = current->neighbor;
-                    onSubjectPolygon = !onSubjectPolygon;
+                // 如果当前是交点，需要判断是否切换多边形
+                // 但是第一个点（入点）不切换，继续沿主多边形走
+                if (!firstPoint && current->isIntersection && current->neighbor) {
+                    if (onSubjectPolygon && !current->isEntry) {
+                        // 主多边形上遇到出点，切换到裁剪窗口
+                        current = current->neighbor;
+                        onSubjectPolygon = false;
+                    } else if (!onSubjectPolygon) {
+                        // 裁剪窗口上遇到交点，切换回主多边形
+                        current = current->neighbor;
+                        onSubjectPolygon = true;
+                    }
                 }
                 
+                firstPoint = false;
+                
+                // 移动到下一个顶点
                 current = current->next;
-                if (!current || current == start || 
-                    (current->point.x == start->point.x && current->point.y == start->point.y)) break;
+                iterations++;
+                
+                if (!current) break;
+                
+                // 检查是否回到起点
+                if (current == start) {
+                    break;
+                }
+                // 也检查坐标是否相同（防止指针不同但位置相同的情况）
+                if (current->point.x == start->point.x && current->point.y == start->point.y) {
+                    break;
+                }
             }
             
-            if (polygon.size() >= 3) resultPolygons.push_back(polygon);
+            if (polygon.size() >= 3) {
+                resultPolygons.push_back(polygon);
+            }
         }
     }
     return resultPolygons;
 }
 
 void ClippingAlgorithms::CleanupVertexList(std::vector<WAVertex*>& vertexList) {
+    // 只删除非交点顶点，因为交点顶点会被两个列表引用
+    // 交点的删除由 polyList 负责
     for (WAVertex* v : vertexList) {
-        delete v;
+        if (v) {
+            delete v;
+        }
     }
     vertexList.clear();
 }
@@ -459,17 +530,23 @@ void ClippingAlgorithms::CleanupVertexList(std::vector<WAVertex*>& vertexList) {
 std::vector<std::vector<Point2D>> ClippingAlgorithms::ClipPolygonWeilerAtherton(
     const std::vector<Point2D>& polygon, int xmin, int ymin, int xmax, int ymax) {
     std::vector<std::vector<Point2D>> result;
-    if (polygon.size() < 3) return result;
     
-    // 检查所有顶点是否都在窗口内
+    if (polygon.size() < 3) {
+        return result;
+    }
+    
+    // Check if all vertices are inside the clipping window
     bool allInside = true;
+    bool allOutside = true;
     for (const Point2D& p : polygon) {
-        if (!IsPointInsideWindow(p, xmin, ymin, xmax, ymax)) {
+        if (IsPointInsideWindow(p, xmin, ymin, xmax, ymax)) {
+            allOutside = false;
+        } else {
             allInside = false;
-            break;
         }
     }
     
+    // If all vertices are inside, return the original polygon
     if (allInside) {
         result.push_back(polygon);
         return result;
@@ -480,7 +557,7 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::ClipPolygonWeilerAtherton(
     
     InsertIntersections(polyList, clipList, xmin, ymin, xmax, ymax);
     
-    // 检查是否有交点
+    // If no intersections were found and all vertices are outside, polygon is outside
     bool hasIntersections = false;
     for (WAVertex* v : polyList) {
         if (v->isIntersection) {
@@ -490,24 +567,36 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::ClipPolygonWeilerAtherton(
     }
     
     if (!hasIntersections) {
-        // 无交点且不全在内部，说明完全在外部
+        // No intersections and not all inside means completely outside
+        // 先清理 clipList 中非交点的顶点
         for (WAVertex* v : clipList) {
-            if (!v->isIntersection) delete v;
+            if (!v->isIntersection) {
+                delete v;
+            }
         }
-        for (WAVertex* v : polyList) delete v;
-        polyList.clear();
         clipList.clear();
-        return result;
+        // 再清理 polyList
+        for (WAVertex* v : polyList) {
+            delete v;
+        }
+        polyList.clear();
+        return result; // Return empty
     }
     
     MarkEntryExit(polyList, xmin, ymin, xmax, ymax);
     result = TraceClippedPolygons(polyList, xmin, ymin, xmax, ymax);
     
-    // 清理内存
+    // 清理内存：先收集所有需要删除的顶点
     std::set<WAVertex*> toDelete;
-    for (WAVertex* v : polyList) toDelete.insert(v);
-    for (WAVertex* v : clipList) toDelete.insert(v);
-    for (WAVertex* v : toDelete) delete v;
+    for (WAVertex* v : polyList) {
+        toDelete.insert(v);
+    }
+    for (WAVertex* v : clipList) {
+        toDelete.insert(v);
+    }
+    for (WAVertex* v : toDelete) {
+        delete v;
+    }
     polyList.clear();
     clipList.clear();
     
