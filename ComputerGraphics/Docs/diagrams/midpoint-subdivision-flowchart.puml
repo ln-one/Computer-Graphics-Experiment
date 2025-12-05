@@ -1,0 +1,59 @@
+@startuml 中点分割算法流程图
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    DiamondBackgroundColor LightYellow
+    StartColor Green
+    EndColor Red
+}
+
+start
+
+:输入线段端点 P1, P2;
+:输入裁剪窗口 [xmin, ymin, xmax, ymax];
+
+if (递归深度 > MAX_DEPTH?) then (是)
+    :达到最大深度;
+    stop
+endif
+
+:判断P1是否在窗口内;
+:判断P2是否在窗口内;
+
+if (P1和P2都在窗口内?) then (是)
+    :接受线段;
+    :添加到结果集;
+    stop
+endif
+
+if (P1和P2都在窗口外同侧?) then (是)
+    note right
+        同侧判断：
+        - 都在左侧：x1 < xmin && x2 < xmin
+        - 都在右侧：x1 > xmax && x2 > xmax
+        - 都在上方：y1 < ymin && y2 < ymin
+        - 都在下方：y1 > ymax && y2 > ymax
+    end note
+    :拒绝线段;
+    stop
+endif
+
+:计算中点 M\nM.x = (P1.x + P2.x) / 2\nM.y = (P1.y + P2.y) / 2;
+
+if (线段长度 <= 1像素?) then (是)
+    if (P1在窗口内?) then (是)
+        :接受 P1 到 M;
+    elseif (P2在窗口内?) then (是)
+        :接受 M 到 P2;
+    endif
+    stop
+endif
+
+:递归处理左半段\nClipLine(P1, M, depth+1);
+
+:递归处理右半段\nClipLine(M, P2, depth+1);
+
+stop
+
+@enduml

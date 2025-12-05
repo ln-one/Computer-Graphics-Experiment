@@ -1,0 +1,71 @@
+@startuml 系统架构图
+
+skinparam rectangle {
+    BackgroundColor<<UI>> #E3F2FD
+    BackgroundColor<<Engine>> #C8E6C9
+    BackgroundColor<<Manager>> #FFF9C4
+    BackgroundColor<<Algorithm>> #FFCCBC
+    BackgroundColor<<Data>> #E0E0E0
+    BorderColor Black
+    FontSize 12
+}
+
+skinparam arrow {
+    Color Black
+    Thickness 2
+}
+
+top to bottom direction
+
+package "用户界面层 (UI Layer)" <<UI>> {
+    rectangle "窗口过程\nWndProc" as WndProc
+    rectangle "菜单处理\nMenu Handler" as Menu
+    rectangle "鼠标事件处理\nMouse Events" as Mouse
+}
+
+package "图形引擎层 (Graphics Engine)" <<Engine>> {
+    rectangle "GraphicsEngine\n核心绘图引擎\n• 模式管理\n• 状态维护\n• 渲染协调" as Engine
+}
+
+package "管理模块层 (Managers)" <<Manager>> {
+    rectangle "ShapeManager\n图形管理器\n• 图形存储\n• 选择管理" as ShapeMgr
+    rectangle "TransformManager\n变换管理器\n• 变换操作\n• 矩阵计算" as TransMgr
+    rectangle "ClipManager\n裁剪管理器\n• 窗口定义\n• 裁剪执行" as ClipMgr
+}
+
+package "算法实现层 (Algorithms)" <<Algorithm>> {
+    rectangle "LineDrawer\n直线绘制" as Line
+    rectangle "CircleDrawer\n圆绘制" as Circle
+    rectangle "FillAlgorithms\n填充算法" as Fill
+    rectangle "TransformAlgorithms\n变换算法" as Trans
+    rectangle "ClippingAlgorithms\n裁剪算法" as Clip
+}
+
+package "数据模型层 (Data Model)" <<Data>> {
+    rectangle "Shape\n图形基类" as Shape
+    rectangle "Point2D\n点结构" as Point
+    rectangle "Matrix3x3\n变换矩阵" as Matrix
+}
+
+WndProc -down-> Engine
+Menu -down-> Engine
+Mouse -down-> Engine
+
+Engine -down-> ShapeMgr
+Engine -down-> TransMgr
+Engine -down-> ClipMgr
+
+ShapeMgr -down-> Line
+ShapeMgr -down-> Circle
+ShapeMgr -down-> Fill
+
+TransMgr -down-> Trans
+ClipMgr -down-> Clip
+
+Line -down-> Shape
+Circle -down-> Shape
+Fill -down-> Shape
+Trans -down-> Matrix
+Clip -down-> Point
+
+@enduml

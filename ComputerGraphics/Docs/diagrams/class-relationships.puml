@@ -1,0 +1,122 @@
+@startuml 核心类关系图
+
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+    FontSize 10
+}
+
+top to bottom direction
+
+package "图形引擎" #E3F2FD {
+    class GraphicsEngine {
+        - hdc: HDC
+        - hwnd: HWND
+        - currentMode: DrawMode
+        ====
+        + SetMode(mode: DrawMode)
+        + OnLButtonDown(x, y)
+        + OnMouseMove(x, y)
+        + RenderAll()
+    }
+}
+
+package "管理器模块" #FFF9C4 {
+    class ShapeManager {
+        - shapes: vector<Shape*>
+        - selectedShape: Shape*
+        ====
+        + AddShape(shape)
+        + SelectShape(point)
+        + DrawAll(hdc)
+    }
+    
+    class TransformManager {
+        - currentMode: TransformMode
+        - anchorPoint: Point2D
+        ====
+        + BeginTransform(point)
+        + ApplyTranslation(shape, dx, dy)
+        + ApplyScaling(shape, scale)
+        + ApplyRotation(shape, angle)
+    }
+    
+    class ClipManager {
+        - currentMode: ClipMode
+        - clipWindow: Rectangle
+        ====
+        + BeginDefineWindow(point)
+        + ExecuteClipping()
+    }
+}
+
+package "算法模块" #FFCCBC {
+    class ClippingAlgorithms <<static>> {
+        + ClipLineCohenSutherland()
+        + ClipLineMidpoint()
+        + ClipPolygonSutherlandHodgman()
+        + ClipPolygonWeilerAtherton()
+    }
+    
+    class TransformAlgorithms <<static>> {
+        + Translate(shape, dx, dy)
+        + Scale(shape, sx, sy, center)
+        + Rotate(shape, angle, center)
+    }
+}
+
+package "数据模型" #E0E0E0 {
+    abstract class Shape {
+        # points: vector<Point2D>
+        # color: COLORREF
+        ====
+        + {abstract} Draw(hdc)
+        + {abstract} Transform(matrix)
+    }
+    
+    class Matrix3x3 {
+        - m: float[3][3]
+        ====
+        + Translation(tx, ty)
+        + Scaling(sx, sy, center)
+        + Rotation(angle, center)
+        + Transform(point)
+    }
+    
+    class Point2D {
+        + x: int
+        + y: int
+    }
+}
+
+GraphicsEngine *-down- ShapeManager
+GraphicsEngine *-down- TransformManager
+GraphicsEngine *-down- ClipManager
+
+ShapeManager o-down- Shape
+
+TransformManager .down.> TransformAlgorithms : 使用
+ClipManager .down.> ClippingAlgorithms : 使用
+
+TransformAlgorithms .down.> Matrix3x3 : 使用
+ClippingAlgorithms .down.> Point2D : 使用
+
+Shape -down-> Point2D : 包含
+
+note right of GraphicsEngine
+  核心引擎
+  协调各模块
+end note
+
+note right of TransformManager
+  ★ 实验三新增
+  几何变换管理
+end note
+
+note right of ClipManager
+  ★ 实验三新增
+  裁剪操作管理
+end note
+
+@enduml

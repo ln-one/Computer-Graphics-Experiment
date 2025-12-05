@@ -1,0 +1,88 @@
+@startuml Weiler-Atherton算法流程图
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    DiamondBackgroundColor LightYellow
+    StartColor Green
+    EndColor Red
+}
+
+start
+
+:输入多边形顶点列表;
+:输入裁剪窗口 [xmin, ymin, xmax, ymax];
+
+:构建多边形顶点链表 polyList;
+:构建裁剪窗口顶点链表 clipList;
+
+:计算多边形边与窗口边的所有交点;
+
+while (遍历多边形的每条边) is (继续)
+    while (遍历窗口的每条边) is (继续)
+        if (两条边相交?) then (是)
+            :创建交点顶点 V_poly 和 V_clip;
+            :设置 V_poly.neighbor = V_clip;
+            :设置 V_clip.neighbor = V_poly;
+            :标记为交点;
+            :插入到相应链表;
+        endif
+    endwhile (结束)
+endwhile (结束)
+
+if (没有交点?) then (是)
+    if (多边形完全在窗口内?) then (是)
+        :返回原多边形;
+        stop
+    else (否)
+        :返回空;
+        stop
+    endif
+endif
+
+:标记交点的进入/离开属性;
+
+note right
+    标记规则：
+    1. 找到第一个非交点顶点
+    2. 判断该顶点是否在窗口内
+    3. 遍历链表，遇到交点时：
+       - 如果当前在外，标记为"进入点"
+       - 如果当前在内，标记为"离开点"
+       - 切换状态
+end note
+
+:初始化结果多边形列表;
+:重置所有顶点的访问标记;
+
+while (存在未访问的进入点?) is (是)
+    :选择一个未访问的进入点作为起点;
+    :创建新的结果多边形;
+    :当前顶点 = 起点;
+    :当前在主多边形上;
+    
+    repeat
+        :标记当前顶点为已访问;
+        :添加当前顶点到结果多边形;
+        
+        if (当前顶点是交点?) then (是)
+            :切换到邻居顶点;
+            :切换边界\n(主多边形 ↔ 裁剪窗口);
+        endif
+        
+        :移动到下一个顶点;
+        
+    repeat while (未回到起点?) is (是)
+    -> 否;
+    
+    if (结果多边形顶点数 >= 3?) then (是)
+        :添加到结果列表;
+    endif
+    
+endwhile (否)
+
+:输出所有结果多边形;
+
+stop
+
+@enduml

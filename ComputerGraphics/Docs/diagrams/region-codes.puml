@@ -1,0 +1,70 @@
+@startuml Cohen-Sutherland区域编码
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+    FontSize 13
+}
+
+title Cohen-Sutherland 区域编码示意图
+
+top to bottom direction
+
+rectangle "1001\n左上" as TL #FFE0E0
+rectangle "1000\n上" as T #FFE0E0
+rectangle "1010\n右上" as TR #FFE0E0
+
+TL -[hidden]right- T
+T -[hidden]right- TR
+
+TL -[hidden]down- L
+T -[hidden]down- C
+TR -[hidden]down- R
+
+rectangle "0001\n左" as L #FFE0E0
+rectangle "0000\n内部\n(裁剪窗口)" as C #C8E6C9
+rectangle "0010\n右" as R #FFE0E0
+
+L -[hidden]right- C
+C -[hidden]right- R
+
+L -[hidden]down- BL
+C -[hidden]down- B
+R -[hidden]down- BR
+
+rectangle "0101\n左下" as BL #FFE0E0
+rectangle "0100\n下" as B #FFE0E0
+rectangle "0110\n右下" as BR #FFE0E0
+
+BL -[hidden]right- B
+B -[hidden]right- BR
+
+note as N1
+**编码规则（4位二进制）：**
+• bit 3 (下): y > ymax  → 1000
+• bit 2 (上): y < ymin  → 0100
+• bit 1 (右): x > xmax  → 0010
+• bit 0 (左): x < xmin  → 0001
+
+**示例：**
+• 左上角 = 0001 | 1000 = 1001
+• 窗口内 = 0000
+• 右下角 = 0010 | 0100 = 0110
+end note
+
+note as N2
+**判断规则：**
+1. code1 | code2 == 0
+   → 两端点都在窗口内，完全接受
+
+2. code1 & code2 != 0
+   → 两端点在窗口同一侧外，完全拒绝
+
+3. 其他情况
+   → 部分相交，需要计算交点裁剪
+end note
+
+C -[hidden]down- N1
+N1 -[hidden]down- N2
+
+@enduml

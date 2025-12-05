@@ -1,0 +1,70 @@
+@startuml 菜单结构图
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+    FontSize 11
+}
+
+skinparam card {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+    FontSize 10
+}
+
+title 计算机图形学实验系统 - 菜单结构
+
+top to bottom direction
+
+rectangle "菜单栏" #F5F5F5 {
+    
+    card "文件(F)" #C8E6C9 {
+        rectangle "  新建(N) Ctrl+N  " as New
+        rectangle "  退出(X)  " as Exit
+    }
+    
+    card "绘图(D)" #BBDEFB {
+        rectangle "  直线（DDA算法）  " as LineDDA
+        rectangle "  直线（Bresenham算法）  " as LineBresenham
+        rectangle "  圆（中点算法）  " as CircleMidpoint
+        rectangle "  圆（Bresenham算法）  " as CircleBresenham
+        rectangle "  矩形  " as Rect
+        rectangle "  多段线（右键结束）  " as Polyline
+        rectangle "  多边形（右键结束） ★  " as Polygon #FFF59D
+        rectangle "  B样条曲线  " as BSpline
+    }
+    
+    card "填充(I)" #B2DFDB {
+        rectangle "  扫描线填充  " as ScanFill
+        rectangle "  边界填充  " as BoundFill
+    }
+    
+    card "变换(T) ★实验三新增" #FFF9C4 {
+        rectangle "  选择图形  " as Select #FFF59D
+        rectangle "  平移  " as Trans #FFF59D
+        rectangle "  缩放  " as Scale #FFF59D
+        rectangle "  旋转  " as Rotate #FFF59D
+    }
+    
+    card "裁剪(C) ★实验三新增" #FFCCBC {
+        rectangle "直线裁剪" #FFE0B2 {
+            rectangle "  Cohen-Sutherland算法  " as CS #FFF59D
+            rectangle "  中点分割算法  " as Mid #FFF59D
+        }
+        rectangle "多边形裁剪" #FFE0B2 {
+            rectangle "  Sutherland-Hodgman算法  " as SH #FFF59D
+            rectangle "  Weiler-Atherton算法  " as WA #FFF59D
+        }
+    }
+    
+    card "帮助(H)" #E0E0E0 {
+        rectangle "  关于(A)  " as About
+    }
+}
+
+note right of Polygon
+  ★ 标记为
+  实验三新增功能
+end note
+
+@enduml

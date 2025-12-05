@@ -1,0 +1,92 @@
+@startuml 图形类继承层次
+
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+    FontSize 11
+}
+
+skinparam classAttributeIconSize 0
+
+top to bottom direction
+
+abstract class Shape {
+    # points: vector<Point2D>
+    # color: COLORREF
+    # selected: bool
+    # type: ShapeType
+    ====
+    + {abstract} Draw(hdc: HDC): void
+    + {abstract} Transform(matrix: Matrix3x3): void
+    + {abstract} HitTest(point: Point2D): bool
+    + {abstract} Clone(): Shape*
+    ----
+    + IsSelected(): bool
+    + SetSelected(sel: bool): void
+    + GetType(): ShapeType
+    + GetPoints(): vector<Point2D>
+}
+
+class LineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class CircleShape {
+    - radius: int
+    ====
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class RectangleShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class PolylineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class PolygonShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class BSplineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+Shape <|-- LineShape
+Shape <|-- CircleShape
+Shape <|-- RectangleShape
+Shape <|-- PolylineShape
+Shape <|-- PolygonShape
+Shape <|-- BSplineShape
+
+note right of Shape
+  所有图形类的基类
+  提供统一的接口
+end note
+
+note bottom of PolygonShape
+  ★ 实验三新增
+  支持任意多边形
+end note
+
+@enduml

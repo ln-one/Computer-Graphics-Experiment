@@ -1,0 +1,86 @@
+@startuml Sutherland-Hodgman算法流程图
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    DiamondBackgroundColor LightYellow
+    StartColor Green
+    EndColor Red
+}
+
+start
+
+:输入多边形顶点列表;
+:输入裁剪窗口 [xmin, ymin, xmax, ymax];
+
+:当前多边形 = 输入多边形;
+
+:对左边界裁剪;
+note right
+    裁剪边界：x = xmin
+end note
+:当前多边形 = 裁剪结果;
+
+if (多边形为空?) then (是)
+    stop
+endif
+
+:对右边界裁剪;
+note right
+    裁剪边界：x = xmax
+end note
+:当前多边形 = 裁剪结果;
+
+if (多边形为空?) then (是)
+    stop
+endif
+
+:对下边界裁剪;
+note right
+    裁剪边界：y = ymax
+end note
+:当前多边形 = 裁剪结果;
+
+if (多边形为空?) then (是)
+    stop
+endif
+
+:对上边界裁剪;
+note right
+    裁剪边界：y = ymin
+end note
+:当前多边形 = 裁剪结果;
+
+:输出最终多边形;
+
+stop
+
+partition "单边裁剪过程" {
+    start
+    :创建输出顶点列表;
+    
+    while (遍历多边形的每条边) is (继续)
+        :获取边的两个端点\nP_prev, P_current;
+        
+        :判断P_prev是否在裁剪边内侧;
+        :判断P_current是否在裁剪边内侧;
+        
+        if (P_prev在内 && P_current在内?) then (情况1)
+            :输出 P_current;
+        elseif (P_prev在内 && P_current在外?) then (情况2)
+            :计算交点 I;
+            :输出 I;
+        elseif (P_prev在外 && P_current在内?) then (情况3)
+            :计算交点 I;
+            :输出 I;
+            :输出 P_current;
+        else (情况4: 都在外)
+            :不输出;
+        endif
+    endwhile (结束)
+    
+    :返回输出顶点列表;
+    stop
+}
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml 菜单WBS结构
+
+@startwbs
+skinparam wbs {
+    BackgroundColor White
+    BorderColor Black
+    .file {
+        BackgroundColor #90EE90
+    }
+    .draw {
+        BackgroundColor #87CEEB
+    }
+    .fill {
+        BackgroundColor #B0E0E6
+    }
+    .transform {
+        BackgroundColor #FFFFE0
+    }
+    .clip {
+        BackgroundColor #FFB6C1
+    }
+    .help {
+        BackgroundColor #D3D3D3
+    }
+    .new {
+        BackgroundColor #FFD700
+        FontStyle bold
+    }
+}
+
+* 菜单栏
+
+** 文件(F) <<file>>
+*** 新建(N) Ctrl+N <<file>>
+*** 退出(X) <<file>>
+
+** 绘图(D) <<draw>>
+*** 直线 <<draw>>
+**** DDA算法 <<draw>>
+**** Bresenham算法 <<draw>>
+*** 圆 <<draw>>
+**** 中点算法 <<draw>>
+**** Bresenham算法 <<draw>>
+*** 矩形 <<draw>>
+*** 多段线\n(右键结束) <<draw>>
+*** 多边形\n(右键结束)\n★新增 <<new>>
+*** B样条曲线 <<draw>>
+
+** 填充(I) <<fill>>
+*** 扫描线填充 <<fill>>
+*** 边界填充 <<fill>>
+
+** 变换(T)\n★实验三新增 <<transform>>
+*** 选择图形 <<new>>
+*** 平移 <<new>>
+*** 缩放 <<new>>
+*** 旋转 <<new>>
+
+** 裁剪(C)\n★实验三新增 <<clip>>
+*** 直线裁剪 <<clip>>
+**** Cohen-Sutherland <<new>>
+**** 中点分割 <<new>>
+*** 多边形裁剪 <<clip>>
+**** Sutherland-Hodgman <<new>>
+**** Weiler-Atherton <<new>>
+
+** 帮助(H) <<help>>
+*** 关于(A) <<help>>
+
+@endwbs
+
+legend right
+    |= 图例 |
+    | <back:#FFD700>★ 新增</back> | 实验三新增功能 |
+    | <back:#90EE90>文件</back> | 文件操作 |
+    | <back:#87CEEB>绘图</back> | 图形绘制 |
+    | <back:#B0E0E6>填充</back> | 区域填充 |
+    | <back:#FFFFE0>变换</back> | 几何变换 |
+    | <back:#FFB6C1>裁剪</back> | 图形裁剪 |
+endlegend
+
+@enduml

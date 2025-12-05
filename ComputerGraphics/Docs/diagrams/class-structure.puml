@@ -1,0 +1,171 @@
+@startuml 类结构图
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+abstract class Shape {
+    # points: vector<Point2D>
+    # color: COLORREF
+    # selected: bool
+    # type: ShapeType
+    --
+    + {abstract} Draw(hdc: HDC): void
+    + {abstract} Transform(matrix: Matrix3x3): void
+    + {abstract} HitTest(point: Point2D): bool
+    + {abstract} Clone(): Shape*
+    + IsSelected(): bool
+    + SetSelected(sel: bool): void
+    + GetType(): ShapeType
+    + GetPoints(): vector<Point2D>
+}
+
+class LineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class CircleShape {
+    - radius: int
+    --
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class RectangleShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class PolygonShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class PolylineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+class BSplineShape {
+    + Draw(hdc: HDC): void
+    + Transform(matrix: Matrix3x3): void
+    + HitTest(point: Point2D): bool
+    + Clone(): Shape*
+}
+
+Shape <|-- LineShape
+Shape <|-- CircleShape
+Shape <|-- RectangleShape
+Shape <|-- PolygonShape
+Shape <|-- PolylineShape
+Shape <|-- BSplineShape
+
+class GraphicsEngine {
+    - hdc: HDC
+    - hwnd: HWND
+    - currentMode: DrawMode
+    - shapeManager: ShapeManager*
+    - transformManager: TransformManager*
+    - clipManager: ClipManager*
+    --
+    + SetMode(mode: DrawMode): void
+    + OnLButtonDown(x: int, y: int): void
+    + OnRButtonDown(x: int, y: int): void
+    + OnMouseMove(x: int, y: int): void
+    + RenderAll(): void
+    + Clear(): void
+}
+
+class ShapeManager {
+    - shapes: vector<unique_ptr<Shape>>
+    - selectedShape: Shape*
+    --
+    + AddShape(shape: Shape*): void
+    + RemoveShape(shape: Shape*): void
+    + ClearAll(): void
+    + SelectShape(point: Point2D): Shape*
+    + DeselectAll(): void
+    + GetSelectedShape(): Shape*
+    + DrawAll(hdc: HDC): void
+    + DrawSelection(hdc: HDC): void
+}
+
+class TransformManager {
+    - shapeManager: ShapeManager*
+    - currentMode: TransformMode
+    - anchorPoint: Point2D
+    - isTransforming: bool
+    --
+    + SetMode(mode: TransformMode): void
+    + BeginTransform(point: Point2D): void
+    + UpdateTransform(point: Point2D): void
+    + EndTransform(): void
+    + ApplyTranslation(shape: Shape*, dx: float, dy: float): void
+    + ApplyScaling(shape: Shape*, scale: float): void
+    + ApplyRotation(shape: Shape*, angle: float): void
+}
+
+class ClipManager {
+    - shapeManager: ShapeManager*
+    - currentMode: ClipMode
+    - clipWindow: Rectangle
+    - isDefiningWindow: bool
+    --
+    + SetMode(mode: ClipMode): void
+    + BeginDefineWindow(point: Point2D): void
+    + UpdateWindow(point: Point2D): void
+    + EndDefineWindow(): void
+    + ExecuteClipping(): void
+}
+
+class ClippingAlgorithms {
+    + {static} ClipLineCohenSutherland(p1: Point2D&, p2: Point2D&, ...): bool
+    + {static} ClipLineMidpoint(p1: Point2D, p2: Point2D, ...): void
+    + {static} ClipPolygonSutherlandHodgman(polygon: vector<Point2D>, ...): vector<Point2D>
+    + {static} ClipPolygonWeilerAtherton(polygon: vector<Point2D>, ...): vector<vector<Point2D>>
+    --
+    - {static} ComputeOutCode(point: Point2D, ...): int
+    - {static} IsInsideEdge(point: Point2D, ...): bool
+    - {static} ComputeIntersection(p1: Point2D, p2: Point2D, ...): Point2D
+}
+
+class TransformAlgorithms {
+    + {static} Translate(shape: Shape*, dx: float, dy: float): void
+    + {static} Scale(shape: Shape*, sx: float, sy: float, center: Point2D): void
+    + {static} Rotate(shape: Shape*, angle: float, center: Point2D): void
+}
+
+class Matrix3x3 {
+    - m: float[3][3]
+    --
+    + Matrix3x3()
+    + {static} Translation(tx: float, ty: float): Matrix3x3
+    + {static} Scaling(sx: float, sy: float, center: Point2D): Matrix3x3
+    + {static} Rotation(angle: float, center: Point2D): Matrix3x3
+    + operator*(other: Matrix3x3): Matrix3x3
+    + Transform(point: Point2D): Point2D
+}
+
+GraphicsEngine *-- ShapeManager
+GraphicsEngine *-- TransformManager
+GraphicsEngine *-- ClipManager
+ShapeManager o-- Shape
+TransformManager ..> TransformAlgorithms
+ClipManager ..> ClippingAlgorithms
+TransformAlgorithms ..> Matrix3x3
+
+@enduml

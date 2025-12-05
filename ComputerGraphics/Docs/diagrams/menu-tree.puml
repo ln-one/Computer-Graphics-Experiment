@@ -1,0 +1,71 @@
+@startuml 菜单树状结构
+
+@startmindmap
+skinparam mindmapDiagram {
+    BackgroundColor White
+    LineColor Black
+    .file {
+        BackgroundColor LightGreen
+    }
+    .draw {
+        BackgroundColor LightBlue
+    }
+    .fill {
+        BackgroundColor LightCyan
+    }
+    .transform {
+        BackgroundColor LightYellow
+    }
+    .clip {
+        BackgroundColor LightCoral
+    }
+    .help {
+        BackgroundColor LightGray
+    }
+    .new {
+        BackgroundColor Yellow
+    }
+}
+
+* 计算机图形学\n实验系统
+
+** 文件(F) <<file>>
+*** 新建(N)\nCtrl+N <<file>>
+*** 退出(X) <<file>>
+
+** 绘图(D) <<draw>>
+*** 直线（DDA算法） <<draw>>
+*** 直线（Bresenham算法） <<draw>>
+*** 圆（中点算法） <<draw>>
+*** 圆（Bresenham算法） <<draw>>
+*** 矩形 <<draw>>
+*** 多段线（右键结束） <<draw>>
+*** 多边形（右键结束）\n[实验三新增] <<new>>
+*** B样条曲线 <<draw>>
+
+** 填充(I) <<fill>>
+*** 扫描线填充 <<fill>>
+*** 边界填充 <<fill>>
+
+left side
+
+** 变换(T)\n[实验三新增] <<transform>>
+*** 选择图形 <<new>>
+*** 平移 <<new>>
+*** 缩放 <<new>>
+*** 旋转 <<new>>
+
+** 裁剪(C)\n[实验三新增] <<clip>>
+*** 直线裁剪 <<clip>>
+**** Cohen-Sutherland算法 <<new>>
+**** 中点分割算法 <<new>>
+*** 多边形裁剪 <<clip>>
+**** Sutherland-Hodgman算法 <<new>>
+**** Weiler-Atherton算法 <<new>>
+
+** 帮助(H) <<help>>
+*** 关于(A) <<help>>
+
+@endmindmap
+
+@enduml

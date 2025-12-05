@@ -1,0 +1,49 @@
+@startuml Cohen-Sutherland算法流程图
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    DiamondBackgroundColor LightYellow
+    StartColor Green
+    EndColor Red
+}
+
+start
+
+:计算端点P1的区域编码 code1;
+:计算端点P2的区域编码 code2;
+
+repeat
+
+    if (code1 | code2 == 0?) then (是)
+        :完全在窗口内;
+        :接受线段;
+        stop
+    elseif (code1 & code2 != 0?) then (是)
+        :完全在窗口外;
+        :拒绝线段;
+        stop
+    else (否)
+        :部分在窗口内;
+    endif
+
+    :选择窗口外的端点\n(code1 != 0 ? P1 : P2);
+    
+    if (outcodeOut & TOP) then (是)
+        :计算与上边界交点\nx = x1 + (x2-x1)*(ymin-y1)/(y2-y1)\ny = ymin;
+    elseif (outcodeOut & BOTTOM) then (是)
+        :计算与下边界交点\nx = x1 + (x2-x1)*(ymax-y1)/(y2-y1)\ny = ymax;
+    elseif (outcodeOut & RIGHT) then (是)
+        :计算与右边界交点\ny = y1 + (y2-y1)*(xmax-x1)/(x2-x1)\nx = xmax;
+    else (LEFT)
+        :计算与左边界交点\ny = y1 + (y2-y1)*(xmin-x1)/(x2-x1)\nx = xmin;
+    endif
+
+    :用交点替换窗口外的端点;
+    :重新计算该端点的区域编码;
+
+repeat while (继续判断)
+
+stop
+
+@enduml

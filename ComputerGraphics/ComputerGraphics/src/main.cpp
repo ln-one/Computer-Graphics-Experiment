@@ -17,7 +17,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(0, CLASS_NAME, L"Computer Graphics Experiment",
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, L"计算机图形学实验",
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
         NULL, NULL, hInstance, NULL);
 
@@ -36,50 +36,50 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_CREATE: {
             HMENU hMenuBar = CreateMenu();
             HMENU hFileMenu = CreatePopupMenu();
-            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_NEW, L"New");
-            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_EXIT, L"Exit");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"File");
+            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_NEW, L"新建");
+            AppendMenuW(hFileMenu, MF_STRING, ID_FILE_EXIT, L"退出");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, L"文件");
             
             HMENU hExprMenu = CreatePopupMenu();
-            AppendMenuW(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"Experiment 1");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"Experiment");
+            AppendMenuW(hExprMenu, MF_STRING, ID_EXPR_EXPR1, L"实验一");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hExprMenu, L"实验");
             
             HMENU hDrawMenu = CreatePopupMenu();
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"Line (DDA)");
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"Line (Bresenham)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_DDA, L"直线 (DDA算法)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_LINE_BRES, L"直线 (Bresenham算法)");
             AppendMenuW(hDrawMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"Circle (Midpoint)");
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"Circle (Bresenham)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_MID, L"圆 (中点算法)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_CIRCLE_BRES, L"圆 (Bresenham算法)");
             AppendMenuW(hDrawMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"Rectangle");
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"Polyline (Right-click to end)");
-            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYGON, L"Polygon (Right-click to end)");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"Draw");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_RECTANGLE, L"矩形");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYLINE, L"折线 (右键结束)");
+            AppendMenuW(hDrawMenu, MF_STRING, ID_DRAW_POLYGON, L"多边形 (右键结束)");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hDrawMenu, L"绘制");
             
             HMENU hFillMenu = CreatePopupMenu();
-            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"Boundary Fill");
-            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"Scanline Fill");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"Fill");
+            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_BOUNDARY, L"边界填充");
+            AppendMenuW(hFillMenu, MF_STRING, ID_FILL_SCANLINE, L"扫描线填充");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFillMenu, L"填充");
             
             HMENU hTransformMenu = CreatePopupMenu();
-            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SELECT, L"Select Shape");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SELECT, L"选择图形");
             AppendMenuW(hTransformMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_TRANSLATE, L"Translate");
-            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SCALE, L"Scale");
-            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_ROTATE, L"Rotate");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hTransformMenu, L"Transform");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_TRANSLATE, L"平移");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_SCALE, L"缩放");
+            AppendMenuW(hTransformMenu, MF_STRING, ID_TRANSFORM_ROTATE, L"旋转");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hTransformMenu, L"变换");
             
             HMENU hClipMenu = CreatePopupMenu();
             HMENU hLineClipMenu = CreatePopupMenu();
-            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_COHEN_SUTHERLAND, L"Cohen-Sutherland");
-            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_MIDPOINT, L"Midpoint Subdivision");
-            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hLineClipMenu, L"Line Clipping");
+            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_COHEN_SUTHERLAND, L"Cohen-Sutherland算法");
+            AppendMenuW(hLineClipMenu, MF_STRING, ID_CLIP_MIDPOINT, L"中点分割算法");
+            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hLineClipMenu, L"线段裁剪");
             
             HMENU hPolyClipMenu = CreatePopupMenu();
-            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_SUTHERLAND_HODGMAN, L"Sutherland-Hodgman");
-            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_WEILER_ATHERTON, L"Weiler-Atherton");
-            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hPolyClipMenu, L"Polygon Clipping");
-            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hClipMenu, L"Clipping");
+            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_SUTHERLAND_HODGMAN, L"Sutherland-Hodgman算法");
+            AppendMenuW(hPolyClipMenu, MF_STRING, ID_CLIP_WEILER_ATHERTON, L"Weiler-Atherton算法");
+            AppendMenuW(hClipMenu, MF_POPUP, (UINT_PTR)hPolyClipMenu, L"多边形裁剪");
+            AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hClipMenu, L"裁剪");
             
             SetMenu(hwnd, hMenuBar);
             return 0;

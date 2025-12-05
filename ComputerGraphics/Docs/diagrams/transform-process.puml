@@ -1,0 +1,84 @@
+@startuml 几何变换流程
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    DiamondBackgroundColor LightYellow
+    StartColor Green
+    EndColor Red
+}
+
+|用户|
+start
+:选择图形;
+
+|系统|
+:高亮显示选中的图形;
+
+|用户|
+:选择变换类型\n(平移/缩放/旋转);
+
+|系统|
+:进入相应的变换模式;
+
+partition "平移变换" {
+    |用户|
+    :点击起始位置;
+    :拖动鼠标到目标位置;
+    
+    |系统|
+    :计算位移向量 (dx, dy);
+    :创建平移矩阵\nT = [1  0  dx]\n    [0  1  dy]\n    [0  0  1];
+    :对图形所有顶点应用变换;
+    :实时显示预览;
+    
+    |用户|
+    :释放鼠标;
+    
+    |系统|
+    :完成平移;
+}
+
+partition "缩放变换" {
+    |用户|
+    :点击确定缩放中心;
+    :拖动鼠标改变大小;
+    
+    |系统|
+    :计算缩放比例 s;
+    :创建复合变换矩阵\n1. 平移到原点: T1 = Translate(-cx, -cy)\n2. 缩放: S = Scale(s, s)\n3. 平移回去: T2 = Translate(cx, cy)\nM = T2 * S * T1;
+    :对图形所有顶点应用变换;
+    :实时显示预览;
+    
+    |用户|
+    :释放鼠标;
+    
+    |系统|
+    :完成缩放;
+}
+
+partition "旋转变换" {
+    |用户|
+    :点击确定旋转中心;
+    :移动鼠标改变角度;
+    
+    |系统|
+    :计算旋转角度 θ;
+    :创建复合变换矩阵\n1. 平移到原点: T1 = Translate(-cx, -cy)\n2. 旋转: R = Rotate(θ)\n3. 平移回去: T2 = Translate(cx, cy)\nM = T2 * R * T1;
+    :对图形所有顶点应用变换;
+    :实时显示预览;
+    
+    |用户|
+    :点击确认;
+    
+    |系统|
+    :完成旋转;
+}
+
+|系统|
+:更新图形对象;
+:重新绘制画布;
+
+stop
+
+@enduml
