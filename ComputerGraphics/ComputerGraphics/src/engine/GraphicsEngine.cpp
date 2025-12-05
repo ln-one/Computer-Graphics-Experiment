@@ -307,7 +307,7 @@ void GraphicsEngine::HandleSelection(Point2D clickPoint) {
 
 void GraphicsEngine::HandleTranslation(Point2D clickPoint) {
     if (!hasSelection) {
-        MessageBoxW(hwnd, L"请先选择一个图形", L"平移", MB_OK | MB_ICONINFORMATION);
+        MessageBoxW(hwnd, L"Please select a shape first", L"Translation", MB_OK | MB_ICONINFORMATION);
         return;
     }
     if (!isTransforming) {
@@ -324,7 +324,7 @@ void GraphicsEngine::HandleTranslation(Point2D clickPoint) {
 
 void GraphicsEngine::HandleScaling(Point2D clickPoint) {
     if (!hasSelection) {
-        MessageBoxW(hwnd, L"请先选择一个图形", L"缩放", MB_OK | MB_ICONINFORMATION);
+        MessageBoxW(hwnd, L"Please select a shape first", L"Scaling", MB_OK | MB_ICONINFORMATION);
         return;
     }
     if (!isTransforming) {
@@ -348,7 +348,7 @@ void GraphicsEngine::HandleScaling(Point2D clickPoint) {
 
 void GraphicsEngine::HandleRotation(Point2D clickPoint) {
     if (!hasSelection) {
-        MessageBoxW(hwnd, L"请先选择一个图形", L"旋转", MB_OK | MB_ICONINFORMATION);
+        MessageBoxW(hwnd, L"Please select a shape first", L"Rotation", MB_OK | MB_ICONINFORMATION);
         return;
     }
     if (!isTransforming) {
@@ -442,7 +442,7 @@ void GraphicsEngine::ExecuteCohenSutherlandClipping() {
     shapes = clippedShapes;
     hasClipWindow = false;
     InvalidateRect(hwnd, NULL, TRUE);
-    MessageBoxW(hwnd, L"Cohen-Sutherland裁剪完成！", L"完成", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(hwnd, L"Cohen-Sutherland clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
 
 void GraphicsEngine::ExecuteMidpointClipping() {
@@ -470,7 +470,7 @@ void GraphicsEngine::ExecuteMidpointClipping() {
     shapes = clippedShapes;
     hasClipWindow = false;
     InvalidateRect(hwnd, NULL, TRUE);
-    MessageBoxW(hwnd, L"中点分割裁剪完成！", L"完成", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(hwnd, L"Midpoint clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
 
 void GraphicsEngine::ExecuteSutherlandHodgmanClipping() {
@@ -496,7 +496,7 @@ void GraphicsEngine::ExecuteSutherlandHodgmanClipping() {
     shapes = clippedShapes;
     hasClipWindow = false;
     InvalidateRect(hwnd, NULL, TRUE);
-    MessageBoxW(hwnd, L"Sutherland-Hodgman裁剪完成！", L"完成", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(hwnd, L"Sutherland-Hodgman clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
 
 
@@ -542,7 +542,7 @@ void GraphicsEngine::DrawPolygon(const std::vector<Point2D>& points, COLORREF co
 
 void GraphicsEngine::ExecuteWeilerAthertonClipping() {
     if (!hasClipWindow) {
-        MessageBoxW(hwnd, L"请先定义裁剪窗口", L"错误", MB_OK | MB_ICONERROR);
+        MessageBoxW(hwnd, L"Please define a clipping window first", L"Error", MB_OK | MB_ICONERROR);
         return;
     }
     
@@ -555,7 +555,7 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping() {
     
     for (Shape& shape : shapes) {
         if (shape.type == SHAPE_POLYGON && shape.points.size() >= 3) {
-            // 检查是否完全在窗口内
+            // Check if completely inside
             bool allInside = true;
             for (const Point2D& pt : shape.points) {
                 if (pt.x < xmin || pt.x > xmax || pt.y < ymin || pt.y > ymax) {
@@ -569,7 +569,7 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping() {
                 continue;
             }
             
-            // 检查是否完全在窗口外
+            // Check if completely outside
             bool allOutside = true;
             for (const Point2D& pt : shape.points) {
                 if (pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax) {
@@ -579,10 +579,10 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping() {
             }
             
             if (allOutside) {
-                continue; // 跳过此多边形
+                continue; // Skip this polygon
             }
             
-            // 多边形与窗口相交，应用Weiler-Atherton算法
+            // Polygon intersects - apply Weiler-Atherton
             std::vector<std::vector<Point2D>> clippedPolygons = 
                 ClippingAlgorithms::ClipPolygonWeilerAtherton(shape.points, xmin, ymin, xmax, ymax);
             
@@ -595,7 +595,7 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping() {
                     }
                 }
             } else {
-                // 备用方案：如果算法失败，保留大部分在窗口内的图形
+                // Fallback: if algorithm fails, keep original if mostly inside
                 int insideCount = 0;
                 for (const Point2D& pt : shape.points) {
                     if (pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax) {
@@ -614,5 +614,5 @@ void GraphicsEngine::ExecuteWeilerAthertonClipping() {
     shapes = clippedShapes;
     hasClipWindow = false;
     InvalidateRect(hwnd, NULL, TRUE);
-    MessageBoxW(hwnd, L"Weiler-Atherton裁剪完成！", L"完成", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(hwnd, L"Weiler-Atherton clipping completed!", L"Complete", MB_OK | MB_ICONINFORMATION);
 }
