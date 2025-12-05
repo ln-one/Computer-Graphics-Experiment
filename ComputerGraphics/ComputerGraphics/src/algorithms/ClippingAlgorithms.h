@@ -43,8 +43,7 @@ private:
     static void InsertIntersections(std::vector<WAVertex*>& polyList, std::vector<WAVertex*>& clipList,
                                     int xmin, int ymin, int xmax, int ymax);
     static void MarkEntryExit(std::vector<WAVertex*>& polyList, int xmin, int ymin, int xmax, int ymax);
-    static std::vector<std::vector<Point2D>> TraceClippedPolygons(std::vector<WAVertex*>& polyList,
-                                                                   int xmin, int ymin, int xmax, int ymax);
+    static std::vector<std::vector<Point2D>> TraceClippedPolygons(std::vector<WAVertex*>& polyList);
     static void CleanupVertexList(std::vector<WAVertex*>& vertexList);
     static bool IsPointInsideWindow(Point2D point, int xmin, int ymin, int xmax, int ymax);
     
