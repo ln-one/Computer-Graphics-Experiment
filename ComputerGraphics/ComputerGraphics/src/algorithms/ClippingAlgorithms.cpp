@@ -170,18 +170,22 @@ std::vector<Point2D> ClippingAlgorithms::ClipPolygonSutherlandHodgman(const std:
 // Weiler-Atherton polygon clipping implementation
 bool ClippingAlgorithms::SegmentIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4,
                                               Point2D& intersection, double& t1, double& t2) {
-    double dx1 = p2.x - p1.x;
-    double dy1 = p2.y - p1.y;
-    double dx2 = p4.x - p3.x;
-    double dy2 = p4.y - p3.y;
+    // 线段 P1P2: P = P1 + t1 * (P2 - P1), t1 ∈ [0,1]
+    // 线段 P3P4: P = P3 + t2 * (P4 - P3), t2 ∈ [0,1]
+    double dx1 = static_cast<double>(p2.x - p1.x);
+    double dy1 = static_cast<double>(p2.y - p1.y);
+    double dx2 = static_cast<double>(p4.x - p3.x);
+    double dy2 = static_cast<double>(p4.y - p3.y);
+    
     double denominator = dx1 * dy2 - dy1 * dx2;
     
-    if (abs(denominator) < 1e-10) return false;
+    if (fabs(denominator) < 1e-10) return false;  // 平行或重合
     
-    double dx3 = p3.x - p1.x;
-    double dy3 = p3.y - p1.y;
-    t1 = (dx3 * dy2 - dy3 * dx2) / denominator;
-    t2 = (dx1 * dy3 - dy1 * dx3) / denominator;
+    double dx = static_cast<double>(p3.x - p1.x);
+    double dy = static_cast<double>(p3.y - p1.y);
+    
+    t1 = (dx * dy2 - dy * dx2) / denominator;
+    t2 = (dx * dy1 - dy * dx1) / denominator;
     
     if (t1 >= 0.0 && t1 <= 1.0 && t2 >= 0.0 && t2 <= 1.0) {
         intersection.x = static_cast<int>(p1.x + t1 * dx1 + 0.5);
@@ -394,17 +398,11 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
             WAVertex* current = v;
             int maxIterations = 1000;
             int iterations = 0;
-            bool onSubjectPolygon = true; // 开始在主多边形上
+            bool onSubjectPolygon = true; // 开始在主多边形上，从入点进入
+            bool firstPoint = true;
             
             while (iterations < maxIterations) {
-                // Add current point to polygon (avoid duplicates)
-                if (polygon.empty() || 
-                    polygon.back().x != current->point.x || 
-                    polygon.back().y != current->point.y) {
-                    polygon.push_back(current->point);
-                }
-                
-                // Mark current intersection as visited
+                // 标记当前交点为已访问
                 if (current->isIntersection) {
                     current->visited = true;
                     if (current->neighbor) {
@@ -412,40 +410,42 @@ std::vector<std::vector<Point2D>> ClippingAlgorithms::TraceClippedPolygons(
                     }
                 }
                 
-                // Move to next vertex
+                // 添加当前点到多边形（避免重复）
+                if (polygon.empty() || 
+                    polygon.back().x != current->point.x || 
+                    polygon.back().y != current->point.y) {
+                    polygon.push_back(current->point);
+                }
+                
+                // 如果当前是交点，需要判断是否切换多边形
+                // 但是第一个点（入点）不切换，继续沿主多边形走
+                if (!firstPoint && current->isIntersection && current->neighbor) {
+                    if (onSubjectPolygon && !current->isEntry) {
+                        // 主多边形上遇到出点，切换到裁剪窗口
+                        current = current->neighbor;
+                        onSubjectPolygon = false;
+                    } else if (!onSubjectPolygon) {
+                        // 裁剪窗口上遇到交点，切换回主多边形
+                        current = current->neighbor;
+                        onSubjectPolygon = true;
+                    }
+                }
+                
+                firstPoint = false;
+                
+                // 移动到下一个顶点
                 current = current->next;
                 iterations++;
                 
                 if (!current) break;
                 
-                // Check if we've returned to start
+                // 检查是否回到起点
                 if (current == start) {
                     break;
                 }
-                
-                // 如果遇到交点
-                if (current->isIntersection && current->neighbor) {
-                    // 添加交点
-                    if (polygon.empty() || 
-                        polygon.back().x != current->point.x || 
-                        polygon.back().y != current->point.y) {
-                        polygon.push_back(current->point);
-                    }
-                    
-                    // 标记为已访问
-                    current->visited = true;
-                    current->neighbor->visited = true;
-                    
-                    // 检查是否回到起点
-                    if (current == start || current->neighbor == start) {
-                        break;
-                    }
-                    
-                    // 切换到另一个多边形
-                    // 在主多边形上遇到出点(isEntry=false)时，切换到裁剪窗口
-                    // 在裁剪窗口上时，遇到交点切换回主多边形
-                    current = current->neighbor;
-                    onSubjectPolygon = !onSubjectPolygon;
+                // 也检查坐标是否相同（防止指针不同但位置相同的情况）
+                if (current->point.x == start->point.x && current->point.y == start->point.y) {
+                    break;
                 }
             }
             
