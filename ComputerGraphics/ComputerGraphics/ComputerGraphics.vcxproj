@@ -145,8 +145,10 @@
     <ClInclude Include="src\algorithms\TransformAlgorithms.h" />
     <ClInclude Include="src\algorithms\ClippingAlgorithms.h" />
     <ClInclude Include="src\algorithms\ShaderManager.h" />
+    <ClInclude Include="src\algorithms\MeshGenerator.h" />
     <ClInclude Include="src\engine\GraphicsEngine.h" />
     <ClInclude Include="src\engine\GraphicsEngine3D.h" />
+    <ClInclude Include="src\engine\OpenGLFunctions.h" />
     <ClInclude Include="src\engine\ShapeRenderer.h" />
     <ClInclude Include="src\engine\ShapeSelector.h" />
     <ClInclude Include="src\ui\MenuIDs.h" />
@@ -159,6 +161,7 @@
     <ClCompile Include="src\algorithms\TransformAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\ShaderManager.cpp" />
+    <ClCompile Include="src\algorithms\MeshGenerator.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine3D.cpp" />
     <ClCompile Include="src\engine\ShapeRenderer.cpp" />

@@ -78,6 +78,15 @@
     <ClInclude Include="src\algorithms\ClippingAlgorithms.h">
       <Filter>Source Files\algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="src\algorithms\ShaderManager.h">
+      <Filter>Source Files\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithms\MeshGenerator.h">
+      <Filter>Source Files\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\OpenGLFunctions.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
     <ClInclude Include="src\ui\MenuIDs.h">
       <Filter>Source Files\ui</Filter>
     </ClInclude>
@@ -111,6 +120,12 @@
       <Filter>Source Files\algorithms</Filter>
     </ClCompile>
     <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp">
+      <Filter>Source Files\algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithms\ShaderManager.cpp">
+      <Filter>Source Files\algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithms\MeshGenerator.cpp">
       <Filter>Source Files\algorithms</Filter>
     </ClCompile>
   </ItemGroup>
