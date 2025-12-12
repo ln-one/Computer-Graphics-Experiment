@@ -2,6 +2,7 @@
 
 // 绘图模式枚举
 enum DrawMode {
+    // === 2D 模式（现有）===
     MODE_NONE = 0,
     MODE_EXPR1,
     MODE_LINE_DDA,
@@ -21,5 +22,13 @@ enum DrawMode {
     MODE_CLIP_COHEN_SUTHERLAND,
     MODE_CLIP_MIDPOINT,
     MODE_CLIP_SUTHERLAND_HODGMAN,
-    MODE_CLIP_WEILER_ATHERTON
+    MODE_CLIP_WEILER_ATHERTON,
+    
+    // === 3D 模式（新增）===
+    MODE_3D_SPHERE,
+    MODE_3D_CYLINDER,
+    MODE_3D_PLANE,
+    MODE_3D_CUBE,
+    MODE_3D_SELECT,
+    MODE_3D_VIEW_CONTROL
 };

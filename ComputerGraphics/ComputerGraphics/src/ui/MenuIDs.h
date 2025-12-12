@@ -1,6 +1,6 @@
 #pragma once
 
-// 菜单ID定义
+// === 2D 菜单ID定义（现有）===
 #define ID_FILE_NEW 40001
 #define ID_FILE_EXIT 40002
 #define ID_EXPR_EXPR1 40101
@@ -23,3 +23,19 @@
 #define ID_CLIP_SUTHERLAND_HODGMAN 40603
 #define ID_CLIP_WEILER_ATHERTON 40604
 #define ID_HELP_ABOUT 40401
+
+// === 3D 菜单ID定义（新增）===
+// 模式切换
+#define ID_MODE_2D 50001
+#define ID_MODE_3D 50002
+
+// 3D图形绘制
+#define ID_3D_SPHERE 60001
+#define ID_3D_CYLINDER 60002
+#define ID_3D_PLANE 60003
+#define ID_3D_CUBE 60004
+
+// 3D控制
+#define ID_3D_SELECT 61001
+#define ID_3D_VIEW_CONTROL 61002
+#define ID_3D_LIGHTING 61003

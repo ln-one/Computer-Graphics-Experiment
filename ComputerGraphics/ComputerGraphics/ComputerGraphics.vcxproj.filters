@@ -39,7 +39,13 @@
     <ClInclude Include="src\core\Point2D.h">
       <Filter>Source Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\Point3D.h">
+      <Filter>Source Files\core</Filter>
+    </ClInclude>
     <ClInclude Include="src\core\Shape.h">
+      <Filter>Source Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\Shape3D.h">
       <Filter>Source Files\core</Filter>
     </ClInclude>
     <ClInclude Include="src\core\DrawMode.h">
@@ -56,6 +62,21 @@
     </ClInclude>
     <ClInclude Include="src\engine\GraphicsEngine.h">
       <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\GraphicsEngine3D.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\ShapeRenderer.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\ShapeSelector.h">
+      <Filter>Source Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithms\TransformAlgorithms.h">
+      <Filter>Source Files\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="src\algorithms\ClippingAlgorithms.h">
+      <Filter>Source Files\algorithms</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\MenuIDs.h">
       <Filter>Source Files\ui</Filter>
@@ -76,6 +97,21 @@
     </ClCompile>
     <ClCompile Include="src\engine\GraphicsEngine.cpp">
       <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\GraphicsEngine3D.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ShapeRenderer.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ShapeSelector.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithms\TransformAlgorithms.cpp">
+      <Filter>Source Files\algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp">
+      <Filter>Source Files\algorithms</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

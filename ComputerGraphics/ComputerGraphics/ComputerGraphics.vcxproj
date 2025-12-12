@@ -76,10 +76,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external;$(ProjectDir)..\external\glad;$(ProjectDir)..\external\glm;$(ProjectDir)..\external\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,10 +92,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external;$(ProjectDir)..\external\glad;$(ProjectDir)..\external\glm;$(ProjectDir)..\external\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,10 +106,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external;$(ProjectDir)..\external\glad;$(ProjectDir)..\external\glm;$(ProjectDir)..\external\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -116,10 +122,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\external;$(ProjectDir)..\external\glad;$(ProjectDir)..\external\glm;$(ProjectDir)..\external\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -127,7 +135,9 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="src\core\Point2D.h" />
+    <ClInclude Include="src\core\Point3D.h" />
     <ClInclude Include="src\core\Shape.h" />
+    <ClInclude Include="src\core\Shape3D.h" />
     <ClInclude Include="src\core\DrawMode.h" />
     <ClInclude Include="src\algorithms\LineDrawer.h" />
     <ClInclude Include="src\algorithms\CircleDrawer.h" />
@@ -135,6 +145,7 @@
     <ClInclude Include="src\algorithms\TransformAlgorithms.h" />
     <ClInclude Include="src\algorithms\ClippingAlgorithms.h" />
     <ClInclude Include="src\engine\GraphicsEngine.h" />
+    <ClInclude Include="src\engine\GraphicsEngine3D.h" />
     <ClInclude Include="src\engine\ShapeRenderer.h" />
     <ClInclude Include="src\engine\ShapeSelector.h" />
     <ClInclude Include="src\ui\MenuIDs.h" />
@@ -147,6 +158,7 @@
     <ClCompile Include="src\algorithms\TransformAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine.cpp" />
+    <ClCompile Include="src\engine\GraphicsEngine3D.cpp" />
     <ClCompile Include="src\engine\ShapeRenderer.cpp" />
     <ClCompile Include="src\engine\ShapeSelector.cpp" />
   </ItemGroup>
