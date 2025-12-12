@@ -144,6 +144,7 @@
     <ClInclude Include="src\algorithms\FillAlgorithms.h" />
     <ClInclude Include="src\algorithms\TransformAlgorithms.h" />
     <ClInclude Include="src\algorithms\ClippingAlgorithms.h" />
+    <ClInclude Include="src\algorithms\ShaderManager.h" />
     <ClInclude Include="src\engine\GraphicsEngine.h" />
     <ClInclude Include="src\engine\GraphicsEngine3D.h" />
     <ClInclude Include="src\engine\ShapeRenderer.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="src\algorithms\FillAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\TransformAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp" />
+    <ClCompile Include="src\algorithms\ShaderManager.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine3D.cpp" />
     <ClCompile Include="src\engine\ShapeRenderer.cpp" />

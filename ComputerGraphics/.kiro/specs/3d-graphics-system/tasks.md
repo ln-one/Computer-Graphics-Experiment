@@ -24,13 +24,13 @@
 
 ## 阶段2：绘制第一个3D图形（可测试：能看到一个立方体）
 
-- [ ] 3. 实现着色器管理
+- [x] 3. 实现着色器管理
   - 创建 `ShaderManager.h` 和 `ShaderManager.cpp`
   - 实现着色器编译、链接、错误检查
   - 提供嵌入的基础顶点和片段着色器代码
   - _Requirements: 5.8, 6.7_
 
-- [ ] 4. 实现立方体网格生成
+- [x] 4. 实现立方体网格生成
   - 创建 `MeshGenerator.h` 和 `MeshGenerator.cpp`
   - 实现 `GenerateCube()` 生成立方体顶点和索引
   - 实现 `CreateBuffers()` 创建VAO/VBO/EBO
