@@ -4,6 +4,7 @@
 #include "../algorithms/MeshGenerator.h"
 #include <gl/GL.h>
 #include <cmath>
+#include <cfloat>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -578,7 +579,69 @@ void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
 }
 
 void GraphicsEngine3D::HandleSelection(int x, int y) {
-    // Selection logic (to be implemented)
+    // Convert screen coordinates to world coordinates for selection
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    
+    if (width <= 0 || height <= 0) return;
+    
+    // Map screen coordinates to normalized device coordinates
+    float ndcX = ((float)x / width) * 2.0f - 1.0f;   // Range: -1 to 1
+    float ndcY = -(((float)y / height) * 2.0f - 1.0f); // Range: -1 to 1 (inverted Y)
+    
+    // Simple selection: find the closest shape to the click point
+    // For now, we'll use a simple 2D distance check in screen space
+    int closestShapeIndex = -1;
+    float minDistance = FLT_MAX;
+    
+    for (size_t i = 0; i < shapes.size(); i++) {
+        const Shape3D& shape = shapes[i];
+        
+        // Project shape position to screen space (simplified)
+        // Map world coordinates to screen coordinates
+        float screenX = ((shape.positionX + 2.0f) / 4.0f) * width;   // Assuming world range -2 to 2
+        float screenY = ((-shape.positionY + 2.0f) / 4.0f) * height; // Inverted Y
+        
+        // Calculate distance from click point to shape center
+        float dx = (float)x - screenX;
+        float dy = (float)y - screenY;
+        float distance = sqrtf(dx * dx + dy * dy);
+        
+        // Consider shape size for selection tolerance
+        float selectionRadius = 50.0f; // Base selection radius in pixels
+        
+        if (distance < selectionRadius && distance < minDistance) {
+            minDistance = distance;
+            closestShapeIndex = (int)i;
+        }
+    }
+    
+    // Clear previous selection
+    for (size_t i = 0; i < shapes.size(); i++) {
+        shapes[i].selected = false;
+    }
+    
+    // Select the closest shape if found
+    if (closestShapeIndex >= 0) {
+        shapes[closestShapeIndex].selected = true;
+        selectedShapeIndex = closestShapeIndex;
+        hasSelection = true;
+        
+        // Debug message
+        char debugMsg[256];
+        sprintf_s(debugMsg, "Selected shape %d at position (%.2f, %.2f, %.2f)", 
+                  closestShapeIndex, 
+                  shapes[closestShapeIndex].positionX,
+                  shapes[closestShapeIndex].positionY,
+                  shapes[closestShapeIndex].positionZ);
+        OutputDebugStringA(debugMsg);
+    } else {
+        selectedShapeIndex = -1;
+        hasSelection = false;
+        OutputDebugStringA("No shape selected");
+    }
 }
 
 void GraphicsEngine3D::HandleViewControl(int deltaX, int deltaY) {
@@ -696,10 +759,19 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
         glRotatef(shape.rotationX, 1.0f, 0.0f, 0.0f);
         glScalef(shape.scaleX, shape.scaleY, shape.scaleZ);
         
-        // Set material properties
-        float ambient[] = {shape.ambient[0], shape.ambient[1], shape.ambient[2], 1.0f};
-        float diffuse[] = {shape.diffuse[0], shape.diffuse[1], shape.diffuse[2], 1.0f};
-        float specular[] = {shape.specular[0], shape.specular[1], shape.specular[2], 1.0f};
+        // Set material properties with selection highlighting
+        float ambient[4], diffuse[4], specular[4];
+        
+        if (shape.selected) {
+            // Highlight selected shapes with yellow tint
+            ambient[0] = 0.3f; ambient[1] = 0.3f; ambient[2] = 0.1f; ambient[3] = 1.0f;
+            diffuse[0] = 1.0f; diffuse[1] = 1.0f; diffuse[2] = 0.3f; diffuse[3] = 1.0f;
+            specular[0] = 1.0f; specular[1] = 1.0f; specular[2] = 0.5f; specular[3] = 1.0f;
+        } else {
+            ambient[0] = shape.ambient[0]; ambient[1] = shape.ambient[1]; ambient[2] = shape.ambient[2]; ambient[3] = 1.0f;
+            diffuse[0] = shape.diffuse[0]; diffuse[1] = shape.diffuse[1]; diffuse[2] = shape.diffuse[2]; diffuse[3] = 1.0f;
+            specular[0] = shape.specular[0]; specular[1] = shape.specular[1]; specular[2] = shape.specular[2]; specular[3] = 1.0f;
+        }
         
         glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
         glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
