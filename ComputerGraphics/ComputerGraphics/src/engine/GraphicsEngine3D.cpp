@@ -1,13 +1,14 @@
-#include "GraphicsEngine3D.h"
+﻿#include "GraphicsEngine3D.h"
 #include "OpenGLFunctions.h"
 #include "../algorithms/ShaderManager.h"
 #include "../algorithms/MeshGenerator.h"
 #include <gl/GL.h>
 #include <cmath>
 
-
-
-
+// Undefine Windows macros that conflict with parameter names
+// Must be after all includes since windows.h defines these
+#undef near
+#undef far
 
 // Simple matrix math functions for MVP calculation
 struct Matrix4 {
@@ -19,14 +20,14 @@ struct Matrix4 {
         m[0] = m[5] = m[10] = m[15] = 1.0f;
     }
     
-    static Matrix4 perspective(float fov, float aspect, float near, float far) {
+    static Matrix4 perspective(float fov, float aspect, float nearPlane, float farPlane) {
         Matrix4 result;
         float f = 1.0f / tanf(fov * 0.5f);
         result.m[0] = f / aspect;
         result.m[5] = f;
-        result.m[10] = (far + near) / (near - far);
+        result.m[10] = (farPlane + nearPlane) / (nearPlane - farPlane);
         result.m[11] = -1.0f;
-        result.m[14] = (2.0f * far * near) / (near - far);
+        result.m[14] = (2.0f * farPlane * nearPlane) / (nearPlane - farPlane);
         result.m[15] = 0.0f;
         return result;
     }
@@ -244,14 +245,7 @@ bool GraphicsEngine3D::CreateOpenGLContext() {
     return true;
 }
 
-// OpenGL function pointers (basic implementation for demonstration)
-typedef void (APIENTRY *PFNGLGENVERTEXARRAYSPROC)(GLsizei n, GLuint *arrays);
-typedef void (APIENTRY *PFNGLBINDVERTEXARRAYPROC)(GLuint array);
-typedef void (APIENTRY *PFNGLGENBUFFERSPROC)(GLsizei n, GLuint *buffers);
-typedef void (APIENTRY *PFNGLBINDBUFFERPROC)(GLenum target, GLuint buffer);
-typedef void (APIENTRY *PFNGLBUFFERDATAPROC)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
-typedef void (APIENTRY *PFNGLVERTEXATTRIBPOINTERPROC)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
-typedef void (APIENTRY *PFNGLENABLEVERTEXATTRIBARRAYPROC)(GLuint index);
+// Additional OpenGL function pointer types not defined in OpenGLFunctions.h
 typedef void (APIENTRY *PFNGLDRAWELEMENTSPROC_EXT)(GLenum mode, GLsizei count, GLenum type, const void *indices);
 typedef void (APIENTRY *PFNGLUSEPROGRAMPROC_EXT)(GLuint program);
 typedef GLint (APIENTRY *PFNGLGETUNIFORMLOCATIONPROC_EXT)(GLuint program, const GLchar *name);
@@ -261,17 +255,19 @@ typedef void (APIENTRY *PFNGLUNIFORM1FPROC_EXT)(GLint location, GLfloat v0);
 typedef void (APIENTRY *PFNGLUNIFORM1IPROC_EXT)(GLint location, GLint v0);
 typedef void (APIENTRY *PFNGLACTIVETEXTUREPROC_EXT)(GLenum texture);
 typedef void (APIENTRY *PFNGLBINDTEXTUREPROC_EXT)(GLenum target, GLuint texture);
-typedef void (APIENTRY *PFNGLDELETEVERTEXARRAYSPROC)(GLsizei n, const GLuint *arrays);
-typedef void (APIENTRY *PFNGLDELETEBUFFERSPROC)(GLsizei n, const GLuint *buffers);
 
-// Global function pointers (exported for use by other modules)
+// Global function pointers - definitions for the ones declared in OpenGLFunctions.h
 PFNGLGENVERTEXARRAYSPROC glGenVertexArrays = nullptr;
-PFNGLBINDVERTEXARRAYSPROC glBindVertexArray = nullptr;
+PFNGLBINDVERTEXARRAYPROC glBindVertexArray = nullptr;
 PFNGLGENBUFFERSPROC glGenBuffers = nullptr;
 PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
 PFNGLBUFFERDATAPROC glBufferData = nullptr;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = nullptr;
 PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = nullptr;
+PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays = nullptr;
+PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
+
+// Additional function pointers not in OpenGLFunctions.h
 PFNGLDRAWELEMENTSPROC_EXT glDrawElementsExt = nullptr;
 PFNGLUSEPROGRAMPROC_EXT glUseProgramExt = nullptr;
 PFNGLGETUNIFORMLOCATIONPROC_EXT glGetUniformLocationExt = nullptr;
@@ -281,8 +277,6 @@ PFNGLUNIFORM1FPROC_EXT glUniform1fExt = nullptr;
 PFNGLUNIFORM1IPROC_EXT glUniform1iExt = nullptr;
 PFNGLACTIVETEXTUREPROC_EXT glActiveTextureExt = nullptr;
 PFNGLBINDTEXTUREPROC_EXT glBindTextureExt = nullptr;
-PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays = nullptr;
-PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
 
 bool GraphicsEngine3D::LoadOpenGLFunctions() {
     // Load OpenGL extension functions
@@ -293,6 +287,8 @@ bool GraphicsEngine3D::LoadOpenGLFunctions() {
     glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
     glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
     glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
+    glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
+    glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
     glDrawElementsExt = (PFNGLDRAWELEMENTSPROC_EXT)wglGetProcAddress("glDrawElements");
     glUseProgramExt = (PFNGLUSEPROGRAMPROC_EXT)wglGetProcAddress("glUseProgram");
     glGetUniformLocationExt = (PFNGLGETUNIFORMLOCATIONPROC_EXT)wglGetProcAddress("glGetUniformLocation");
@@ -302,8 +298,6 @@ bool GraphicsEngine3D::LoadOpenGLFunctions() {
     glUniform1iExt = (PFNGLUNIFORM1IPROC_EXT)wglGetProcAddress("glUniform1i");
     glActiveTextureExt = (PFNGLACTIVETEXTUREPROC_EXT)wglGetProcAddress("glActiveTexture");
     glBindTextureExt = (PFNGLBINDTEXTUREPROC_EXT)wglGetProcAddress("glBindTexture");
-    glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
-    glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
     
     // Check if all functions were loaded successfully
     return (glGenVertexArrays && glBindVertexArray && glGenBuffers && 
@@ -413,7 +407,7 @@ void GraphicsEngine3D::Render() {
             glBindTextureExt(GL_TEXTURE_2D, shape.textureID);
         }
         
-        // Render the shape
+        // Render the shapes
         if (shape.VAO != 0) {
             glBindVertexArray(shape.VAO);
             glDrawElementsExt(GL_TRIANGLES, (GLsizei)shape.indices.size(), GL_UNSIGNED_INT, 0);
