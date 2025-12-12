@@ -1,4 +1,4 @@
-﻿#include "GraphicsEngine3D.h"
+#include "GraphicsEngine3D.h"
 #include "OpenGLFunctions.h"
 #include "../algorithms/ShaderManager.h"
 #include "../algorithms/MeshGenerator.h"
@@ -446,6 +446,15 @@ void GraphicsEngine3D::OnLButtonDown(int x, int y) {
     lastMouseY = y;
     isDragging = true;
     
+    // 检查是否按住了Ctrl键（用于视角控制）
+    bool ctrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+    
+    if (ctrlPressed) {
+        // Ctrl + 左键 = 旋转视角
+        // 不创建形状，只记录鼠标位置用于旋转
+        return;
+    }
+    
     switch (currentMode) {
         case MODE_3D_SPHERE:
         case MODE_3D_CYLINDER:
@@ -457,7 +466,7 @@ void GraphicsEngine3D::OnLButtonDown(int x, int y) {
             HandleSelection(x, y);
             break;
         case MODE_3D_VIEW_CONTROL:
-            // Record mouse position in view control mode
+            // 视角控制模式：只旋转，不创建形状
             break;
         default:
             break;

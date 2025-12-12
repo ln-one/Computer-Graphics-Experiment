@@ -118,6 +118,16 @@ public:
     void OnLButtonUp(int x, int y);
     
     /**
+     * @brief 处理鼠标右键按下事件
+     */
+    void OnRButtonDown(int x, int y);
+    
+    /**
+     * @brief 处理鼠标右键释放事件
+     */
+    void OnRButtonUp(int x, int y);
+    
+    /**
      * @brief 处理鼠标左键双击事件
      */
     void OnLButtonDoubleClick(int x, int y);
@@ -192,6 +202,7 @@ private:
     // === 鼠标交互状态 ===
     int lastMouseX, lastMouseY;           ///< 上次鼠标位置
     bool isDragging;                      ///< 是否正在拖拽
+    bool isRightDragging;                 ///< 是否正在右键拖拽
     
     // === OpenGL资源 ===
     unsigned int shaderProgram;           ///< 着色器程序ID

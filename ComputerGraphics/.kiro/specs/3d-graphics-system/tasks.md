@@ -49,7 +49,7 @@
 
 ## 阶段3：添加其他基本图形（可测试：能看到球体、柱体、平面）
 
-- [ ] 6. 实现球体网格生成
+- [x] 6. 实现球体网格生成
   - 在 `MeshGenerator.cpp` 实现 `GenerateSphere()`
   - 在 `main.cpp` 添加"Sphere"菜单项
   - 在 `GraphicsEngine3D` 处理球体创建
