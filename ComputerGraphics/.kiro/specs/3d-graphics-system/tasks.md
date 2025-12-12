@@ -36,7 +36,7 @@
   - 实现 `CreateBuffers()` 创建VAO/VBO/EBO
   - _Requirements: 1.4_
 
-- [ ] 5. 实现基础渲染和立方体绘制
+- [-] 5. 实现基础渲染和立方体绘制
   - 在 `GraphicsEngine3D` 中初始化着色器程序
   - 实现 `OnLButtonDown()` 在点击时创建立方体
   - 实现完整的 `Render()` 方法：设置MVP矩阵、渲染立方体

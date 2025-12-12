@@ -6,32 +6,81 @@
 // 需要包含OpenGL头文件 - 这里假设已经通过GLAD或其他方式加载
 // #include <glad/glad.h> 或 #include <GL/gl.h>
 
-// OpenGL常量定义（如果没有包含OpenGL头文件）
+// OpenGL constants and types
 #ifndef GL_VERTEX_SHADER
 #define GL_VERTEX_SHADER 0x8B31
 #define GL_FRAGMENT_SHADER 0x8B30
 #define GL_COMPILE_STATUS 0x8B81
 #define GL_LINK_STATUS 0x8B82
 #define GL_INFO_LOG_LENGTH 0x8B84
+
+typedef int GLsizei;
+typedef unsigned int GLuint;
+typedef int GLint;
+typedef unsigned char GLboolean;
+typedef float GLfloat;
+typedef char GLchar;
+typedef unsigned int GLenum;
 #endif
 
-// OpenGL函数指针（需要在实际使用时通过GLAD等加载）
-// 这里提供函数签名，实际实现需要动态加载
-extern "C" {
-    unsigned int (*glCreateShader)(unsigned int type);
-    void (*glShaderSource)(unsigned int shader, int count, const char* const* string, const int* length);
-    void (*glCompileShader)(unsigned int shader);
-    void (*glGetShaderiv)(unsigned int shader, unsigned int pname, int* params);
-    void (*glGetShaderInfoLog)(unsigned int shader, int bufSize, int* length, char* infoLog);
-    unsigned int (*glCreateProgram)(void);
-    void (*glAttachShader)(unsigned int program, unsigned int shader);
-    void (*glLinkProgram)(unsigned int program);
-    void (*glGetProgramiv)(unsigned int program, unsigned int pname, int* params);
-    void (*glGetProgramInfoLog)(unsigned int program, int bufSize, int* length, char* infoLog);
-    void (*glDeleteShader)(unsigned int shader);
+// OpenGL function pointers
+typedef GLuint (APIENTRY *PFNGLCREATESHADERPROC)(GLenum type);
+typedef void (APIENTRY *PFNGLSHADERSOURCEPROC)(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
+typedef void (APIENTRY *PFNGLCOMPILESHADERPROC)(GLuint shader);
+typedef void (APIENTRY *PFNGLGETSHADERIVPROC)(GLuint shader, GLenum pname, GLint *params);
+typedef void (APIENTRY *PFNGLGETSHADERINFOLOGPROC)(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef GLuint (APIENTRY *PFNGLCREATEPROGRAMPROC)(void);
+typedef void (APIENTRY *PFNGLATTACHSHADERPROC)(GLuint program, GLuint shader);
+typedef void (APIENTRY *PFNGLLINKPROGRAMPROC)(GLuint program);
+typedef void (APIENTRY *PFNGLGETPROGRAMIVPROC)(GLuint program, GLenum pname, GLint *params);
+typedef void (APIENTRY *PFNGLGETPROGRAMINFOLOGPROC)(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void (APIENTRY *PFNGLDELETESHADERPROC)(GLuint shader);
+
+// Global function pointers
+static PFNGLCREATESHADERPROC glCreateShader = nullptr;
+static PFNGLSHADERSOURCEPROC glShaderSource = nullptr;
+static PFNGLCOMPILESHADERPROC glCompileShader = nullptr;
+static PFNGLGETSHADERIVPROC glGetShaderiv = nullptr;
+static PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = nullptr;
+static PFNGLCREATEPROGRAMPROC glCreateProgram = nullptr;
+static PFNGLATTACHSHADERPROC glAttachShader = nullptr;
+static PFNGLLINKPROGRAMPROC glLinkProgram = nullptr;
+static PFNGLGETPROGRAMIVPROC glGetProgramiv = nullptr;
+static PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = nullptr;
+static PFNGLDELETESHADERPROC glDeleteShader = nullptr;
+
+// Function to load OpenGL functions
+static bool LoadShaderFunctions() {
+    static bool loaded = false;
+    if (loaded) return true;
+    
+    glCreateShader = (PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader");
+    glShaderSource = (PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource");
+    glCompileShader = (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
+    glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
+    glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
+    glCreateProgram = (PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram");
+    glAttachShader = (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
+    glLinkProgram = (PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram");
+    glGetProgramiv = (PFNGLGETPROGRAMIVPROC)wglGetProcAddress("glGetProgramiv");
+    glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
+    glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
+    
+    loaded = (glCreateShader && glShaderSource && glCompileShader && 
+              glGetShaderiv && glGetShaderInfoLog && glCreateProgram && 
+              glAttachShader && glLinkProgram && glGetProgramiv && 
+              glGetProgramInfoLog && glDeleteShader);
+    
+    return loaded;
 }
 
 unsigned int ShaderManager::CreateShaderProgram(const char* vertexSource, const char* fragmentSource) {
+    // Load OpenGL functions first
+    if (!LoadShaderFunctions()) {
+        MessageBoxA(NULL, "Failed to load OpenGL shader functions", "Shader Error", MB_OK | MB_ICONERROR);
+        return 0;
+    }
+    
     // 编译顶点着色器
     unsigned int vertexShader = CompileShader(vertexSource, GL_VERTEX_SHADER);
     if (vertexShader == 0) {

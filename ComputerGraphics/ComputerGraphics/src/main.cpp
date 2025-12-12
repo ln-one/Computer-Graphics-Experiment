@@ -14,6 +14,7 @@
 #include "engine/GraphicsEngine.h"
 #include "engine/GraphicsEngine3D.h"
 #include "ui/MenuIDs.h"
+#include <windowsx.h>  // For GET_WHEEL_DELTA_WPARAM
 
 // === 全局变量 ===
 GraphicsEngine g_engine;        ///< 2D图形引擎实例
@@ -205,12 +206,50 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         }
         
+        case WM_LBUTTONUP: {
+            // 处理鼠标左键释放事件
+            if (is3DMode) {
+                // 3D模式下的鼠标处理
+                g_engine3D.OnLButtonUp(LOWORD(lParam), HIWORD(lParam));
+            }
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+        
+        case WM_LBUTTONDBLCLK: {
+            // 处理鼠标左键双击事件
+            if (is3DMode) {
+                // 3D模式下的鼠标处理
+                g_engine3D.OnLButtonDoubleClick(LOWORD(lParam), HIWORD(lParam));
+            }
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+        
         case WM_MOUSEMOVE: {
-            // 处理鼠标移动事件（仅2D模式）
-            HDC hdc = GetDC(hwnd);
-            g_engine.Initialize(hwnd, hdc);
-            g_engine.OnMouseMove(LOWORD(lParam), HIWORD(lParam));
-            ReleaseDC(hwnd, hdc);
+            // 处理鼠标移动事件
+            if (is3DMode) {
+                // 3D模式下的鼠标处理
+                g_engine3D.OnMouseMove(LOWORD(lParam), HIWORD(lParam));
+                InvalidateRect(hwnd, NULL, FALSE);
+            } else {
+                // 2D模式下的鼠标处理
+                HDC hdc = GetDC(hwnd);
+                g_engine.Initialize(hwnd, hdc);
+                g_engine.OnMouseMove(LOWORD(lParam), HIWORD(lParam));
+                ReleaseDC(hwnd, hdc);
+            }
+            return 0;
+        }
+        
+        case WM_MOUSEWHEEL: {
+            // 处理鼠标滚轮事件
+            if (is3DMode) {
+                // 3D模式下的滚轮处理
+                int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+                g_engine3D.OnMouseWheel(delta);
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
             return 0;
         }
         
