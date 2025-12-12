@@ -499,6 +499,9 @@ void GraphicsEngine3D::OnMouseMove(int x, int y) {
     
     if (currentMode == MODE_3D_VIEW_CONTROL || ctrlPressed) {
         HandleViewControl(deltaX, deltaY);
+    } else if (currentMode == MODE_3D_SELECT && hasSelection && selectedShapeIndex >= 0) {
+        // Handle object dragging in select mode
+        HandleObjectDragging(deltaX, deltaY);
     }
     
     lastMouseX = x;
@@ -652,6 +655,44 @@ void GraphicsEngine3D::HandleViewControl(int deltaX, int deltaY) {
     // Clamp vertical angle to prevent flipping
     if (camera.angleY > 89.0f) camera.angleY = 89.0f;
     if (camera.angleY < -89.0f) camera.angleY = -89.0f;
+}
+
+void GraphicsEngine3D::HandleObjectDragging(int deltaX, int deltaY) {
+    if (!hasSelection || selectedShapeIndex < 0 || selectedShapeIndex >= (int)shapes.size()) {
+        return;
+    }
+    
+    Shape3D& selectedShape = shapes[selectedShapeIndex];
+    
+    // Get window dimensions for coordinate conversion
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    
+    if (width <= 0 || height <= 0) return;
+    
+    // Convert mouse movement to world space movement
+    // Scale factor to control movement sensitivity
+    float movementScale = 0.01f;
+    
+    // Calculate movement in world coordinates
+    // X movement: positive deltaX moves right
+    float worldDeltaX = (float)deltaX * movementScale;
+    // Y movement: positive deltaY moves down, but in 3D world Y-up, so negate
+    float worldDeltaY = -(float)deltaY * movementScale;
+    
+    // Apply movement to the selected shape's position
+    selectedShape.positionX += worldDeltaX;
+    selectedShape.positionY += worldDeltaY;
+    // Z position remains unchanged during XY plane dragging
+    
+    // Debug output
+    char debugMsg[256];
+    sprintf_s(debugMsg, "Dragging shape %d: deltaX=%d, deltaY=%d, newPos=(%.2f, %.2f, %.2f)", 
+              selectedShapeIndex, deltaX, deltaY, 
+              selectedShape.positionX, selectedShape.positionY, selectedShape.positionZ);
+    OutputDebugStringA(debugMsg);
 }
 
 void GraphicsEngine3D::UpdateLight() {

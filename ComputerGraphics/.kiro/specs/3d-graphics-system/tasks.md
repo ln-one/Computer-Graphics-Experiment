@@ -79,7 +79,7 @@
   - **测试点：点击Select菜单，点击图形，看到颜色变化**
   - _Requirements: 2.1, 2.4_
 
-- [ ] 10. 实现鼠标拖动移动
+- [x] 10. 实现鼠标拖动移动
   - 在 `GraphicsEngine3D` 实现 `OnMouseMove()` 和 `OnLButtonUp()`
   - 实现拖动时的XY平面移动
   - 在 `main.cpp` 添加 `WM_LBUTTONUP` 和 `WM_MOUSEMOVE` 路由

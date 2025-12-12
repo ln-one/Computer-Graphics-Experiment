@@ -245,6 +245,13 @@ private:
      */
     void HandleViewControl(int deltaX, int deltaY);
     
+    /**
+     * @brief 处理物体拖拽移动
+     * @param deltaX 鼠标X方向移动量
+     * @param deltaY 鼠标Y方向移动量
+     */
+    void HandleObjectDragging(int deltaX, int deltaY);
+    
     // === OpenGL初始化 ===
     /**
      * @brief 创建OpenGL上下文
