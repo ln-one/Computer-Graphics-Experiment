@@ -158,6 +158,11 @@ public:
      */
     void UpdateLight();
     
+    /**
+     * @brief 释放OpenGL上下文
+     */
+    void ReleaseContext();
+    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄

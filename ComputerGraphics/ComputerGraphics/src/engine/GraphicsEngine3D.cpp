@@ -104,6 +104,9 @@ void GraphicsEngine3D::Render() {
         return;
     }
     
+    // Make sure our OpenGL context is current
+    wglMakeCurrent(hdc, hglrc);
+    
     // Clear color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -186,4 +189,9 @@ void GraphicsEngine3D::HandleViewControl(int deltaX, int deltaY) {
 
 void GraphicsEngine3D::UpdateLight() {
     // Light update logic (to be implemented)
+}
+
+void GraphicsEngine3D::ReleaseContext() {
+    // Release OpenGL context to allow 2D rendering
+    wglMakeCurrent(NULL, NULL);
 }

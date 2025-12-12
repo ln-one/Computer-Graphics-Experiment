@@ -316,6 +316,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 case ID_MODE_2D:
                     // 切换到2D模式
                     is3DMode = false;
+                    // 释放OpenGL上下文，确保2D渲染正常
+                    g_engine3D.ReleaseContext();
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 case ID_MODE_3D:
