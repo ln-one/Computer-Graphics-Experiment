@@ -1,45 +1,103 @@
+/**
+ * @file ClippingAlgorithms.cpp
+ * @brief 图形裁剪算法实现
+ * @author 计算机图形学项目组
+ */
+
 #include "ClippingAlgorithms.h"
 #include <cmath>
 #include <set>
 
+/**
+ * @brief 计算点的区域编码（Cohen-Sutherland算法）
+ * @param point 待编码的点
+ * @param xmin 裁剪窗口左边界
+ * @param ymin 裁剪窗口下边界
+ * @param xmax 裁剪窗口右边界
+ * @param ymax 裁剪窗口上边界
+ * @return 点的区域编码
+ * 
+ * 根据点相对于裁剪窗口的位置，生成4位二进制编码：
+ * bit 0: LEFT (点在左侧)
+ * bit 1: RIGHT (点在右侧)
+ * bit 2: BOTTOM (点在下方)
+ * bit 3: TOP (点在上方)
+ */
 int ClippingAlgorithms::ComputeOutCode(Point2D point, int xmin, int ymin, int xmax, int ymax) {
-    int code = INSIDE;
-    if (point.x < xmin) code |= LEFT;
-    else if (point.x > xmax) code |= RIGHT;
-    if (point.y < ymin) code |= TOP;
-    else if (point.y > ymax) code |= BOTTOM;
+    int code = INSIDE;  // 初始化为内部区域
+    
+    // 检查水平位置
+    if (point.x < xmin) 
+        code |= LEFT;       // 点在左侧
+    else if (point.x > xmax) 
+        code |= RIGHT;      // 点在右侧
+    
+    // 检查垂直位置
+    if (point.y < ymin) 
+        code |= TOP;        // 点在上方
+    else if (point.y > ymax) 
+        code |= BOTTOM;     // 点在下方
+    
     return code;
 }
 
+/**
+ * @brief Cohen-Sutherland直线裁剪算法
+ * @param p1 直线起点（引用，可能被修改）
+ * @param p2 直线终点（引用，可能被修改）
+ * @param xmin 裁剪窗口左边界
+ * @param ymin 裁剪窗口下边界
+ * @param xmax 裁剪窗口右边界
+ * @param ymax 裁剪窗口上边界
+ * @return 如果直线与窗口有交集返回true，否则返回false
+ * 
+ * 算法步骤：
+ * 1. 计算两端点的区域编码
+ * 2. 如果两点都在窗口内，直接接受
+ * 3. 如果两点在窗口同一侧外，直接拒绝
+ * 4. 否则计算与窗口边界的交点，更新端点并重复
+ */
 bool ClippingAlgorithms::ClipLineCohenSutherland(Point2D& p1, Point2D& p2, int xmin, int ymin, int xmax, int ymax) {
-    int outcode1 = ComputeOutCode(p1, xmin, ymin, xmax, ymax);
-    int outcode2 = ComputeOutCode(p2, xmin, ymin, xmax, ymax);
+    int outcode1 = ComputeOutCode(p1, xmin, ymin, xmax, ymax);  // 起点编码
+    int outcode2 = ComputeOutCode(p2, xmin, ymin, xmax, ymax);  // 终点编码
     bool accept = false;
 
     while (true) {
+        // 情况1：两点都在窗口内（编码都为0）
         if ((outcode1 | outcode2) == 0) {
-            accept = true;
+            accept = true;  // 完全接受
             break;
-        } else if ((outcode1 & outcode2) != 0) {
-            break;
-        } else {
+        } 
+        // 情况2：两点在窗口同一侧外（编码按位与不为0）
+        else if ((outcode1 & outcode2) != 0) {
+            break;  // 完全拒绝
+        } 
+        // 情况3：需要裁剪
+        else {
+            // 选择窗口外的点进行裁剪
             int outcodeOut = outcode1 ? outcode1 : outcode2;
             Point2D intersection;
 
+            // 计算与窗口边界的交点
             if (outcodeOut & TOP) {
+                // 与上边界相交
                 intersection.x = p1.x + (p2.x - p1.x) * (ymin - p1.y) / (p2.y - p1.y);
                 intersection.y = ymin;
             } else if (outcodeOut & BOTTOM) {
+                // 与下边界相交
                 intersection.x = p1.x + (p2.x - p1.x) * (ymax - p1.y) / (p2.y - p1.y);
                 intersection.y = ymax;
             } else if (outcodeOut & RIGHT) {
+                // 与右边界相交
                 intersection.y = p1.y + (p2.y - p1.y) * (xmax - p1.x) / (p2.x - p1.x);
                 intersection.x = xmax;
             } else if (outcodeOut & LEFT) {
+                // 与左边界相交
                 intersection.y = p1.y + (p2.y - p1.y) * (xmin - p1.x) / (p2.x - p1.x);
                 intersection.x = xmin;
             }
 
+            // 用交点替换窗口外的端点
             if (outcodeOut == outcode1) {
                 p1 = intersection;
                 outcode1 = ComputeOutCode(p1, xmin, ymin, xmax, ymax);

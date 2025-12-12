@@ -21,14 +21,13 @@ bool GraphicsEngine3D::Initialize(HWND hwnd) {
     this->hdc = GetDC(hwnd);
     
     if (!CreateOpenGLContext()) {
-        MessageBoxW(hwnd, L"无法创建OpenGL上下文\n请确保显卡支持OpenGL", 
-                   L"初始化失败", MB_OK | MB_ICONERROR);
+        MessageBoxW(hwnd, L"Failed to create OpenGL context. Please ensure your graphics card supports OpenGL.", L"Initialization Failed", MB_OK | MB_ICONERROR);
         return false;
     }
     
-    // 设置OpenGL基本状态
+    // Setup OpenGL basic state
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.4f, 0.8f, 1.0f);  // 蓝色背景
+    glClearColor(0.2f, 0.4f, 0.8f, 1.0f);  // Blue background
     
     isInitialized = true;
     return true;
@@ -50,20 +49,20 @@ void GraphicsEngine3D::Shutdown() {
 }
 
 bool GraphicsEngine3D::CreateOpenGLContext() {
-    // 设置像素格式
+    // Setup pixel format
     PIXELFORMATDESCRIPTOR pfd = {
         sizeof(PIXELFORMATDESCRIPTOR),
         1,
         PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
         PFD_TYPE_RGBA,
-        32,  // 颜色深度
+        32,  // Color depth
         0, 0, 0, 0, 0, 0,
         0,
         0,
         0,
         0, 0, 0, 0,
-        24,  // 深度缓冲
-        8,   // 模板缓冲
+        24,  // Depth buffer
+        8,   // Stencil buffer
         0,
         PFD_MAIN_PLANE,
         0,
@@ -79,7 +78,7 @@ bool GraphicsEngine3D::CreateOpenGLContext() {
         return false;
     }
     
-    // 创建OpenGL渲染上下文
+    // Create OpenGL rendering context
     hglrc = wglCreateContext(hdc);
     if (!hglrc) {
         return false;
@@ -95,8 +94,8 @@ bool GraphicsEngine3D::CreateOpenGLContext() {
 }
 
 bool GraphicsEngine3D::LoadOpenGLFunctions() {
-    // 对于基础OpenGL 1.1功能，Windows已经提供
-    // 更高版本的功能需要GLAD，这里先使用基础功能
+    // For basic OpenGL 1.1 functions, Windows provides them
+    // Higher version functions require GLAD, using basic functions for now
     return true;
 }
 
@@ -105,10 +104,10 @@ void GraphicsEngine3D::Render() {
         return;
     }
     
-    // 清除颜色和深度缓冲
+    // Clear color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // 交换缓冲区
+    // Swap buffers
     SwapBuffers(hdc);
 }
 
@@ -138,7 +137,7 @@ void GraphicsEngine3D::OnLButtonDown(int x, int y) {
             HandleSelection(x, y);
             break;
         case MODE_3D_VIEW_CONTROL:
-            // 视角控制模式下记录鼠标位置
+            // Record mouse position in view control mode
             break;
         default:
             break;
@@ -150,7 +149,7 @@ void GraphicsEngine3D::OnLButtonUp(int x, int y) {
 }
 
 void GraphicsEngine3D::OnLButtonDoubleClick(int x, int y) {
-    // 双击打开变换对话框（后续实现）
+    // Double-click to open transform dialog (to be implemented)
 }
 
 void GraphicsEngine3D::OnMouseMove(int x, int y) {
@@ -170,21 +169,21 @@ void GraphicsEngine3D::OnMouseMove(int x, int y) {
 }
 
 void GraphicsEngine3D::OnMouseWheel(int delta) {
-    // 鼠标滚轮控制（后续实现）
+    // Mouse wheel control (to be implemented)
 }
 
 void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
-    // 图形创建逻辑（后续实现）
+    // Shape creation logic (to be implemented)
 }
 
 void GraphicsEngine3D::HandleSelection(int x, int y) {
-    // 选择逻辑（后续实现）
+    // Selection logic (to be implemented)
 }
 
 void GraphicsEngine3D::HandleViewControl(int deltaX, int deltaY) {
-    // 视角控制逻辑（后续实现）
+    // View control logic (to be implemented)
 }
 
 void GraphicsEngine3D::UpdateLight() {
-    // 光照更新逻辑（后续实现）
+    // Light update logic (to be implemented)
 }
