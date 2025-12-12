@@ -1,4 +1,5 @@
 #include "MeshGenerator.h"
+#include "../engine/OpenGLFunctions.h"
 #include <cmath>
 
 /**
@@ -7,44 +8,7 @@
  * @author 计算机图形学项目组
  */
 
-// OpenGL constants and types
-#ifndef GL_ARRAY_BUFFER
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_ELEMENT_ARRAY_BUFFER 0x8893
-#define GL_STATIC_DRAW 0x88E4
-#define GL_FLOAT 0x1406
-#define GL_FALSE 0
 
-typedef int GLsizei;
-typedef unsigned int GLuint;
-typedef int GLint;
-typedef unsigned char GLboolean;
-typedef float GLfloat;
-typedef ptrdiff_t GLsizeiptr;
-typedef unsigned int GLenum;
-#endif
-
-// OpenGL function pointers
-typedef void (APIENTRY *PFNGLGENVERTEXARRAYSPROC)(GLsizei n, GLuint *arrays);
-typedef void (APIENTRY *PFNGLBINDVERTEXARRAYPROC)(GLuint array);
-typedef void (APIENTRY *PFNGLGENBUFFERSPROC)(GLsizei n, GLuint *buffers);
-typedef void (APIENTRY *PFNGLBINDBUFFERPROC)(GLenum target, GLuint buffer);
-typedef void (APIENTRY *PFNGLBUFFERDATAPROC)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
-typedef void (APIENTRY *PFNGLVERTEXATTRIBPOINTERPROC)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
-typedef void (APIENTRY *PFNGLENABLEVERTEXATTRIBARRAYPROC)(GLuint index);
-typedef void (APIENTRY *PFNGLDELETEVERTEXARRAYSPROC)(GLsizei n, const GLuint *arrays);
-typedef void (APIENTRY *PFNGLDELETEBUFFERSPROC)(GLsizei n, const GLuint *buffers);
-
-// External function pointers (defined in GraphicsEngine3D.cpp)
-extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
-extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
-extern PFNGLGENBUFFERSPROC glGenBuffers;
-extern PFNGLBINDBUFFERPROC glBindBuffer;
-extern PFNGLBUFFERDATAPROC glBufferData;
-extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
-extern PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-extern PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
-extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 
 void MeshGenerator::GenerateCube(Shape3D& shape, float size) {
     // 清空现有数据

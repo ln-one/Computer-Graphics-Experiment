@@ -1,39 +1,13 @@
 #include "GraphicsEngine3D.h"
+#include "OpenGLFunctions.h"
 #include "../algorithms/ShaderManager.h"
 #include "../algorithms/MeshGenerator.h"
 #include <gl/GL.h>
 #include <cmath>
 
-// OpenGL constants and types
-#ifndef GL_ARRAY_BUFFER
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_ELEMENT_ARRAY_BUFFER 0x8893
-#define GL_STATIC_DRAW 0x88E4
-#define GL_TRIANGLES 0x0004
-#define GL_UNSIGNED_INT 0x1405
-#define GL_FLOAT 0x1406
-#define GL_FALSE 0
-#define GL_TEXTURE0 0x84C0
-#define GL_TEXTURE_2D 0x0DE1
-#define GL_VERTEX_SHADER 0x8B31
-#define GL_FRAGMENT_SHADER 0x8B30
-#define GL_COMPILE_STATUS 0x8B81
-#define GL_LINK_STATUS 0x8B82
-#define GL_INFO_LOG_LENGTH 0x8B84
 
-typedef int GLsizei;
-typedef unsigned int GLuint;
-typedef int GLint;
-typedef unsigned char GLboolean;
-typedef float GLfloat;
-typedef char GLchar;
-typedef ptrdiff_t GLsizeiptr;
-typedef unsigned int GLenum;
-#endif
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+
 
 // Simple matrix math functions for MVP calculation
 struct Matrix4 {
@@ -47,7 +21,7 @@ struct Matrix4 {
     
     static Matrix4 perspective(float fov, float aspect, float near, float far) {
         Matrix4 result;
-        float f = 1.0f / tan(fov * 0.5f);
+        float f = 1.0f / tanf(fov * 0.5f);
         result.m[0] = f / aspect;
         result.m[5] = f;
         result.m[10] = (far + near) / (near - far);
@@ -66,14 +40,14 @@ struct Matrix4 {
         float fx = centerX - eyeX;
         float fy = centerY - eyeY;
         float fz = centerZ - eyeZ;
-        float flen = sqrt(fx*fx + fy*fy + fz*fz);
+        float flen = sqrtf(fx*fx + fy*fy + fz*fz);
         fx /= flen; fy /= flen; fz /= flen;
         
         // Calculate right vector
         float rx = fy * upZ - fz * upY;
         float ry = fz * upX - fx * upZ;
         float rz = fx * upY - fy * upX;
-        float rlen = sqrt(rx*rx + ry*ry + rz*rz);
+        float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
         rx /= rlen; ry /= rlen; rz /= rlen;
         
         // Calculate up vector
@@ -99,8 +73,8 @@ struct Matrix4 {
     
     static Matrix4 rotateX(float angle) {
         Matrix4 result;
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cosf(angle);
+        float s = sinf(angle);
         result.m[5] = c; result.m[6] = s;
         result.m[9] = -s; result.m[10] = c;
         return result;
@@ -108,8 +82,8 @@ struct Matrix4 {
     
     static Matrix4 rotateY(float angle) {
         Matrix4 result;
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cosf(angle);
+        float s = sinf(angle);
         result.m[0] = c; result.m[2] = -s;
         result.m[8] = s; result.m[10] = c;
         return result;
@@ -117,8 +91,8 @@ struct Matrix4 {
     
     static Matrix4 rotateZ(float angle) {
         Matrix4 result;
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cosf(angle);
+        float s = sinf(angle);
         result.m[0] = c; result.m[1] = s;
         result.m[4] = -s; result.m[5] = c;
         return result;
@@ -278,15 +252,15 @@ typedef void (APIENTRY *PFNGLBINDBUFFERPROC)(GLenum target, GLuint buffer);
 typedef void (APIENTRY *PFNGLBUFFERDATAPROC)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (APIENTRY *PFNGLVERTEXATTRIBPOINTERPROC)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 typedef void (APIENTRY *PFNGLENABLEVERTEXATTRIBARRAYPROC)(GLuint index);
-typedef void (APIENTRY *PFNGLDRAWELEMENTSPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices);
-typedef void (APIENTRY *PFNGLUSEPROGRAMPROC)(GLuint program);
-typedef GLint (APIENTRY *PFNGLGETUNIFORMLOCATIONPROC)(GLuint program, const GLchar *name);
-typedef void (APIENTRY *PFNGLUNIFORMMATRIX4FVPROC)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
-typedef void (APIENTRY *PFNGLUNIFORM3FPROC)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-typedef void (APIENTRY *PFNGLUNIFORM1FPROC)(GLint location, GLfloat v0);
-typedef void (APIENTRY *PFNGLUNIFORM1IPROC)(GLint location, GLint v0);
-typedef void (APIENTRY *PFNGLACTIVETEXTUREPROC)(GLenum texture);
-typedef void (APIENTRY *PFNGLBINDTEXTUREPROC)(GLenum target, GLuint texture);
+typedef void (APIENTRY *PFNGLDRAWELEMENTSPROC_EXT)(GLenum mode, GLsizei count, GLenum type, const void *indices);
+typedef void (APIENTRY *PFNGLUSEPROGRAMPROC_EXT)(GLuint program);
+typedef GLint (APIENTRY *PFNGLGETUNIFORMLOCATIONPROC_EXT)(GLuint program, const GLchar *name);
+typedef void (APIENTRY *PFNGLUNIFORMMATRIX4FVPROC_EXT)(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRY *PFNGLUNIFORM3FPROC_EXT)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+typedef void (APIENTRY *PFNGLUNIFORM1FPROC_EXT)(GLint location, GLfloat v0);
+typedef void (APIENTRY *PFNGLUNIFORM1IPROC_EXT)(GLint location, GLint v0);
+typedef void (APIENTRY *PFNGLACTIVETEXTUREPROC_EXT)(GLenum texture);
+typedef void (APIENTRY *PFNGLBINDTEXTUREPROC_EXT)(GLenum target, GLuint texture);
 typedef void (APIENTRY *PFNGLDELETEVERTEXARRAYSPROC)(GLsizei n, const GLuint *arrays);
 typedef void (APIENTRY *PFNGLDELETEBUFFERSPROC)(GLsizei n, const GLuint *buffers);
 
@@ -298,15 +272,15 @@ PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
 PFNGLBUFFERDATAPROC glBufferData = nullptr;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = nullptr;
 PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = nullptr;
-PFNGLDRAWELEMENTSPROC glDrawElements = nullptr;
-PFNGLUSEPROGRAMPROC glUseProgram = nullptr;
-PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation = nullptr;
-PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = nullptr;
-PFNGLUNIFORM3FPROC glUniform3f = nullptr;
-PFNGLUNIFORM1FPROC glUniform1f = nullptr;
-PFNGLUNIFORM1IPROC glUniform1i = nullptr;
-PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
-PFNGLBINDTEXTUREPROC glBindTexture = nullptr;
+PFNGLDRAWELEMENTSPROC_EXT glDrawElementsExt = nullptr;
+PFNGLUSEPROGRAMPROC_EXT glUseProgramExt = nullptr;
+PFNGLGETUNIFORMLOCATIONPROC_EXT glGetUniformLocationExt = nullptr;
+PFNGLUNIFORMMATRIX4FVPROC_EXT glUniformMatrix4fvExt = nullptr;
+PFNGLUNIFORM3FPROC_EXT glUniform3fExt = nullptr;
+PFNGLUNIFORM1FPROC_EXT glUniform1fExt = nullptr;
+PFNGLUNIFORM1IPROC_EXT glUniform1iExt = nullptr;
+PFNGLACTIVETEXTUREPROC_EXT glActiveTextureExt = nullptr;
+PFNGLBINDTEXTUREPROC_EXT glBindTextureExt = nullptr;
 PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays = nullptr;
 PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
 
@@ -319,24 +293,24 @@ bool GraphicsEngine3D::LoadOpenGLFunctions() {
     glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
     glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
     glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-    glDrawElements = (PFNGLDRAWELEMENTSPROC)wglGetProcAddress("glDrawElements");
-    glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
-    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation");
-    glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
-    glUniform3f = (PFNGLUNIFORM3FPROC)wglGetProcAddress("glUniform3f");
-    glUniform1f = (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
-    glUniform1i = (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
-    glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
-    glBindTexture = (PFNGLBINDTEXTUREPROC)wglGetProcAddress("glBindTexture");
+    glDrawElementsExt = (PFNGLDRAWELEMENTSPROC_EXT)wglGetProcAddress("glDrawElements");
+    glUseProgramExt = (PFNGLUSEPROGRAMPROC_EXT)wglGetProcAddress("glUseProgram");
+    glGetUniformLocationExt = (PFNGLGETUNIFORMLOCATIONPROC_EXT)wglGetProcAddress("glGetUniformLocation");
+    glUniformMatrix4fvExt = (PFNGLUNIFORMMATRIX4FVPROC_EXT)wglGetProcAddress("glUniformMatrix4fv");
+    glUniform3fExt = (PFNGLUNIFORM3FPROC_EXT)wglGetProcAddress("glUniform3f");
+    glUniform1fExt = (PFNGLUNIFORM1FPROC_EXT)wglGetProcAddress("glUniform1f");
+    glUniform1iExt = (PFNGLUNIFORM1IPROC_EXT)wglGetProcAddress("glUniform1i");
+    glActiveTextureExt = (PFNGLACTIVETEXTUREPROC_EXT)wglGetProcAddress("glActiveTexture");
+    glBindTextureExt = (PFNGLBINDTEXTUREPROC_EXT)wglGetProcAddress("glBindTexture");
     glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
     glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
     
     // Check if all functions were loaded successfully
     return (glGenVertexArrays && glBindVertexArray && glGenBuffers && 
             glBindBuffer && glBufferData && glVertexAttribPointer && 
-            glEnableVertexAttribArray && glDrawElements && glUseProgram &&
-            glGetUniformLocation && glUniformMatrix4fv && glUniform3f &&
-            glUniform1f && glUniform1i && glActiveTexture && glBindTexture &&
+            glEnableVertexAttribArray && glDrawElementsExt && glUseProgramExt &&
+            glGetUniformLocationExt && glUniformMatrix4fvExt && glUniform3fExt &&
+            glUniform1fExt && glUniform1iExt && glActiveTextureExt && glBindTextureExt &&
             glDeleteVertexArrays && glDeleteBuffers);
 }
 
@@ -364,35 +338,35 @@ void GraphicsEngine3D::Render() {
     glViewport(0, 0, width, height);
     
     // Use shader program
-    glUseProgram(shaderProgram);
+    glUseProgramExt(shaderProgram);
     
     // Calculate camera position
-    float cameraX = camera.targetX + camera.distance * cos(camera.angleY * M_PI / 180.0f) * cos(camera.angleX * M_PI / 180.0f);
-    float cameraY = camera.targetY + camera.distance * sin(camera.angleY * M_PI / 180.0f);
-    float cameraZ = camera.targetZ + camera.distance * cos(camera.angleY * M_PI / 180.0f) * sin(camera.angleX * M_PI / 180.0f);
+    float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
+    float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
+    float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
     
     // Create matrices
-    Matrix4 projection = Matrix4::perspective(45.0f * M_PI / 180.0f, aspectRatio, 0.1f, 100.0f);
+    Matrix4 projection = Matrix4::perspective(45.0f * (float)M_PI / 180.0f, aspectRatio, 0.1f, 100.0f);
     Matrix4 view = Matrix4::lookAt(cameraX, cameraY, cameraZ,
                                    camera.targetX, camera.targetY, camera.targetZ,
                                    0.0f, 1.0f, 0.0f);
     
     // Set projection and view matrices
-    int projLoc = glGetUniformLocation(shaderProgram, "projection");
-    int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    int projLoc = glGetUniformLocationExt(shaderProgram, "projection");
+    int viewLoc = glGetUniformLocationExt(shaderProgram, "view");
+    int modelLoc = glGetUniformLocationExt(shaderProgram, "model");
     
-    if (projLoc >= 0) glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection.m);
-    if (viewLoc >= 0) glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view.m);
+    if (projLoc >= 0) glUniformMatrix4fvExt(projLoc, 1, GL_FALSE, projection.m);
+    if (viewLoc >= 0) glUniformMatrix4fvExt(viewLoc, 1, GL_FALSE, view.m);
     
     // Set light parameters
-    int lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
-    int lightColorLoc = glGetUniformLocation(shaderProgram, "lightColor");
-    int viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+    int lightPosLoc = glGetUniformLocationExt(shaderProgram, "lightPos");
+    int lightColorLoc = glGetUniformLocationExt(shaderProgram, "lightColor");
+    int viewPosLoc = glGetUniformLocationExt(shaderProgram, "viewPos");
     
-    if (lightPosLoc >= 0) glUniform3f(lightPosLoc, light.positionX, light.positionY, light.positionZ);
-    if (lightColorLoc >= 0) glUniform3f(lightColorLoc, light.color[0], light.color[1], light.color[2]);
-    if (viewPosLoc >= 0) glUniform3f(viewPosLoc, cameraX, cameraY, cameraZ);
+    if (lightPosLoc >= 0) glUniform3fExt(lightPosLoc, light.positionX, light.positionY, light.positionZ);
+    if (lightColorLoc >= 0) glUniform3fExt(lightColorLoc, light.color[0], light.color[1], light.color[2]);
+    if (viewPosLoc >= 0) glUniform3fExt(viewPosLoc, cameraX, cameraY, cameraZ);
     
     // Render all shapes
     for (size_t i = 0; i < shapes.size(); i++) {
@@ -400,19 +374,19 @@ void GraphicsEngine3D::Render() {
         
         // Calculate model matrix
         Matrix4 model = Matrix4::translate(shape.positionX, shape.positionY, shape.positionZ);
-        model = model.multiply(Matrix4::rotateZ(shape.rotationZ * M_PI / 180.0f));
-        model = model.multiply(Matrix4::rotateY(shape.rotationY * M_PI / 180.0f));
-        model = model.multiply(Matrix4::rotateX(shape.rotationX * M_PI / 180.0f));
+        model = model.multiply(Matrix4::rotateZ(shape.rotationZ * (float)M_PI / 180.0f));
+        model = model.multiply(Matrix4::rotateY(shape.rotationY * (float)M_PI / 180.0f));
+        model = model.multiply(Matrix4::rotateX(shape.rotationX * (float)M_PI / 180.0f));
         model = model.multiply(Matrix4::scale(shape.scaleX, shape.scaleY, shape.scaleZ));
         
-        if (modelLoc >= 0) glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model.m);
+        if (modelLoc >= 0) glUniformMatrix4fvExt(modelLoc, 1, GL_FALSE, model.m);
         
         // Set material properties
-        int ambientLoc = glGetUniformLocation(shaderProgram, "ambient");
-        int diffuseLoc = glGetUniformLocation(shaderProgram, "diffuse");
-        int specularLoc = glGetUniformLocation(shaderProgram, "specular");
-        int shininessLoc = glGetUniformLocation(shaderProgram, "shininess");
-        int useTextureLoc = glGetUniformLocation(shaderProgram, "useTexture");
+        int ambientLoc = glGetUniformLocationExt(shaderProgram, "ambient");
+        int diffuseLoc = glGetUniformLocationExt(shaderProgram, "diffuse");
+        int specularLoc = glGetUniformLocationExt(shaderProgram, "specular");
+        int shininessLoc = glGetUniformLocationExt(shaderProgram, "shininess");
+        int useTextureLoc = glGetUniformLocationExt(shaderProgram, "useTexture");
         
         // Use different color for selected shapes
         float ambient[3], diffuse[3], specular[3];
@@ -427,22 +401,22 @@ void GraphicsEngine3D::Render() {
             specular[0] = shape.specular[0]; specular[1] = shape.specular[1]; specular[2] = shape.specular[2];
         }
         
-        if (ambientLoc >= 0) glUniform3f(ambientLoc, ambient[0], ambient[1], ambient[2]);
-        if (diffuseLoc >= 0) glUniform3f(diffuseLoc, diffuse[0], diffuse[1], diffuse[2]);
-        if (specularLoc >= 0) glUniform3f(specularLoc, specular[0], specular[1], specular[2]);
-        if (shininessLoc >= 0) glUniform1f(shininessLoc, shape.shininess);
-        if (useTextureLoc >= 0) glUniform1i(useTextureLoc, shape.hasTexture ? 1 : 0);
+        if (ambientLoc >= 0) glUniform3fExt(ambientLoc, ambient[0], ambient[1], ambient[2]);
+        if (diffuseLoc >= 0) glUniform3fExt(diffuseLoc, diffuse[0], diffuse[1], diffuse[2]);
+        if (specularLoc >= 0) glUniform3fExt(specularLoc, specular[0], specular[1], specular[2]);
+        if (shininessLoc >= 0) glUniform1fExt(shininessLoc, shape.shininess);
+        if (useTextureLoc >= 0) glUniform1iExt(useTextureLoc, shape.hasTexture ? 1 : 0);
         
         // Bind texture if available
         if (shape.hasTexture && shape.textureID != 0) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, shape.textureID);
+            glActiveTextureExt(GL_TEXTURE0);
+            glBindTextureExt(GL_TEXTURE_2D, shape.textureID);
         }
         
         // Render the shape
         if (shape.VAO != 0) {
             glBindVertexArray(shape.VAO);
-            glDrawElements(GL_TRIANGLES, (GLsizei)shape.indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElementsExt(GL_TRIANGLES, (GLsizei)shape.indices.size(), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
         }
     }
