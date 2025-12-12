@@ -163,6 +163,16 @@ public:
      */
     void ReleaseContext();
     
+    /**
+     * @brief 使用固定管线渲染（备用方案）
+     */
+    void RenderWithFixedPipeline();
+    
+    /**
+     * @brief 使用立即模式渲染立方体
+     */
+    void RenderCubeImmediate(float size);
+    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄

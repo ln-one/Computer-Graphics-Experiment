@@ -309,7 +309,7 @@ bool GraphicsEngine3D::LoadOpenGLFunctions() {
 }
 
 void GraphicsEngine3D::Render() {
-    if (!isInitialized || shaderProgram == 0) {
+    if (!isInitialized) {
         return;
     }
     
@@ -318,6 +318,18 @@ void GraphicsEngine3D::Render() {
     
     // Clear color and depth buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // Debug: Always use fixed pipeline for now to ensure something renders
+    RenderWithFixedPipeline();
+    SwapBuffers(hdc);
+    return;
+    
+    // If shader program failed to load, use fixed function pipeline
+    if (shaderProgram == 0) {
+        RenderWithFixedPipeline();
+        SwapBuffers(hdc);
+        return;
+    }
     
     // Get window dimensions for aspect ratio
     RECT rect;
@@ -490,6 +502,11 @@ void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
     // Convert screen coordinates to world coordinates (simplified)
     // For now, place shapes at fixed positions in 3D space
     
+    // Debug: Show message when shape creation is called
+    char debugMsg[256];
+    sprintf_s(debugMsg, "Creating shape at (%d, %d), current mode: %d", x, y, (int)currentMode);
+    OutputDebugStringA(debugMsg);
+    
     Shape3D newShape;
     
     // Set position based on screen coordinates (simplified mapping)
@@ -537,6 +554,11 @@ void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
     
     // Add to shapes collection
     shapes.push_back(newShape);
+    
+    // Debug: Show message when shape is added
+    char debugMsg2[256];
+    sprintf_s(debugMsg2, "Shape added! Total shapes: %zu, VAO: %u", shapes.size(), newShape.VAO);
+    OutputDebugStringA(debugMsg2);
 }
 
 void GraphicsEngine3D::HandleSelection(int x, int y) {
@@ -560,4 +582,185 @@ void GraphicsEngine3D::UpdateLight() {
 void GraphicsEngine3D::ReleaseContext() {
     // Release OpenGL context to allow 2D rendering
     wglMakeCurrent(NULL, NULL);
+}
+
+void GraphicsEngine3D::RenderWithFixedPipeline() {
+    // Get window dimensions for aspect ratio
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    if (width == 0 || height == 0) return;
+    
+    float aspectRatio = (float)width / (float)height;
+    
+    // Set viewport
+    glViewport(0, 0, width, height);
+    
+    // Setup projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    // Create perspective projection
+    float fov = 45.0f;
+    float nearPlane = 0.1f;
+    float farPlane = 100.0f;
+    float top = nearPlane * tanf(fov * (float)M_PI / 360.0f);
+    float bottom = -top;
+    float right = top * aspectRatio;
+    float left = -right;
+    glFrustum(left, right, bottom, top, nearPlane, farPlane);
+    
+    // Setup modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    // Calculate camera position
+    float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
+    float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
+    float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
+    
+    // Set camera (manual implementation since gluLookAt might not be available)
+    // Calculate view matrix manually
+    float fx = camera.targetX - cameraX;
+    float fy = camera.targetY - cameraY;
+    float fz = camera.targetZ - cameraZ;
+    float flen = sqrtf(fx*fx + fy*fy + fz*fz);
+    fx /= flen; fy /= flen; fz /= flen;
+    
+    float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
+    float rx = fy * upZ - fz * upY;
+    float ry = fz * upX - fx * upZ;
+    float rz = fx * upY - fy * upX;
+    float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
+    rx /= rlen; ry /= rlen; rz /= rlen;
+    
+    float ux = ry * fz - rz * fy;
+    float uy = rz * fx - rx * fz;
+    float uz = rx * fy - ry * fx;
+    
+    float viewMatrix[16] = {
+        rx, ux, -fx, 0,
+        ry, uy, -fy, 0,
+        rz, uz, -fz, 0,
+        -(rx*cameraX + ry*cameraY + rz*cameraZ),
+        -(ux*cameraX + uy*cameraY + uz*cameraZ),
+        -(-fx*cameraX + -fy*cameraY + -fz*cameraZ),
+        1
+    };
+    
+    glMultMatrixf(viewMatrix);
+    
+    // Enable lighting
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    
+    // Set light position
+    float lightPos[] = {light.positionX, light.positionY, light.positionZ, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    
+    // Set light colors
+    float lightColor[] = {light.color[0], light.color[1], light.color[2], 1.0f};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+    
+    float ambientLight[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+    
+    // Render all shapes using immediate mode
+    for (size_t i = 0; i < shapes.size(); i++) {
+        const Shape3D& shape = shapes[i];
+        
+        glPushMatrix();
+        
+        // Apply transformations
+        glTranslatef(shape.positionX, shape.positionY, shape.positionZ);
+        glRotatef(shape.rotationZ, 0.0f, 0.0f, 1.0f);
+        glRotatef(shape.rotationY, 0.0f, 1.0f, 0.0f);
+        glRotatef(shape.rotationX, 1.0f, 0.0f, 0.0f);
+        glScalef(shape.scaleX, shape.scaleY, shape.scaleZ);
+        
+        // Set material properties
+        float ambient[] = {shape.ambient[0], shape.ambient[1], shape.ambient[2], 1.0f};
+        float diffuse[] = {shape.diffuse[0], shape.diffuse[1], shape.diffuse[2], 1.0f};
+        float specular[] = {shape.specular[0], shape.specular[1], shape.specular[2], 1.0f};
+        
+        glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+        glMaterialf(GL_FRONT, GL_SHININESS, shape.shininess);
+        
+        // Render shape based on type
+        switch (shape.type) {
+            case SHAPE3D_CUBE:
+                RenderCubeImmediate(1.0f);
+                break;
+            case SHAPE3D_SPHERE:
+                // For now, render as a simple cube
+                RenderCubeImmediate(0.5f);
+                break;
+            case SHAPE3D_CYLINDER:
+                // For now, render as a simple cube
+                RenderCubeImmediate(0.5f);
+                break;
+            case SHAPE3D_PLANE:
+                // For now, render as a simple quad
+                RenderCubeImmediate(0.1f);
+                break;
+        }
+        
+        glPopMatrix();
+    }
+    
+    glDisable(GL_LIGHTING);
+}
+
+void GraphicsEngine3D::RenderCubeImmediate(float size) {
+    float halfSize = size * 0.5f;
+    
+    glBegin(GL_QUADS);
+    
+    // Front face
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(-halfSize, -halfSize,  halfSize);
+    glVertex3f( halfSize, -halfSize,  halfSize);
+    glVertex3f( halfSize,  halfSize,  halfSize);
+    glVertex3f(-halfSize,  halfSize,  halfSize);
+    
+    // Back face
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glVertex3f(-halfSize, -halfSize, -halfSize);
+    glVertex3f(-halfSize,  halfSize, -halfSize);
+    glVertex3f( halfSize,  halfSize, -halfSize);
+    glVertex3f( halfSize, -halfSize, -halfSize);
+    
+    // Top face
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-halfSize,  halfSize, -halfSize);
+    glVertex3f(-halfSize,  halfSize,  halfSize);
+    glVertex3f( halfSize,  halfSize,  halfSize);
+    glVertex3f( halfSize,  halfSize, -halfSize);
+    
+    // Bottom face
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(-halfSize, -halfSize, -halfSize);
+    glVertex3f( halfSize, -halfSize, -halfSize);
+    glVertex3f( halfSize, -halfSize,  halfSize);
+    glVertex3f(-halfSize, -halfSize,  halfSize);
+    
+    // Right face
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glVertex3f( halfSize, -halfSize, -halfSize);
+    glVertex3f( halfSize,  halfSize, -halfSize);
+    glVertex3f( halfSize,  halfSize,  halfSize);
+    glVertex3f( halfSize, -halfSize,  halfSize);
+    
+    // Left face
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(-halfSize, -halfSize, -halfSize);
+    glVertex3f(-halfSize, -halfSize,  halfSize);
+    glVertex3f(-halfSize,  halfSize,  halfSize);
+    glVertex3f(-halfSize,  halfSize, -halfSize);
+    
+    glEnd();
 }

@@ -154,14 +154,14 @@ bool ShaderManager::CheckCompileErrors(unsigned int shader, const std::string& t
 
 const char* ShaderManager::GetDefaultVertexShader() {
     return R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
-        layout (location = 2) in vec2 aTexCoord;
+        #version 120
+        attribute vec3 aPos;
+        attribute vec3 aNormal;
+        attribute vec2 aTexCoord;
         
-        out vec3 FragPos;
-        out vec3 Normal;
-        out vec2 TexCoord;
+        varying vec3 FragPos;
+        varying vec3 Normal;
+        varying vec2 TexCoord;
         
         uniform mat4 model;
         uniform mat4 view;
@@ -169,7 +169,7 @@ const char* ShaderManager::GetDefaultVertexShader() {
         
         void main() {
             FragPos = vec3(model * vec4(aPos, 1.0));
-            Normal = mat3(transpose(inverse(model))) * aNormal;
+            Normal = mat3(model) * aNormal;
             TexCoord = aTexCoord;
             gl_Position = projection * view * vec4(FragPos, 1.0);
         }
@@ -178,12 +178,10 @@ const char* ShaderManager::GetDefaultVertexShader() {
 
 const char* ShaderManager::GetDefaultFragmentShader() {
     return R"(
-        #version 330 core
-        out vec4 FragColor;
-        
-        in vec3 FragPos;
-        in vec3 Normal;
-        in vec2 TexCoord;
+        #version 120
+        varying vec3 FragPos;
+        varying vec3 Normal;
+        varying vec2 TexCoord;
         
         uniform vec3 lightPos;
         uniform vec3 lightColor;
@@ -218,10 +216,10 @@ const char* ShaderManager::GetDefaultFragmentShader() {
             vec3 result = ambientColor + diffuseColor + specularColor;
             
             if (useTexture) {
-                result *= texture(textureSampler, TexCoord).rgb;
+                result *= texture2D(textureSampler, TexCoord).rgb;
             }
             
-            FragColor = vec4(result, 1.0);
+            gl_FragColor = vec4(result, 1.0);
         }
     )";
 }
