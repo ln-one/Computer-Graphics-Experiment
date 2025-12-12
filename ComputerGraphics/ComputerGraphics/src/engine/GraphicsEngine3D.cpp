@@ -5,6 +5,10 @@
 #include <gl/GL.h>
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Undefine Windows macros that conflict with parameter names
 // Must be after all includes since windows.h defines these
 #undef near
@@ -489,7 +493,10 @@ void GraphicsEngine3D::OnMouseMove(int x, int y) {
     int deltaX = x - lastMouseX;
     int deltaY = y - lastMouseY;
     
-    if (currentMode == MODE_3D_VIEW_CONTROL) {
+    // 检查是否按住了Ctrl键（用于视角控制）
+    bool ctrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+    
+    if (currentMode == MODE_3D_VIEW_CONTROL || ctrlPressed) {
         HandleViewControl(deltaX, deltaY);
     }
     
@@ -705,16 +712,13 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
                 RenderCubeImmediate(1.0f);
                 break;
             case SHAPE3D_SPHERE:
-                // For now, render as a simple cube
-                RenderCubeImmediate(0.5f);
+                RenderSphereImmediate(0.5f, 16, 16);
                 break;
             case SHAPE3D_CYLINDER:
-                // For now, render as a simple cube
-                RenderCubeImmediate(0.5f);
+                RenderCylinderImmediate(0.5f, 1.0f, 16);
                 break;
             case SHAPE3D_PLANE:
-                // For now, render as a simple quad
-                RenderCubeImmediate(0.1f);
+                RenderPlaneImmediate(1.0f, 1.0f);
                 break;
         }
         
@@ -770,6 +774,146 @@ void GraphicsEngine3D::RenderCubeImmediate(float size) {
     glVertex3f(-halfSize, -halfSize,  halfSize);
     glVertex3f(-halfSize,  halfSize,  halfSize);
     glVertex3f(-halfSize,  halfSize, -halfSize);
+    
+    glEnd();
+}
+
+void GraphicsEngine3D::RenderSphereImmediate(float radius, int segments, int rings) {
+    glBegin(GL_TRIANGLES);
+    
+    for (int ring = 0; ring < rings; ring++) {
+        float phi1 = (float)M_PI * ring / rings;        // Current ring angle
+        float phi2 = (float)M_PI * (ring + 1) / rings;  // Next ring angle
+        
+        for (int seg = 0; seg < segments; seg++) {
+            float theta1 = 2.0f * (float)M_PI * seg / segments;        // Current segment angle
+            float theta2 = 2.0f * (float)M_PI * (seg + 1) / segments;  // Next segment angle
+            
+            // Calculate vertices for the quad (2 triangles)
+            // Vertex 1: current ring, current segment
+            float x1 = radius * sinf(phi1) * cosf(theta1);
+            float y1 = radius * cosf(phi1);
+            float z1 = radius * sinf(phi1) * sinf(theta1);
+            float nx1 = x1 / radius, ny1 = y1 / radius, nz1 = z1 / radius;
+            
+            // Vertex 2: next ring, current segment
+            float x2 = radius * sinf(phi2) * cosf(theta1);
+            float y2 = radius * cosf(phi2);
+            float z2 = radius * sinf(phi2) * sinf(theta1);
+            float nx2 = x2 / radius, ny2 = y2 / radius, nz2 = z2 / radius;
+            
+            // Vertex 3: current ring, next segment
+            float x3 = radius * sinf(phi1) * cosf(theta2);
+            float y3 = radius * cosf(phi1);
+            float z3 = radius * sinf(phi1) * sinf(theta2);
+            float nx3 = x3 / radius, ny3 = y3 / radius, nz3 = z3 / radius;
+            
+            // Vertex 4: next ring, next segment
+            float x4 = radius * sinf(phi2) * cosf(theta2);
+            float y4 = radius * cosf(phi2);
+            float z4 = radius * sinf(phi2) * sinf(theta2);
+            float nx4 = x4 / radius, ny4 = y4 / radius, nz4 = z4 / radius;
+            
+            // First triangle: 1-2-3
+            glNormal3f(nx1, ny1, nz1);
+            glVertex3f(x1, y1, z1);
+            glNormal3f(nx2, ny2, nz2);
+            glVertex3f(x2, y2, z2);
+            glNormal3f(nx3, ny3, nz3);
+            glVertex3f(x3, y3, z3);
+            
+            // Second triangle: 2-4-3
+            glNormal3f(nx2, ny2, nz2);
+            glVertex3f(x2, y2, z2);
+            glNormal3f(nx4, ny4, nz4);
+            glVertex3f(x4, y4, z4);
+            glNormal3f(nx3, ny3, nz3);
+            glVertex3f(x3, y3, z3);
+        }
+    }
+    
+    glEnd();
+}
+
+void GraphicsEngine3D::RenderCylinderImmediate(float radius, float height, int segments) {
+    float halfHeight = height * 0.5f;
+    
+    // Render cylinder sides
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < segments; i++) {
+        float theta1 = 2.0f * (float)M_PI * i / segments;
+        float theta2 = 2.0f * (float)M_PI * (i + 1) / segments;
+        
+        float x1 = radius * cosf(theta1);
+        float z1 = radius * sinf(theta1);
+        float x2 = radius * cosf(theta2);
+        float z2 = radius * sinf(theta2);
+        
+        float nx1 = cosf(theta1), nz1 = sinf(theta1);
+        float nx2 = cosf(theta2), nz2 = sinf(theta2);
+        
+        // Side quad (2 triangles)
+        // Triangle 1
+        glNormal3f(nx1, 0.0f, nz1);
+        glVertex3f(x1, -halfHeight, z1);
+        glNormal3f(nx2, 0.0f, nz2);
+        glVertex3f(x2, -halfHeight, z2);
+        glNormal3f(nx1, 0.0f, nz1);
+        glVertex3f(x1, halfHeight, z1);
+        
+        // Triangle 2
+        glNormal3f(nx2, 0.0f, nz2);
+        glVertex3f(x2, -halfHeight, z2);
+        glNormal3f(nx2, 0.0f, nz2);
+        glVertex3f(x2, halfHeight, z2);
+        glNormal3f(nx1, 0.0f, nz1);
+        glVertex3f(x1, halfHeight, z1);
+    }
+    glEnd();
+    
+    // Render top and bottom caps
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < segments; i++) {
+        float theta1 = 2.0f * (float)M_PI * i / segments;
+        float theta2 = 2.0f * (float)M_PI * (i + 1) / segments;
+        
+        float x1 = radius * cosf(theta1);
+        float z1 = radius * sinf(theta1);
+        float x2 = radius * cosf(theta2);
+        float z2 = radius * sinf(theta2);
+        
+        // Top cap
+        glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(0.0f, halfHeight, 0.0f);
+        glVertex3f(x1, halfHeight, z1);
+        glVertex3f(x2, halfHeight, z2);
+        
+        // Bottom cap
+        glNormal3f(0.0f, -1.0f, 0.0f);
+        glVertex3f(0.0f, -halfHeight, 0.0f);
+        glVertex3f(x2, -halfHeight, z2);
+        glVertex3f(x1, -halfHeight, z1);
+    }
+    glEnd();
+}
+
+void GraphicsEngine3D::RenderPlaneImmediate(float width, float height) {
+    float halfWidth = width * 0.5f;
+    float halfHeight = height * 0.5f;
+    
+    glBegin(GL_TRIANGLES);
+    
+    // First triangle
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-halfWidth, 0.0f, -halfHeight);
+    glVertex3f(halfWidth, 0.0f, -halfHeight);
+    glVertex3f(halfWidth, 0.0f, halfHeight);
+    
+    // Second triangle
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-halfWidth, 0.0f, -halfHeight);
+    glVertex3f(halfWidth, 0.0f, halfHeight);
+    glVertex3f(-halfWidth, 0.0f, halfHeight);
     
     glEnd();
 }

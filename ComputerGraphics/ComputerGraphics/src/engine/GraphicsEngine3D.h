@@ -183,6 +183,21 @@ public:
      */
     void RenderCubeImmediate(float size);
     
+    /**
+     * @brief 使用立即模式渲染球体
+     */
+    void RenderSphereImmediate(float radius, int segments, int rings);
+    
+    /**
+     * @brief 使用立即模式渲染圆柱体
+     */
+    void RenderCylinderImmediate(float radius, float height, int segments);
+    
+    /**
+     * @brief 使用立即模式渲染平面
+     */
+    void RenderPlaneImmediate(float width, float height);
+    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄
@@ -225,10 +240,10 @@ private:
     
     /**
      * @brief 处理视角控制
-     * @param x 鼠标x坐标
-     * @param y 鼠标y坐标
+     * @param deltaX 鼠标X方向移动量
+     * @param deltaY 鼠标Y方向移动量
      */
-    void HandleViewControl(int x, int y);
+    void HandleViewControl(int deltaX, int deltaY);
     
     // === OpenGL初始化 ===
     /**
