@@ -24,6 +24,10 @@
 #include <cmath>
 #include <cfloat>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // ============================================================================
 // 鼠标按键事件处理
 // ============================================================================
@@ -366,12 +370,10 @@ void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
  * @param y 鼠标Y坐标（屏幕坐标）
  * 
  * 选择算法说明：
- * 1. 将屏幕坐标转换为归一化设备坐标(NDC)
- * 2. 遍历所有图形，将图形位置投影到屏幕空间
- * 3. 计算点击位置与图形中心的距离
+ * 1. 计算摄像机位置和视图/投影矩阵
+ * 2. 将每个图形的世界坐标投影到屏幕空间
+ * 3. 计算点击位置与投影后图形中心的距离
  * 4. 选择距离最近且在选择半径内的图形
- * 
- * 注：这是简化的选择算法，实际应用中可能需要射线投射(Ray Casting)
  */
 void GraphicsEngine3D::HandleSelection(int x, int y) {
     // 获取窗口尺寸
@@ -382,30 +384,77 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     
     if (width <= 0 || height <= 0) return;
     
-    // 将屏幕坐标转换为归一化设备坐标(NDC)
-    float ndcX = ((float)x / width) * 2.0f - 1.0f;    // 范围: -1 到 1
-    float ndcY = -(((float)y / height) * 2.0f - 1.0f); // 范围: -1 到 1（Y轴反转）
+    float aspectRatio = (float)width / (float)height;
+    
+    // 计算摄像机位置（球坐标转笛卡尔坐标）
+    float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
+    float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
+    float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
+    
+    // 计算视图矩阵的基向量
+    float fx = camera.targetX - cameraX;
+    float fy = camera.targetY - cameraY;
+    float fz = camera.targetZ - cameraZ;
+    float flen = sqrtf(fx*fx + fy*fy + fz*fz);
+    fx /= flen; fy /= flen; fz /= flen;
+    
+    float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
+    float rx = fy * upZ - fz * upY;
+    float ry = fz * upX - fx * upZ;
+    float rz = fx * upY - fy * upX;
+    float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
+    rx /= rlen; ry /= rlen; rz /= rlen;
+    
+    float ux = ry * fz - rz * fy;
+    float uy = rz * fx - rx * fz;
+    float uz = rx * fy - ry * fx;
+    
+    // 透视投影参数
+    float fov = 45.0f;
+    float nearPlane = 0.1f;
+    float tanHalfFov = tanf(fov * (float)M_PI / 360.0f);
     
     // 简单选择：找到距离点击位置最近的图形
-    // 使用屏幕空间的2D距离检测
     int closestShapeIndex = -1;
     float minDistance = FLT_MAX;
     
     for (size_t i = 0; i < shapes.size(); i++) {
         const Shape3D& shape = shapes[i];
         
-        // 将图形位置投影到屏幕空间（简化映射）
-        // 假设世界坐标范围是[-2, 2]
-        float screenX = ((shape.positionX + 2.0f) / 4.0f) * width;
-        float screenY = ((-shape.positionY + 2.0f) / 4.0f) * height;  // Y轴反转
+        // 将图形位置从世界坐标转换到摄像机坐标
+        float dx = shape.positionX - cameraX;
+        float dy = shape.positionY - cameraY;
+        float dz = shape.positionZ - cameraZ;
+        
+        // 在摄像机坐标系中的位置
+        float camSpaceX = rx * dx + ry * dy + rz * dz;
+        float camSpaceY = ux * dx + uy * dy + uz * dz;
+        float camSpaceZ = -(fx * dx + fy * dy + fz * dz);  // 摄像机看向-Z
+        
+        // 如果在摄像机后面，跳过
+        if (camSpaceZ <= nearPlane) continue;
+        
+        // 透视投影到NDC
+        float ndcX = camSpaceX / (camSpaceZ * tanHalfFov * aspectRatio);
+        float ndcY = camSpaceY / (camSpaceZ * tanHalfFov);
+        
+        // NDC转屏幕坐标
+        float screenX = (ndcX + 1.0f) * 0.5f * width;
+        float screenY = (1.0f - ndcY) * 0.5f * height;  // Y轴反转
         
         // 计算点击位置与图形中心的距离
-        float dx = (float)x - screenX;
-        float dy = (float)y - screenY;
-        float distance = sqrtf(dx * dx + dy * dy);
+        float distX = (float)x - screenX;
+        float distY = (float)y - screenY;
+        float distance = sqrtf(distX * distX + distY * distY);
         
-        // 选择容差（像素）
-        float selectionRadius = 50.0f;
+        // 选择容差（像素），根据距离调整
+        float selectionRadius = 80.0f;
+        
+        // 调试输出
+        char debugMsg[256];
+        sprintf_s(debugMsg, "图形 %zu: 屏幕位置(%.1f, %.1f), 点击位置(%d, %d), 距离=%.1f", 
+                  i, screenX, screenY, x, y, distance);
+        OutputDebugStringA(debugMsg);
         
         // 如果在选择半径内且是最近的图形
         if (distance < selectionRadius && distance < minDistance) {
