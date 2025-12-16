@@ -407,6 +407,10 @@ void GraphicsEngine3D::UpdateLight() {
         glUniform1fExt(lightSpecularIntensityLoc, light.specularIntensity);
     }
     
+    // 重要：禁用着色器程序，恢复固定管线状态
+    // 如果不禁用，后续的固定管线渲染会出问题
+    glUseProgramExt(0);
+    
     // 调试输出：更新后的shapes数量
     sprintf_s(debugMsg, "UpdateLight结束: shapes数量=%zu", shapes.size());
     OutputDebugStringA(debugMsg);

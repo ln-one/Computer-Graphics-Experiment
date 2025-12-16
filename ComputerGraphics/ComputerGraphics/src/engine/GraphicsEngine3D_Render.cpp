@@ -246,6 +246,13 @@ void GraphicsEngine3D::Render() {
  * - GL_SHININESS: 高光指数（控制高光大小）
  */
 void GraphicsEngine3D::RenderWithFixedPipeline() {
+    // 确保禁用着色器程序，使用固定管线
+    // 这是必要的，因为如果着色器程序处于激活状态，
+    // 固定管线的光照和材质设置会被忽略
+    if (glUseProgramExt) {
+        glUseProgramExt(0);
+    }
+    
     // 获取窗口尺寸
     RECT rect;
     GetClientRect(hwnd, &rect);
