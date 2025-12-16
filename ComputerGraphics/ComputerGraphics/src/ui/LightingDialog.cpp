@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file LightingDialog.cpp
  * @brief 3D光照设置对话框实现
  * @author 计算机图形学项目组

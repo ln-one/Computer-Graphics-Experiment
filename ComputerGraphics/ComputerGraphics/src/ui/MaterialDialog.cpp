@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file MaterialDialog.cpp
  * @brief 3D材质编辑对话框实现
  * @author 计算机图形学项目组

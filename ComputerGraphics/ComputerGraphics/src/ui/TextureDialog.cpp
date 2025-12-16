@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TextureDialog.cpp
  * @brief 3D纹理设置对话框实现
  * @author 计算机图形学项目组

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TransformDialog3D.cpp
  * @brief 3D变换参数编辑对话框实现
  * @author 计算机图形学项目组
