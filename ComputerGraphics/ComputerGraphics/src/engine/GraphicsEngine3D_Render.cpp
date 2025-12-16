@@ -80,7 +80,14 @@ extern PFNGLBINDTEXTUREPROC_EXT glBindTextureExt;
  * 5. 交换前后缓冲（双缓冲）
  */
 void GraphicsEngine3D::Render() {
+    // 调试输出：检查shapes数量
+    char debugMsg[256];
+    sprintf_s(debugMsg, "Render开始: shapes数量=%zu, isInitialized=%d", 
+              shapes.size(), isInitialized ? 1 : 0);
+    OutputDebugStringA(debugMsg);
+    
     if (!isInitialized) {
+        OutputDebugStringA("Render: 引擎未初始化，直接返回");
         return;
     }
     
@@ -371,6 +378,10 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     // ========================================================================
     // 渲染所有3D图形
     // ========================================================================
+    char renderDebug[256];
+    sprintf_s(renderDebug, "RenderWithFixedPipeline: 准备渲染 %zu 个图形", shapes.size());
+    OutputDebugStringA(renderDebug);
+    
     for (size_t i = 0; i < shapes.size(); i++) {
         const Shape3D& shape = shapes[i];
         

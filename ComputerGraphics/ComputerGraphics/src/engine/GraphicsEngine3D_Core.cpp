@@ -355,8 +355,17 @@ bool GraphicsEngine3D::LoadOpenGLFunctions() {
  * - lightSpecularIntensity: 镜面反射强度
  */
 void GraphicsEngine3D::UpdateLight() {
+    // 调试输出缓冲区
+    char debugMsg[512];
+    
+    // 调试输出：检查shapes数量
+    sprintf_s(debugMsg, "UpdateLight开始: shapes数量=%zu, isInitialized=%d", 
+              shapes.size(), isInitialized ? 1 : 0);
+    OutputDebugStringA(debugMsg);
+    
     // 检查引擎是否已初始化
     if (!isInitialized || shaderProgram == 0) {
+        OutputDebugStringA("UpdateLight: 引擎未初始化，直接返回");
         return;
     }
     
@@ -398,8 +407,11 @@ void GraphicsEngine3D::UpdateLight() {
         glUniform1fExt(lightSpecularIntensityLoc, light.specularIntensity);
     }
     
+    // 调试输出：更新后的shapes数量
+    sprintf_s(debugMsg, "UpdateLight结束: shapes数量=%zu", shapes.size());
+    OutputDebugStringA(debugMsg);
+    
     // 调试输出
-    char debugMsg[512];
     sprintf_s(debugMsg, 
         "光照参数已更新: 位置(%.2f, %.2f, %.2f) 强度(环境:%.2f, 漫反射:%.2f, 镜面:%.2f) 颜色(%.2f, %.2f, %.2f)",
         light.positionX, light.positionY, light.positionZ,
