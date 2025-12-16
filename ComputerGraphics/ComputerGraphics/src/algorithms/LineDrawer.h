@@ -1,3 +1,34 @@
+/**
+ * @dir algorithms
+ * @brief 图形算法实现目录
+ * 
+ * 本目录包含各种图形学算法的具体实现，是项目的算法核心。
+ * 
+ * 目录内容：
+ * 
+ * 【2D绘图算法】
+ * - LineDrawer.*        - 直线绘制算法（DDA、Bresenham）
+ * - CircleDrawer.*      - 圆形绘制算法（中点圆、Bresenham圆）
+ * - FillAlgorithms.*    - 区域填充算法（边界填充、扫描线填充）
+ * - TransformAlgorithms.* - 几何变换算法（平移、旋转、缩放）
+ * 
+ * 【裁剪算法】
+ * - ClippingAlgorithms.* - 裁剪算法集合
+ *   - Cohen-Sutherland 直线裁剪
+ *   - 中点分割直线裁剪
+ *   - Sutherland-Hodgman 多边形裁剪
+ *   - Weiler-Atherton 多边形裁剪
+ * 
+ * 【3D图形算法】
+ * - MeshGenerator.*     - 3D网格生成器（立方体、球体、圆柱体、平面）
+ * - ShaderManager.*     - OpenGL着色器管理（编译、链接、使用）
+ * - TextureLoader.*     - 纹理加载器（支持常见图片格式）
+ * 
+ * 使用说明：
+ * 所有算法类都提供静态方法，可以直接调用而无需实例化。
+ * 算法实现遵循计算机图形学教材中的经典算法描述。
+ */
+
 #pragma once
 #include "../core/Point2D.h"
 #include <windows.h>

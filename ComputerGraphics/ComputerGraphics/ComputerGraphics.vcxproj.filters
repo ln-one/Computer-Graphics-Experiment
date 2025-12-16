@@ -25,6 +25,9 @@
     <Filter Include="Source Files\ui">
       <UniqueIdentifier>{bc6f4h5d-4e7a-6b8c-cf9a-0d1e2f3a4b5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{cd7a5i6e-5f8b-7c9d-da0b-1e2f3a4b5c6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -84,11 +87,20 @@
     <ClInclude Include="src\algorithms\MeshGenerator.h">
       <Filter>Source Files\algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="src\algorithms\TextureLoader.h">
+      <Filter>Source Files\algorithms</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\OpenGLFunctions.h">
       <Filter>Source Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\MenuIDs.h">
       <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\Dialogs3D.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math\Matrix4.h">
+      <Filter>Source Files\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -107,7 +119,13 @@
     <ClCompile Include="src\engine\GraphicsEngine.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\GraphicsEngine3D.cpp">
+    <ClCompile Include="src\engine\GraphicsEngine3D_Core.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\GraphicsEngine3D_Render.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\GraphicsEngine3D_Input.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\ShapeRenderer.cpp">
@@ -127,6 +145,21 @@
     </ClCompile>
     <ClCompile Include="src\algorithms\MeshGenerator.cpp">
       <Filter>Source Files\algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithms\TextureLoader.cpp">
+      <Filter>Source Files\algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\TransformDialog3D.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\LightingDialog.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\MaterialDialog.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\TextureDialog.cpp">
+      <Filter>Source Files\ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

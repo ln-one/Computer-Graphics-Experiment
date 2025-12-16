@@ -1,3 +1,29 @@
+/**
+ * @dir engine
+ * @brief 图形引擎目录
+ * 
+ * 本目录包含图形渲染引擎的核心代码，负责图形的渲染和用户交互。
+ * 
+ * 目录内容：
+ * 
+ * 【2D图形引擎】
+ * - GraphicsEngine.*    - 2D图形引擎，处理2D绑定和渲染
+ * - ShapeRenderer.*     - 图形渲染器，负责具体图形的绘制
+ * - ShapeSelector.*     - 图形选择器，处理图形的选中和高亮
+ * 
+ * 【3D图形引擎】
+ * - GraphicsEngine3D.h          - 3D引擎头文件，类声明
+ * - GraphicsEngine3D_Core.cpp   - 3D引擎核心：初始化、OpenGL上下文管理
+ * - GraphicsEngine3D_Render.cpp - 3D引擎渲染：场景渲染、光照计算
+ * - GraphicsEngine3D_Input.cpp  - 3D引擎输入：鼠标交互、视角控制
+ * - OpenGLFunctions.h           - OpenGL函数指针声明
+ * 
+ * 架构说明：
+ * - GraphicsEngine 负责2D图形，使用Windows GDI进行渲染
+ * - GraphicsEngine3D 负责3D图形，使用OpenGL 3.3 Core Profile进行渲染
+ * - 两个引擎共享相同的用户界面，通过DrawMode切换工作模式
+ */
+
 #pragma once
 #include "../core/Point2D.h"
 #include "../core/Shape.h"

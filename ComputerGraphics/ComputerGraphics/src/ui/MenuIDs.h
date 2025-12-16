@@ -64,3 +64,102 @@
 #define ID_3D_SELECT 61001                   ///< 3D图形选择模式
 #define ID_3D_VIEW_CONTROL 61002             ///< 3D视角控制模式
 #define ID_3D_LIGHTING 61003                 ///< 3D光照设置
+
+// === 3D对话框ID ===
+#define IDD_TRANSFORM3D 70001                ///< 3D变换对话框
+
+// === 3D变换对话框控件ID ===
+// 位置输入框
+#define IDC_EDIT_POS_X 70101                 ///< 位置X输入框
+#define IDC_EDIT_POS_Y 70102                 ///< 位置Y输入框
+#define IDC_EDIT_POS_Z 70103                 ///< 位置Z输入框
+
+// 旋转输入框
+#define IDC_EDIT_ROT_X 70104                 ///< 旋转X输入框
+#define IDC_EDIT_ROT_Y 70105                 ///< 旋转Y输入框
+#define IDC_EDIT_ROT_Z 70106                 ///< 旋转Z输入框
+
+// 缩放输入框
+#define IDC_EDIT_SCALE_X 70107               ///< 缩放X输入框
+#define IDC_EDIT_SCALE_Y 70108               ///< 缩放Y输入框
+#define IDC_EDIT_SCALE_Z 70109               ///< 缩放Z输入框
+
+// 分组框
+#define IDC_GROUP_POSITION 70201             ///< 位置分组框
+#define IDC_GROUP_ROTATION 70202             ///< 旋转分组框
+#define IDC_GROUP_SCALE 70203                ///< 缩放分组框
+
+// === 3D光照对话框ID ===
+#define IDD_LIGHTING3D 70002                 ///< 3D光照设置对话框
+
+// === 3D光照对话框控件ID ===
+// 光源位置输入框
+#define IDC_EDIT_LIGHT_POS_X 70301           ///< 光源位置X输入框
+#define IDC_EDIT_LIGHT_POS_Y 70302           ///< 光源位置Y输入框
+#define IDC_EDIT_LIGHT_POS_Z 70303           ///< 光源位置Z输入框
+
+// 光照强度输入框
+#define IDC_EDIT_AMBIENT 70304               ///< 环境光强度输入框
+#define IDC_EDIT_DIFFUSE 70305               ///< 漫反射强度输入框
+#define IDC_EDIT_SPECULAR 70306              ///< 镜面反射强度输入框
+
+// 光源颜色输入框
+#define IDC_EDIT_LIGHT_R 70307               ///< 光源颜色R输入框
+#define IDC_EDIT_LIGHT_G 70308               ///< 光源颜色G输入框
+#define IDC_EDIT_LIGHT_B 70309               ///< 光源颜色B输入框
+
+// 光照对话框分组框
+#define IDC_GROUP_LIGHT_POSITION 70401       ///< 光源位置分组框
+#define IDC_GROUP_LIGHT_INTENSITY 70402      ///< 光照强度分组框
+#define IDC_GROUP_LIGHT_COLOR 70403          ///< 光源颜色分组框
+
+// === 3D材质对话框ID ===
+#define IDD_MATERIAL3D 70003                 ///< 3D材质编辑对话框
+
+// === 3D材质对话框控件ID ===
+// 环境光反射系数输入框
+#define IDC_EDIT_MAT_AMBIENT_R 70501         ///< 环境光R输入框
+#define IDC_EDIT_MAT_AMBIENT_G 70502         ///< 环境光G输入框
+#define IDC_EDIT_MAT_AMBIENT_B 70503         ///< 环境光B输入框
+
+// 漫反射系数输入框
+#define IDC_EDIT_MAT_DIFFUSE_R 70504         ///< 漫反射R输入框
+#define IDC_EDIT_MAT_DIFFUSE_G 70505         ///< 漫反射G输入框
+#define IDC_EDIT_MAT_DIFFUSE_B 70506         ///< 漫反射B输入框
+
+// 镜面反射系数输入框
+#define IDC_EDIT_MAT_SPECULAR_R 70507        ///< 镜面反射R输入框
+#define IDC_EDIT_MAT_SPECULAR_G 70508        ///< 镜面反射G输入框
+#define IDC_EDIT_MAT_SPECULAR_B 70509        ///< 镜面反射B输入框
+
+// 光泽度输入框
+#define IDC_EDIT_MAT_SHININESS 70510         ///< 光泽度输入框
+
+// 材质对话框分组框
+#define IDC_GROUP_MAT_AMBIENT 70601          ///< 环境光分组框
+#define IDC_GROUP_MAT_DIFFUSE 70602          ///< 漫反射分组框
+#define IDC_GROUP_MAT_SPECULAR 70603         ///< 镜面反射分组框
+#define IDC_GROUP_MAT_SHININESS 70604        ///< 光泽度分组框
+
+// 材质按钮（在变换对话框中）
+#define IDC_BTN_MATERIAL 70701               ///< 材质编辑按钮
+#define IDC_BTN_TEXTURE 70702                ///< 纹理设置按钮
+
+// === 3D纹理对话框ID ===
+#define IDD_TEXTURE3D 70004                  ///< 3D纹理设置对话框
+
+// === 3D纹理对话框控件ID ===
+#define IDC_EDIT_TEXTURE_PATH 70801          ///< 纹理文件路径输入框
+#define IDC_BTN_BROWSE_TEXTURE 70802         ///< 浏览纹理文件按钮
+#define IDC_COMBO_MAPPING_TYPE 70803         ///< 纹理映射方式下拉框
+#define IDC_EDIT_TEX_SCALE_U 70804           ///< 纹理缩放U输入框
+#define IDC_EDIT_TEX_SCALE_V 70805           ///< 纹理缩放V输入框
+#define IDC_EDIT_TEX_OFFSET_U 70806          ///< 纹理偏移U输入框
+#define IDC_EDIT_TEX_OFFSET_V 70807          ///< 纹理偏移V输入框
+#define IDC_BTN_REMOVE_TEXTURE 70808         ///< 移除纹理按钮
+#define IDC_STATIC_TEXTURE_PREVIEW 70809     ///< 纹理预览静态控件
+
+// 纹理对话框分组框
+#define IDC_GROUP_TEXTURE_FILE 70901         ///< 纹理文件分组框
+#define IDC_GROUP_TEXTURE_MAPPING 70902      ///< 纹理映射分组框
+#define IDC_GROUP_TEXTURE_PARAMS 70903       ///< 纹理参数分组框

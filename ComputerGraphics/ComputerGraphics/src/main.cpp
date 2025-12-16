@@ -14,6 +14,7 @@
 #include "engine/GraphicsEngine.h"
 #include "engine/GraphicsEngine3D.h"
 #include "ui/MenuIDs.h"
+#include "ui/Dialogs3D.h"
 #include <windowsx.h>  // For GET_WHEEL_DELTA_WPARAM
 
 // === 全局变量 ===
@@ -46,6 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 
     // 注册窗口类
     WNDCLASS wc = {};
+    wc.style = CS_DBLCLKS;                              // 启用双击消息
     wc.lpfnWndProc = WndProc;                           // 窗口过程函数
     wc.hInstance = hInstance;                           // 应用程序实例
     wc.lpszClassName = CLASS_NAME;                      // 窗口类名
@@ -392,9 +394,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     // 3D视角控制模式
                     g_engine3D.SetMode(MODE_3D_VIEW_CONTROL);
                     break;
-                case ID_3D_LIGHTING:
-                    // 3D光照设置（待实现）
+                case ID_3D_LIGHTING: {
+                    // 3D光照设置
+                    Light& light = g_engine3D.GetLight();
+                    if (LightingDialog::Show(hwnd, &light)) {
+                        // 用户确认了修改，更新光照参数到着色器
+                        g_engine3D.UpdateLight();
+                        InvalidateRect(hwnd, NULL, FALSE);
+                    }
                     break;
+                }
             }
             return 0;
         }

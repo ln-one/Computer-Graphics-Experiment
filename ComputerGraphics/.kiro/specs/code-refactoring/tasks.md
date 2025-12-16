@@ -1,0 +1,116 @@
+# 实现计划
+
+## 任务列表
+
+- [x] 1. 创建 Matrix4 数学模块
+  - 从 GraphicsEngine3D.cpp 提取 Matrix4 结构体到独立头文件
+  - 添加完整的中文注释说明矩阵运算原理
+  - 更新 GraphicsEngine3D.cpp 的 include 引用
+  - _需求: 1.1, 2.1_
+
+- [x] 2. 拆分 GraphicsEngine3D.cpp
+  - [x] 2.1 创建 GraphicsEngine3D_Core.cpp
+    - 提取构造函数、析构函数、Initialize、Shutdown
+    - 提取 CreateOpenGLContext、LoadOpenGLFunctions
+    - 提取 UpdateLight、ReleaseContext
+    - 添加中文注释说明 OpenGL 初始化流程
+    - _需求: 1.1, 2.1_
+  - [x] 2.2 创建 GraphicsEngine3D_Render.cpp
+    - 提取 Render、RenderWithFixedPipeline
+    - 提取 RenderCubeImmediate、RenderSphereImmediate
+    - 提取 RenderCylinderImmediate、RenderPlaneImmediate
+    - 添加中文注释说明渲染流程和 Phong 光照模型
+    - _需求: 1.1, 2.1_
+  - [x] 2.3 创建 GraphicsEngine3D_Input.cpp
+    - 提取所有鼠标事件处理函数
+    - 提取 HandleShapeCreation、HandleSelection
+    - 提取 HandleViewControl、HandleObjectDragging
+    - 添加中文注释说明交互逻辑
+    - _需求: 1.1, 2.1_
+  - [x] 2.4 删除原 GraphicsEngine3D.cpp 并更新项目文件
+    - 更新 .vcxproj 添加新的源文件
+    - 确保编译通过
+    - _需求: 1.4_
+
+- [x] 3. 拆分 Dialogs3D.cpp
+  - [x] 3.1 创建 TransformDialog3D.cpp
+    - 提取 TransformDialog3D 类的所有实现
+    - 添加中文注释说明变换参数的含义
+    - _需求: 1.2, 2.1_
+  - [x] 3.2 创建 LightingDialog.cpp
+    - 提取 LightingDialog 类的所有实现
+    - 添加中文注释说明光照参数（环境光、漫反射、镜面反射）
+    - _需求: 1.2, 2.1_
+  - [x] 3.3 创建 MaterialDialog.cpp
+    - 提取 MaterialDialog 类的所有实现
+    - 添加中文注释说明材质属性
+    - _需求: 1.2, 2.1_
+  - [x] 3.4 创建 TextureDialog.cpp
+    - 提取 TextureDialog 类的所有实现
+    - 添加中文注释说明纹理映射
+    - _需求: 1.2, 2.1_
+  - [x] 3.5 删除原 Dialogs3D.cpp 并更新项目文件
+    - 更新 .vcxproj 添加新的源文件
+    - 确保编译通过
+    - _需求: 1.4_
+
+- [x] 4. 为现有算法文件添加中文注释
+  - [x] 4.1 LineDrawer.cpp 添加中文注释
+    - 说明 DDA 算法原理和步骤
+    - 说明 Bresenham 算法原理和步骤
+    - _需求: 2.1, 2.2_
+  - [x] 4.2 CircleDrawer.cpp 添加中文注释
+    - 说明中点圆算法原理
+    - 说明 Bresenham 圆算法原理
+    - _需求: 2.1, 2.2_
+  - [x] 4.3 FillAlgorithms.cpp 添加中文注释
+    - 说明边界填充算法原理
+    - 说明扫描线填充算法原理
+    - _需求: 2.1, 2.2_
+  - [x] 4.4 TransformAlgorithms.cpp 添加中文注释
+    - 说明平移、缩放、旋转变换的数学原理
+    - _需求: 2.1, 2.2_
+  - [x] 4.5 MeshGenerator.cpp 添加中文注释
+    - 说明各种3D网格的生成方法
+    - 说明顶点数据格式（位置、法线、纹理坐标）
+    - _需求: 2.1, 2.2_
+  - [x] 4.6 ShaderManager.cpp 添加中文注释
+    - 说明着色器编译和链接流程
+    - 说明顶点着色器和片段着色器的作用
+    - _需求: 2.1, 2.2_
+
+- [x] 5. 创建代码导航文档
+  - [x] 5.1 创建 Docs/CODE_NAVIGATION.md
+    - 编写项目结构概述
+    - 编写功能模块索引表
+    - _需求: 3.1, 3.2_
+  - [x] 5.2 编写 2D 绘图算法导航
+    - 直线绘制算法定位
+    - 圆形绘制算法定位
+    - 填充算法定位
+    - _需求: 3.1, 3.2_
+  - [x] 5.3 编写裁剪算法导航
+    - Cohen-Sutherland 算法定位和说明
+    - 中点分割算法定位和说明
+    - Sutherland-Hodgman 算法定位和说明
+    - Weiler-Atherton 算法定位和说明
+    - _需求: 3.1, 3.2, 3.3_
+  - [x] 5.4 编写 3D 图形系统导航
+    - 网格生成定位
+    - 渲染流程定位
+    - 交互操作定位
+    - _需求: 3.1, 3.2, 3.3_
+  - [x] 5.5 编写常见问题快速定位
+    - 如何创建新图形
+    - 如何修改光照
+    - 如何添加纹理
+    - _需求: 3.1, 3.2_
+
+- [x] 6. 整理项目结构文档
+  - [x] 6.1 更新 Docs/README.md 或创建项目说明
+    - 项目目录结构说明
+    - 各模块功能说明
+    - _需求: 4.1, 4.2_
+  - [x] 6.2 为 src 各子目录添加说明注释
+    - 在关键头文件中添加目录用途说明
+    - _需求: 4.2_

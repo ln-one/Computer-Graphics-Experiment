@@ -146,12 +146,15 @@
     <ClInclude Include="src\algorithms\ClippingAlgorithms.h" />
     <ClInclude Include="src\algorithms\ShaderManager.h" />
     <ClInclude Include="src\algorithms\MeshGenerator.h" />
+    <ClInclude Include="src\algorithms\TextureLoader.h" />
     <ClInclude Include="src\engine\GraphicsEngine.h" />
     <ClInclude Include="src\engine\GraphicsEngine3D.h" />
     <ClInclude Include="src\engine\OpenGLFunctions.h" />
     <ClInclude Include="src\engine\ShapeRenderer.h" />
     <ClInclude Include="src\engine\ShapeSelector.h" />
     <ClInclude Include="src\ui\MenuIDs.h" />
+    <ClInclude Include="src\ui\Dialogs3D.h" />
+    <ClInclude Include="src\math\Matrix4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -162,10 +165,17 @@
     <ClCompile Include="src\algorithms\ClippingAlgorithms.cpp" />
     <ClCompile Include="src\algorithms\ShaderManager.cpp" />
     <ClCompile Include="src\algorithms\MeshGenerator.cpp" />
+    <ClCompile Include="src\algorithms\TextureLoader.cpp" />
     <ClCompile Include="src\engine\GraphicsEngine.cpp" />
-    <ClCompile Include="src\engine\GraphicsEngine3D.cpp" />
+    <ClCompile Include="src\engine\GraphicsEngine3D_Core.cpp" />
+    <ClCompile Include="src\engine\GraphicsEngine3D_Render.cpp" />
+    <ClCompile Include="src\engine\GraphicsEngine3D_Input.cpp" />
     <ClCompile Include="src\engine\ShapeRenderer.cpp" />
     <ClCompile Include="src\engine\ShapeSelector.cpp" />
+    <ClCompile Include="src\ui\TransformDialog3D.cpp" />
+    <ClCompile Include="src\ui\LightingDialog.cpp" />
+    <ClCompile Include="src\ui\MaterialDialog.cpp" />
+    <ClCompile Include="src\ui\TextureDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ComputerGraphics.rc" />
