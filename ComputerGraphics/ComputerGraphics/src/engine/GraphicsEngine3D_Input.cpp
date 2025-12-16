@@ -370,10 +370,7 @@ void GraphicsEngine3D::HandleShapeCreation(int x, int y) {
  * @param y 鼠标Y坐标（屏幕坐标）
  * 
  * 选择算法说明：
- * 1. 计算摄像机位置和视图/投影矩阵
- * 2. 将每个图形的世界坐标投影到屏幕空间
- * 3. 计算点击位置与投影后图形中心的距离
- * 4. 选择距离最近且在选择半径内的图形
+ * 使用与渲染代码完全相同的投影计算，确保选择准确
  */
 void GraphicsEngine3D::HandleSelection(int x, int y) {
     // 获取窗口尺寸
@@ -386,33 +383,40 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     
     float aspectRatio = (float)width / (float)height;
     
-    // 计算摄像机位置（球坐标转笛卡尔坐标）
+    // 透视投影参数（与渲染代码一致）
+    float fov = 45.0f;
+    float nearPlane = 0.1f;
+    float top = nearPlane * tanf(fov * (float)M_PI / 360.0f);
+    float right_proj = top * aspectRatio;
+    
+    // 计算摄像机位置（与渲染代码完全一致）
     float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
     float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
     float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
     
-    // 计算视图矩阵的基向量
+    // 计算视图矩阵的基向量（与渲染代码完全一致）
     float fx = camera.targetX - cameraX;
     float fy = camera.targetY - cameraY;
     float fz = camera.targetZ - cameraZ;
     float flen = sqrtf(fx*fx + fy*fy + fz*fz);
-    fx /= flen; fy /= flen; fz /= flen;
+    if (flen > 0.0001f) { fx /= flen; fy /= flen; fz /= flen; }
     
     float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
     float rx = fy * upZ - fz * upY;
     float ry = fz * upX - fx * upZ;
     float rz = fx * upY - fy * upX;
     float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
-    rx /= rlen; ry /= rlen; rz /= rlen;
+    if (rlen > 0.0001f) { rx /= rlen; ry /= rlen; rz /= rlen; }
     
     float ux = ry * fz - rz * fy;
     float uy = rz * fx - rx * fz;
     float uz = rx * fy - ry * fx;
     
-    // 透视投影参数
-    float fov = 45.0f;
-    float nearPlane = 0.1f;
-    float tanHalfFov = tanf(fov * (float)M_PI / 360.0f);
+    // 调试输出摄像机信息
+    char camDebug[256];
+    sprintf_s(camDebug, "摄像机: 位置(%.2f, %.2f, %.2f), 角度(%.1f, %.1f), 距离=%.1f", 
+              cameraX, cameraY, cameraZ, camera.angleX, camera.angleY, camera.distance);
+    OutputDebugStringA(camDebug);
     
     // 简单选择：找到距离点击位置最近的图形
     int closestShapeIndex = -1;
@@ -426,17 +430,24 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
         float dy = shape.positionY - cameraY;
         float dz = shape.positionZ - cameraZ;
         
-        // 在摄像机坐标系中的位置
-        float camSpaceX = rx * dx + ry * dy + rz * dz;
-        float camSpaceY = ux * dx + uy * dy + uz * dz;
-        float camSpaceZ = -(fx * dx + fy * dy + fz * dz);  // 摄像机看向-Z
+        // 在摄像机坐标系中的位置（与渲染代码的视图矩阵一致）
+        float eyeX = rx * dx + ry * dy + rz * dz;
+        float eyeY = ux * dx + uy * dy + uz * dz;
+        float eyeZ = -fx * dx - fy * dy - fz * dz;  // 注意：这里是负的前向向量
         
         // 如果在摄像机后面，跳过
-        if (camSpaceZ <= nearPlane) continue;
+        if (eyeZ <= nearPlane) {
+            char skipMsg[128];
+            sprintf_s(skipMsg, "图形 %zu: 在摄像机后面 (eyeZ=%.2f)", i, eyeZ);
+            OutputDebugStringA(skipMsg);
+            continue;
+        }
         
-        // 透视投影到NDC
-        float ndcX = camSpaceX / (camSpaceZ * tanHalfFov * aspectRatio);
-        float ndcY = camSpaceY / (camSpaceZ * tanHalfFov);
+        // 透视投影（与glFrustum一致）
+        // NDC_x = eyeX * nearPlane / (right_proj * eyeZ)
+        // NDC_y = eyeY * nearPlane / (top * eyeZ)
+        float ndcX = (eyeX * nearPlane) / (right_proj * eyeZ);
+        float ndcY = (eyeY * nearPlane) / (top * eyeZ);
         
         // NDC转屏幕坐标
         float screenX = (ndcX + 1.0f) * 0.5f * width;
@@ -447,13 +458,14 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
         float distY = (float)y - screenY;
         float distance = sqrtf(distX * distX + distY * distY);
         
-        // 选择容差（像素），根据距离调整
-        float selectionRadius = 80.0f;
+        // 选择容差（像素）
+        float selectionRadius = 100.0f;
         
         // 调试输出
         char debugMsg[256];
-        sprintf_s(debugMsg, "图形 %zu: 屏幕位置(%.1f, %.1f), 点击位置(%d, %d), 距离=%.1f", 
-                  i, screenX, screenY, x, y, distance);
+        sprintf_s(debugMsg, "图形 %zu: 世界(%.2f,%.2f,%.2f) 眼睛(%.2f,%.2f,%.2f) NDC(%.2f,%.2f) 屏幕(%.1f,%.1f) 点击(%d,%d) 距离=%.1f", 
+                  i, shape.positionX, shape.positionY, shape.positionZ,
+                  eyeX, eyeY, eyeZ, ndcX, ndcY, screenX, screenY, x, y, distance);
         OutputDebugStringA(debugMsg);
         
         // 如果在选择半径内且是最近的图形
@@ -476,7 +488,7 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
         
         // 调试输出
         char debugMsg[256];
-        sprintf_s(debugMsg, "选中图形 %d，位置 (%.2f, %.2f, %.2f)", 
+        sprintf_s(debugMsg, ">>> 选中图形 %d，位置 (%.2f, %.2f, %.2f)", 
                   closestShapeIndex, 
                   shapes[closestShapeIndex].positionX,
                   shapes[closestShapeIndex].positionY,
@@ -485,7 +497,7 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     } else {
         selectedShapeIndex = -1;
         hasSelection = false;
-        OutputDebugStringA("未选中任何图形");
+        OutputDebugStringA(">>> 未选中任何图形");
     }
 }
 
