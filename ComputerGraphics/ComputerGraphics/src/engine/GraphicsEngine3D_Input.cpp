@@ -430,12 +430,14 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
         float dy = shape.positionY - cameraY;
         float dz = shape.positionZ - cameraZ;
         
-        // 在摄像机坐标系中的位置（与渲染代码的视图矩阵一致）
+        // 在摄像机坐标系中的位置
+        // 注意：OpenGL摄像机看向-Z方向，所以eyeZ应该取正值表示在摄像机前面
         float eyeX = rx * dx + ry * dy + rz * dz;
         float eyeY = ux * dx + uy * dy + uz * dz;
-        float eyeZ = -fx * dx - fy * dy - fz * dz;  // 注意：这里是负的前向向量
+        // 前向向量指向目标，所以点积为正表示物体在摄像机前面
+        float eyeZ = fx * dx + fy * dy + fz * dz;
         
-        // 如果在摄像机后面，跳过
+        // 如果在摄像机后面（eyeZ <= 0），跳过
         if (eyeZ <= nearPlane) {
             char skipMsg[128];
             sprintf_s(skipMsg, "图形 %zu: 在摄像机后面 (eyeZ=%.2f)", i, eyeZ);
