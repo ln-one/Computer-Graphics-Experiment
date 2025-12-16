@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Point2D.h"
 #include <windows.h>
 #include <vector>

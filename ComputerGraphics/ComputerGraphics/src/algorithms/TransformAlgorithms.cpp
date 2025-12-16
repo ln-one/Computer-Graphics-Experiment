@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file TransformAlgorithms.cpp
  * @brief 二维几何变换算法实现
  * @author 计算机图形学项目组

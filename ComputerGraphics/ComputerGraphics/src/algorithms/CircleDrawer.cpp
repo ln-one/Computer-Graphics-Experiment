@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file CircleDrawer.cpp
  * @brief 圆形绘制算法实现
  * @author 计算机图形学项目组

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "../core/Shape3D.h"
 #include "../core/DrawMode.h"
 #include <windows.h>

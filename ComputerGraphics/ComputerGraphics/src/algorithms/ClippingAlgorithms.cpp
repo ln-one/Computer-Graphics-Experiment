@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file ClippingAlgorithms.cpp
  * @brief 图形裁剪算法实现
  * @author 计算机图形学项目组
