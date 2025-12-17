@@ -5,7 +5,7 @@
 /**
  * @file MeshGenerator.h
  * @brief 三维网格生成算法类
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 /**

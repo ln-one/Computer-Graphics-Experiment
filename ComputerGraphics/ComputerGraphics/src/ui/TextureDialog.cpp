@@ -1,7 +1,7 @@
 ﻿/**
  * @file TextureDialog.cpp
  * @brief 3D纹理设置对话框实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 实现了3D图形纹理设置对话框的功能，允许用户：
  * - 选择纹理贴图文件（支持BMP、JPG、PNG、TGA、GIF等格式）

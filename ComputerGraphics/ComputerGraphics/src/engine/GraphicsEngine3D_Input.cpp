@@ -15,7 +15,7 @@
  * 3. 视角控制模式：拖拽旋转视角，滚轮缩放
  * 4. Ctrl键：在任何模式下按住Ctrl可临时切换到视角控制
  * 
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 #include "GraphicsEngine3D.h"

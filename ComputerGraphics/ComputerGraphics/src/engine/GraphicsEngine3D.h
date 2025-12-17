@@ -7,7 +7,7 @@
 /**
  * @file GraphicsEngine3D.h
  * @brief 三维图形引擎类定义
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 /**

@@ -1,7 +1,7 @@
 ﻿/**
  * @file TransformAlgorithms.cpp
  * @brief 二维几何变换算法实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 本文件实现了三种基本的二维几何变换：
  * 1. 平移变换（Translation）

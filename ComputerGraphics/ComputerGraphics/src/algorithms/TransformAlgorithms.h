@@ -5,7 +5,7 @@
 /**
  * @file TransformAlgorithms.h
  * @brief 几何变换算法类定义
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 /**

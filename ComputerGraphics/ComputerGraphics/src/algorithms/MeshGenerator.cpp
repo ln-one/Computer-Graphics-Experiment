@@ -1,7 +1,7 @@
 ﻿/**
  * @file MeshGenerator.cpp
  * @brief 三维网格生成算法实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 本文件实现了四种基本三维几何体的网格生成：
  * 1. 立方体（Cube）- 6个面，24个顶点

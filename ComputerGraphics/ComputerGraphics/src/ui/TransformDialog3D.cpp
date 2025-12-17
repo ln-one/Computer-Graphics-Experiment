@@ -1,7 +1,7 @@
 ﻿/**
  * @file TransformDialog3D.cpp
  * @brief 3D变换参数编辑对话框实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 实现了3D图形变换参数编辑对话框的功能，允许用户精确设置：
  * - 位置参数（Position）：控制物体在3D空间中的位置（X, Y, Z坐标）

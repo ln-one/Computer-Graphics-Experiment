@@ -23,7 +23,7 @@
  * 
  * 最终颜色 = 环境光 + 漫反射 + 镜面反射
  * 
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 #include "GraphicsEngine3D.h"

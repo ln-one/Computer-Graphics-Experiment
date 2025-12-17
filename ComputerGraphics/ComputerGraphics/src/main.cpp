@@ -1,7 +1,7 @@
 ﻿/**
  * @file main.cpp
  * @brief 计算机图形学实验程序主入口
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 这是整个计算机图形学实验系统的主程序文件，负责：
  * - 创建和管理主窗口

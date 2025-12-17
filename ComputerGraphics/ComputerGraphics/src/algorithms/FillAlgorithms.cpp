@@ -1,7 +1,7 @@
 ﻿/**
  * @file FillAlgorithms.cpp
  * @brief 图形填充算法实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 本文件实现了两种经典的图形填充算法：
  * 1. 边界填充算法（Boundary Fill）- 基于种子点的区域填充

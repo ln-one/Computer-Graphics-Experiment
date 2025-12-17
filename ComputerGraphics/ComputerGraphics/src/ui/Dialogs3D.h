@@ -29,7 +29,7 @@
 /**
  * @file Dialogs3D.h
  * @brief 3D对话框类定义
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 定义了3D图形系统中使用的各种对话框类，包括变换参数编辑、
  * 光照设置、材质编辑和纹理设置对话框

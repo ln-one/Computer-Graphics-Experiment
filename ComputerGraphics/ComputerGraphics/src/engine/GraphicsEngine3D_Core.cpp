@@ -16,7 +16,7 @@
  * 5. 加载OpenGL扩展函数（现代OpenGL功能）
  * 6. 初始化着色器程序
  * 
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 #include "GraphicsEngine3D.h"

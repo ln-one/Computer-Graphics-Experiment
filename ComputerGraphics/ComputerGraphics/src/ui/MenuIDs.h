@@ -3,7 +3,7 @@
 /**
  * @file MenuIDs.h
  * @brief 菜单项ID定义
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 定义了应用程序中所有菜单项的唯一标识符
  * 按功能模块分组，便于管理和维护

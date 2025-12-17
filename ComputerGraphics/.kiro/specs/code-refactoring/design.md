@@ -280,7 +280,7 @@ classDiagram
 /**
  * @file 文件名.cpp
  * @brief 文件功能简述
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 详细说明（可选）
  */

@@ -1,7 +1,7 @@
 ﻿/**
  * @file CircleDrawer.cpp
  * @brief 圆形绘制算法实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 本文件实现了两种经典的圆形绘制算法：
  * 1. 中点圆算法（Midpoint Circle Algorithm）

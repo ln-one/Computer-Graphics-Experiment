@@ -1,7 +1,7 @@
 ﻿/**
  * @file LightingDialog.cpp
  * @brief 3D光照设置对话框实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 实现了3D场景光照参数设置对话框的功能，允许用户调整：
  * - 光源位置（Light Position）：控制光源在3D空间中的位置

@@ -21,7 +21,7 @@
 /**
  * @file Point2D.h
  * @brief 二维点数据结构定义
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  */
 
 /**

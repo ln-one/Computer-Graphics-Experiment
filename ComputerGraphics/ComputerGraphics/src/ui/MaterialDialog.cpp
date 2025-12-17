@@ -1,7 +1,7 @@
 ﻿/**
  * @file MaterialDialog.cpp
  * @brief 3D材质编辑对话框实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 实现了3D图形材质参数编辑对话框的功能，允许用户调整：
  * - 环境光反射系数（Ambient）：物体对环境光的反射能力

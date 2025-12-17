@@ -1,7 +1,7 @@
 ﻿/**
  * @file LineDrawer.cpp
  * @brief 直线绘制算法实现
- * @author 计算机图形学项目组
+ * @author ln1.opensource@gmail.com
  * 
  * 本文件实现了两种经典的直线绘制算法：
  * 1. DDA（数字微分分析器）算法 - 基于浮点增量计算
