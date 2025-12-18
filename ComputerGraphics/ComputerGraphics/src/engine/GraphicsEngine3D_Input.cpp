@@ -390,9 +390,11 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     float right_proj = top * aspectRatio;
     
     // 计算摄像机位置（与渲染代码完全一致）
-    float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
-    float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
-    float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
+    float radX = camera.angleX * (float)M_PI / 180.0f;
+    float radY = camera.angleY * (float)M_PI / 180.0f;
+    float cameraX = camera.targetX + camera.distance * cosf(radY) * sinf(radX);
+    float cameraY = camera.targetY + camera.distance * sinf(radY);
+    float cameraZ = camera.targetZ + camera.distance * cosf(radY) * cosf(radX);
     
     // 计算视图矩阵的基向量（与渲染代码完全一致）
     float fx = camera.targetX - cameraX;
