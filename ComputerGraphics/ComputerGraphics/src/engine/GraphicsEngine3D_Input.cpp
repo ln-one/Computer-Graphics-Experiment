@@ -397,19 +397,24 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     float cameraZ = camera.targetZ + camera.distance * cosf(radY) * cosf(radX);
     
     // 计算视图矩阵的基向量（与渲染代码完全一致）
+    // 前向向量：从摄像机指向目标
     float fx = camera.targetX - cameraX;
     float fy = camera.targetY - cameraY;
     float fz = camera.targetZ - cameraZ;
     float flen = sqrtf(fx*fx + fy*fy + fz*fz);
     if (flen > 0.0001f) { fx /= flen; fy /= flen; fz /= flen; }
     
-    float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
-    float rx = fy * upZ - fz * upY;
-    float ry = fz * upX - fx * upZ;
-    float rz = fx * upY - fy * upX;
+    // 世界上向量
+    float worldUpX = 0.0f, worldUpY = 1.0f, worldUpZ = 0.0f;
+    
+    // 右向量 = 前向 × 世界上向（与渲染代码一致）
+    float rx = fy * worldUpZ - fz * worldUpY;
+    float ry = fz * worldUpX - fx * worldUpZ;
+    float rz = fx * worldUpY - fy * worldUpX;
     float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
     if (rlen > 0.0001f) { rx /= rlen; ry /= rlen; rz /= rlen; }
     
+    // 真正的上向量 = 右向 × 前向（与渲染代码一致）
     float ux = ry * fz - rz * fy;
     float uy = rz * fx - rx * fz;
     float uz = rx * fy - ry * fx;
@@ -427,20 +432,23 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
     for (size_t i = 0; i < shapes.size(); i++) {
         const Shape3D& shape = shapes[i];
         
-        // 将图形位置从世界坐标转换到摄像机坐标
+        // 将图形位置从世界坐标转换到眼睛坐标
+        // 这与视图矩阵的变换一致
         float dx = shape.positionX - cameraX;
         float dy = shape.positionY - cameraY;
         float dz = shape.positionZ - cameraZ;
         
-        // 在摄像机坐标系中的位置
-        // 注意：OpenGL摄像机看向-Z方向，所以eyeZ应该取正值表示在摄像机前面
+        // 在眼睛坐标系中的位置（与视图矩阵变换一致）
+        // eyeX = dot(right, worldPos - cameraPos)
+        // eyeY = dot(up, worldPos - cameraPos)
+        // eyeZ = dot(-forward, worldPos - cameraPos) = -dot(forward, worldPos - cameraPos)
         float eyeX = rx * dx + ry * dy + rz * dz;
         float eyeY = ux * dx + uy * dy + uz * dz;
-        // 前向向量指向目标，所以点积为正表示物体在摄像机前面
-        float eyeZ = fx * dx + fy * dy + fz * dz;
+        float eyeZ = -(fx * dx + fy * dy + fz * dz);  // 注意：取负，因为眼睛空间Z轴指向摄像机后方
         
-        // 如果在摄像机后面（eyeZ <= 0），跳过
-        if (eyeZ <= nearPlane) {
+        // 如果在摄像机后面（eyeZ >= -nearPlane，因为眼睛空间中物体在-Z方向）
+        // 在眼睛空间中，摄像机看向-Z方向，所以物体的Z应该是负的
+        if (eyeZ >= -nearPlane) {
             char skipMsg[128];
             sprintf_s(skipMsg, "图形 %zu: 在摄像机后面 (eyeZ=%.2f)", i, eyeZ);
             OutputDebugStringA(skipMsg);
@@ -448,10 +456,12 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
         }
         
         // 透视投影（与glFrustum一致）
-        // NDC_x = eyeX * nearPlane / (right_proj * eyeZ)
-        // NDC_y = eyeY * nearPlane / (top * eyeZ)
-        float ndcX = (eyeX * nearPlane) / (right_proj * eyeZ);
-        float ndcY = (eyeY * nearPlane) / (top * eyeZ);
+        // 在眼睛空间中，物体Z是负的，投影公式：
+        // NDC_x = eyeX * nearPlane / (right_proj * (-eyeZ))
+        // NDC_y = eyeY * nearPlane / (top * (-eyeZ))
+        float depth = -eyeZ;  // 转换为正的深度值
+        float ndcX = (eyeX * nearPlane) / (right_proj * depth);
+        float ndcY = (eyeY * nearPlane) / (top * depth);
         
         // NDC转屏幕坐标
         float screenX = (ndcX + 1.0f) * 0.5f * width;
@@ -522,8 +532,10 @@ void GraphicsEngine3D::HandleSelection(int x, int y) {
  */
 void GraphicsEngine3D::HandleViewControl(int deltaX, int deltaY) {
     // 根据鼠标移动更新摄像机角度
-    camera.angleX += deltaX * 0.5f;  // 水平旋转
-    camera.angleY += deltaY * 0.5f;  // 垂直旋转
+    // 鼠标向右移动 -> angleX增加 -> 摄像机向右旋转（场景向左转）
+    // 鼠标向下移动 -> angleY减少 -> 摄像机向下看（更符合直觉）
+    camera.angleX += deltaX * 0.5f;   // 水平旋转
+    camera.angleY -= deltaY * 0.5f;   // 垂直旋转（取反，使鼠标下移时视角向下）
     
     // 限制垂直角度，防止摄像机翻转
     if (camera.angleY > 89.0f) camera.angleY = 89.0f;

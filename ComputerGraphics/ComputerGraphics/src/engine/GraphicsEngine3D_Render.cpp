@@ -344,18 +344,25 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     float upY = rightZ * forwardX - rightX * forwardZ;
     float upZ = rightX * forwardY - rightY * forwardX;
     
-    // 计算平移分量（点乘）
+    // 计算平移分量（将摄像机位置变换到眼睛空间原点）
     float tx = -(rightX * cameraX + rightY * cameraY + rightZ * cameraZ);
     float ty = -(upX * cameraX + upY * cameraY + upZ * cameraZ);
     float tz = (forwardX * cameraX + forwardY * cameraY + forwardZ * cameraZ);
     
     // 构建视图矩阵（lookAt矩阵）
-    // OpenGL使用列主序（column-major），数组按列存储
+    // OpenGL使用列主序（column-major）
+    // 矩阵布局（行主序表示）：
+    // | rightX   rightY   rightZ   tx |
+    // | upX      upY      upZ      ty |
+    // | -forwardX -forwardY -forwardZ tz |
+    // | 0        0        0        1  |
+    // 
+    // 列主序存储：先存第一列，再存第二列...
     float viewMatrix[16] = {
-        rightX,    upX,    -forwardX,  0.0f,  // 第一列
-        rightY,    upY,    -forwardY,  0.0f,  // 第二列
-        rightZ,    upZ,    -forwardZ,  0.0f,  // 第三列
-        tx,        ty,     tz,         1.0f   // 第四列
+        rightX,     rightY,     rightZ,     0.0f,  // 第一列
+        upX,        upY,        upZ,        0.0f,  // 第二列
+        -forwardX,  -forwardY,  -forwardZ,  0.0f,  // 第三列
+        tx,         ty,         tz,         1.0f   // 第四列
     };
     
     glLoadMatrixf(viewMatrix);
