@@ -331,8 +331,6 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
         1
     };
     
-    glMultMatrixf(viewMatrix);
-    
     // ========================================================================
     // 启用OpenGL固定管线光照
     // 实现Phong光照模型
@@ -348,9 +346,19 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     float globalAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
     
-    // 设置光源位置（w=1.0表示点光源，w=0.0表示方向光）
+    // 重要：在应用视图矩阵之前设置光源位置
+    // 这样光源位置就是在世界坐标系中，不会受摄像机变换影响
     float lightPos[] = {light.positionX, light.positionY, light.positionZ, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    
+    // 调试输出光源位置
+    char lightDebug[256];
+    sprintf_s(lightDebug, "光源位置: (%.2f, %.2f, %.2f)", 
+              light.positionX, light.positionY, light.positionZ);
+    OutputDebugStringA(lightDebug);
+    
+    // 现在应用视图矩阵
+    glMultMatrixf(viewMatrix);
     
     // 设置环境光分量（Ambient）
     // 环境光模拟间接光照，使物体在阴影中也可见
@@ -968,38 +976,51 @@ void GraphicsEngine3D::RenderGrid(int size, float spacing) {
     
     // 恢复OpenGL状态
     glPopAttrib();
-}/**
+}
 
+/**
  * @brief 渲染光源可视化
  * 
  * 在光源位置绘制一个小太阳图标，帮助用户了解光源位置。
  * 太阳图标由一个中心圆和周围的射线组成。
+ * 现在光源位置应该与实际光照效果一致。
  */
 void GraphicsEngine3D::RenderLightSource() {
     // 保存当前OpenGL状态
     glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
     glPushMatrix();
     
-    // 移动到光源位置
+    // 移动到光源位置（世界坐标系）
     glTranslatef(light.positionX, light.positionY, light.positionZ);
     
-    // 设置光源颜色（使用光源的颜色）
-    glColor3f(light.color[0], light.color[1], light.color[2]);
+    // 调试输出光源可视化位置
+    char lightVisDebug[256];
+    sprintf_s(lightVisDebug, "光源可视化位置: (%.2f, %.2f, %.2f)", 
+              light.positionX, light.positionY, light.positionZ);
+    OutputDebugStringA(lightVisDebug);
     
-    // 绘制中心圆球（太阳的核心）
-    glPointSize(12.0f);
+    // 设置光源颜色（使用光源的颜色，但增加亮度）
+    float brightColor[3] = {
+        fminf(light.color[0] * 1.5f, 1.0f),
+        fminf(light.color[1] * 1.5f, 1.0f),
+        fminf(light.color[2] * 1.5f, 1.0f)
+    };
+    glColor3f(brightColor[0], brightColor[1], brightColor[2]);
+    
+    // 绘制中心圆球（太阳的核心）- 更大更明显
+    glPointSize(16.0f);
     glBegin(GL_POINTS);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glEnd();
     
-    // 绘制太阳射线
-    glLineWidth(2.0f);
+    // 绘制太阳射线 - 更长更明显
+    glLineWidth(3.0f);
     glBegin(GL_LINES);
     
-    // 8个方向的射线
-    float rayLength = 0.3f;
+    // 12个方向的射线，更密集
+    float rayLength = 0.5f;
     
-    // 水平和垂直射线
+    // 主要方向射线
     glVertex3f(-rayLength, 0.0f, 0.0f); glVertex3f(rayLength, 0.0f, 0.0f);   // X轴
     glVertex3f(0.0f, -rayLength, 0.0f); glVertex3f(0.0f, rayLength, 0.0f);   // Y轴
     glVertex3f(0.0f, 0.0f, -rayLength); glVertex3f(0.0f, 0.0f, rayLength);   // Z轴
@@ -1013,20 +1034,40 @@ void GraphicsEngine3D::RenderLightSource() {
     glVertex3f(0.0f, -diag, -diag); glVertex3f(0.0f, diag, diag);
     glVertex3f(0.0f, -diag, diag); glVertex3f(0.0f, diag, -diag);
     
+    // 额外的射线，使太阳更明显
+    float shortRay = rayLength * 0.3f;
+    for (int i = 0; i < 8; i++) {
+        float angle = i * 45.0f * (float)M_PI / 180.0f;
+        float x = shortRay * cosf(angle);
+        float z = shortRay * sinf(angle);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(x, 0.0f, z);
+    }
+    
     glEnd();
     
-    // 绘制光源信息文本（使用简单的线条表示坐标）
-    glLineWidth(1.0f);
-    glColor3f(1.0f, 1.0f, 0.0f);  // 黄色文字
+    // 绘制一个围绕光源的小圆环，增加可见性
+    glLineWidth(2.0f);
+    glColor3f(1.0f, 1.0f, 0.0f);  // 黄色圆环
+    glBegin(GL_LINE_LOOP);
+    float circleRadius = 0.2f;
+    for (int i = 0; i < 16; i++) {
+        float angle = i * 2.0f * (float)M_PI / 16.0f;
+        float x = circleRadius * cosf(angle);
+        float z = circleRadius * sinf(angle);
+        glVertex3f(x, 0.0f, z);
+    }
+    glEnd();
     
-    // 在光源旁边显示坐标信息（简化表示）
+    // 在光源上方绘制一个小标识，表示这是光源
+    glColor3f(1.0f, 1.0f, 1.0f);  // 白色标识
+    glLineWidth(2.0f);
     glBegin(GL_LINES);
-    // 绘制一个小的坐标标识
-    float offset = 0.5f;
-    glVertex3f(offset, offset, 0.0f);
-    glVertex3f(offset + 0.2f, offset, 0.0f);
-    glVertex3f(offset, offset, 0.0f);
-    glVertex3f(offset, offset + 0.2f, 0.0f);
+    // 绘制一个简单的"L"形状表示Light
+    glVertex3f(-0.1f, 0.6f, 0.0f);
+    glVertex3f(-0.1f, 0.8f, 0.0f);
+    glVertex3f(-0.1f, 0.6f, 0.0f);
+    glVertex3f(0.1f, 0.6f, 0.0f);
     glEnd();
     
     glPopMatrix();
