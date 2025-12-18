@@ -90,7 +90,7 @@ GraphicsEngine3D::GraphicsEngine3D()
     : hwnd(NULL), hdc(NULL), hglrc(NULL), 
       currentMode(MODE_NONE), selectedShapeIndex(-1), hasSelection(false),
       lastMouseX(0), lastMouseY(0), isDragging(false), isRightDragging(false),
-      shaderProgram(0), isInitialized(false), showAxes(true), showGrid(true) {
+      shaderProgram(0), isInitialized(false), showAxes(true), showGrid(true), showLight(true) {
     
     // 初始化摄像机参数
     // 使用球坐标系统：distance为半径，angleX/Y为角度

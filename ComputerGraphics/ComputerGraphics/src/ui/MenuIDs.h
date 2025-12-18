@@ -66,6 +66,7 @@
 #define ID_3D_LIGHTING 61003                 ///< 3D光照设置
 #define ID_3D_SHOW_AXES 61004                ///< 显示/隐藏坐标轴
 #define ID_3D_SHOW_GRID 61005                ///< 显示/隐藏网格
+#define ID_3D_SHOW_LIGHT 61006               ///< 显示/隐藏光源
 
 // === 3D对话框ID ===
 #define IDD_TRANSFORM3D 70001                ///< 3D变换对话框

@@ -154,6 +154,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             AppendMenuW(h3DControlMenu, MF_SEPARATOR, 0, NULL);
             AppendMenuW(h3DControlMenu, MF_STRING | MF_CHECKED, ID_3D_SHOW_AXES, L"显示坐标轴(&A)");
             AppendMenuW(h3DControlMenu, MF_STRING | MF_CHECKED, ID_3D_SHOW_GRID, L"显示网格(&G)");
+            AppendMenuW(h3DControlMenu, MF_STRING | MF_CHECKED, ID_3D_SHOW_LIGHT, L"显示光源(&I)");
             AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)h3DControlMenu, L"3D控制(&O)");
             
             SetMenu(hwnd, hMenuBar);
@@ -429,6 +430,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     HMENU hMenu = GetMenu(hwnd);
                     CheckMenuItem(hMenu, ID_3D_SHOW_GRID, 
                                   g_engine3D.GetShowGrid() ? MF_CHECKED : MF_UNCHECKED);
+                    
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    break;
+                }
+                case ID_3D_SHOW_LIGHT: {
+                    // 切换光源显示状态
+                    bool showLight = g_engine3D.GetShowLight();
+                    g_engine3D.SetShowLight(!showLight);
+                    
+                    // 更新菜单项的选中状态
+                    HMENU hMenu = GetMenu(hwnd);
+                    CheckMenuItem(hMenu, ID_3D_SHOW_LIGHT, 
+                                  g_engine3D.GetShowLight() ? MF_CHECKED : MF_UNCHECKED);
                     
                     InvalidateRect(hwnd, NULL, FALSE);
                     break;

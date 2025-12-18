@@ -470,6 +470,11 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     if (showGrid) {
         RenderGrid();
     }
+    
+    // 渲染光源可视化（如果启用）
+    if (showLight) {
+        RenderLightSource();
+    }
 }
 
 
@@ -742,64 +747,118 @@ void GraphicsEngine3D::RenderPlaneImmediate(float width, float height) {
  * - Y轴：绿色，指向上方（正Y方向）
  * - Z轴：蓝色，指向前方（正Z方向）
  * 
- * 每个轴的长度为2个单位，从原点开始绘制。
- * 使用较粗的线条以便清晰可见。
+ * 每个轴的长度为3个单位，从原点开始绘制。
+ * 使用较粗的线条以便清晰可见，并添加箭头和标签。
  */
 void GraphicsEngine3D::RenderCoordinateAxes() {
     // 保存当前OpenGL状态
     glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT);
     
     // 设置线条宽度
+    glLineWidth(4.0f);
+    
+    // 开始绘制主轴线
+    glBegin(GL_LINES);
+    
+    // X轴 - 红色（右方向）
+    glColor3f(1.0f, 0.0f, 0.0f);  // 鲜红色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(3.0f, 0.0f, 0.0f);  // X正方向
+    
+    // Y轴 - 绿色（上方向）
+    glColor3f(0.0f, 1.0f, 0.0f);  // 鲜绿色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(0.0f, 3.0f, 0.0f);  // Y正方向
+    
+    // Z轴 - 蓝色（前方向）
+    glColor3f(0.0f, 0.0f, 1.0f);  // 鲜蓝色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(0.0f, 0.0f, 3.0f);  // Z正方向
+    
+    glEnd();
+    
+    // 绘制更明显的箭头
     glLineWidth(3.0f);
     
-    // 开始绘制线条
-    glBegin(GL_LINES);
-    
-    // X轴 - 红色
-    glColor3f(1.0f, 0.0f, 0.0f);  // 红色
-    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
-    glVertex3f(2.0f, 0.0f, 0.0f);  // X正方向
-    
-    // Y轴 - 绿色
-    glColor3f(0.0f, 1.0f, 0.0f);  // 绿色
-    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
-    glVertex3f(0.0f, 2.0f, 0.0f);  // Y正方向
-    
-    // Z轴 - 蓝色
-    glColor3f(0.0f, 0.0f, 1.0f);  // 蓝色
-    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
-    glVertex3f(0.0f, 0.0f, 2.0f);  // Z正方向
-    
-    glEnd();
-    
-    // 绘制坐标轴标签（简单的字母标识）
-    // 在每个轴的末端绘制小的标识线来表示轴的方向
-    
-    // X轴箭头（简化为小线段）
+    // X轴箭头（红色）
     glColor3f(1.0f, 0.0f, 0.0f);
     glBegin(GL_LINES);
-    glVertex3f(1.8f, 0.1f, 0.0f);
-    glVertex3f(2.0f, 0.0f, 0.0f);
-    glVertex3f(1.8f, -0.1f, 0.0f);
-    glVertex3f(2.0f, 0.0f, 0.0f);
+    // 箭头的两个分支
+    glVertex3f(2.7f, 0.15f, 0.0f);
+    glVertex3f(3.0f, 0.0f, 0.0f);
+    glVertex3f(2.7f, -0.15f, 0.0f);
+    glVertex3f(3.0f, 0.0f, 0.0f);
+    glVertex3f(2.7f, 0.0f, 0.15f);
+    glVertex3f(3.0f, 0.0f, 0.0f);
+    glVertex3f(2.7f, 0.0f, -0.15f);
+    glVertex3f(3.0f, 0.0f, 0.0f);
     glEnd();
     
-    // Y轴箭头
+    // Y轴箭头（绿色）
     glColor3f(0.0f, 1.0f, 0.0f);
     glBegin(GL_LINES);
-    glVertex3f(0.1f, 1.8f, 0.0f);
-    glVertex3f(0.0f, 2.0f, 0.0f);
-    glVertex3f(-0.1f, 1.8f, 0.0f);
-    glVertex3f(0.0f, 2.0f, 0.0f);
+    glVertex3f(0.15f, 2.7f, 0.0f);
+    glVertex3f(0.0f, 3.0f, 0.0f);
+    glVertex3f(-0.15f, 2.7f, 0.0f);
+    glVertex3f(0.0f, 3.0f, 0.0f);
+    glVertex3f(0.0f, 2.7f, 0.15f);
+    glVertex3f(0.0f, 3.0f, 0.0f);
+    glVertex3f(0.0f, 2.7f, -0.15f);
+    glVertex3f(0.0f, 3.0f, 0.0f);
     glEnd();
     
-    // Z轴箭头
+    // Z轴箭头（蓝色）
     glColor3f(0.0f, 0.0f, 1.0f);
     glBegin(GL_LINES);
-    glVertex3f(0.0f, 0.1f, 1.8f);
-    glVertex3f(0.0f, 0.0f, 2.0f);
-    glVertex3f(0.0f, -0.1f, 1.8f);
-    glVertex3f(0.0f, 0.0f, 2.0f);
+    glVertex3f(0.15f, 0.0f, 2.7f);
+    glVertex3f(0.0f, 0.0f, 3.0f);
+    glVertex3f(-0.15f, 0.0f, 2.7f);
+    glVertex3f(0.0f, 0.0f, 3.0f);
+    glVertex3f(0.0f, 0.15f, 2.7f);
+    glVertex3f(0.0f, 0.0f, 3.0f);
+    glVertex3f(0.0f, -0.15f, 2.7f);
+    glVertex3f(0.0f, 0.0f, 3.0f);
+    glEnd();
+    
+    // 绘制轴标签（使用简单的几何图形表示X、Y、Z）
+    glLineWidth(2.0f);
+    
+    // X轴标签（在轴末端绘制"X"形状）
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex3f(3.2f, 0.1f, 0.1f);
+    glVertex3f(3.4f, -0.1f, -0.1f);
+    glVertex3f(3.2f, -0.1f, -0.1f);
+    glVertex3f(3.4f, 0.1f, 0.1f);
+    glEnd();
+    
+    // Y轴标签（在轴末端绘制"Y"形状）
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 3.2f, 0.0f);
+    glVertex3f(0.0f, 3.3f, 0.0f);
+    glVertex3f(-0.1f, 3.4f, 0.0f);
+    glVertex3f(0.0f, 3.3f, 0.0f);
+    glVertex3f(0.1f, 3.4f, 0.0f);
+    glVertex3f(0.0f, 3.3f, 0.0f);
+    glEnd();
+    
+    // Z轴标签（在轴末端绘制"Z"形状）
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glBegin(GL_LINES);
+    glVertex3f(-0.1f, 0.1f, 3.2f);
+    glVertex3f(0.1f, 0.1f, 3.2f);
+    glVertex3f(0.1f, 0.1f, 3.2f);
+    glVertex3f(-0.1f, -0.1f, 3.2f);
+    glVertex3f(-0.1f, -0.1f, 3.2f);
+    glVertex3f(0.1f, -0.1f, 3.2f);
+    glEnd();
+    
+    // 在原点绘制一个小球表示坐标原点
+    glColor3f(1.0f, 1.0f, 1.0f);  // 白色
+    glPointSize(8.0f);
+    glBegin(GL_POINTS);
+    glVertex3f(0.0f, 0.0f, 0.0f);
     glEnd();
     
     // 恢复OpenGL状态
@@ -818,6 +877,7 @@ void GraphicsEngine3D::RenderCoordinateAxes() {
  * 网格特点：
  * - 主轴线（X=0和Z=0）使用较深的颜色
  * - 其他网格线使用较浅的颜色
+ * - 添加刻度标识帮助用户读取坐标
  * - 所有线条都在Y=0平面上
  */
 void GraphicsEngine3D::RenderGrid(int size, float spacing) {
@@ -838,10 +898,14 @@ void GraphicsEngine3D::RenderGrid(int size, float spacing) {
         
         if (i == 0) {
             // 主轴线（Z=0）使用较深的颜色
-            glColor3f(0.5f, 0.5f, 0.5f);
+            glColor3f(0.6f, 0.6f, 0.6f);
+            glLineWidth(2.0f);
+        } else if (i % 5 == 0) {
+            // 每5格的线条使用中等颜色
+            glColor3f(0.4f, 0.4f, 0.4f);
         } else {
             // 普通网格线使用较浅的颜色
-            glColor3f(0.3f, 0.3f, 0.3f);
+            glColor3f(0.25f, 0.25f, 0.25f);
         }
         
         glVertex3f(-halfSize, 0.0f, z);
@@ -854,10 +918,14 @@ void GraphicsEngine3D::RenderGrid(int size, float spacing) {
         
         if (i == 0) {
             // 主轴线（X=0）使用较深的颜色
-            glColor3f(0.5f, 0.5f, 0.5f);
+            glColor3f(0.6f, 0.6f, 0.6f);
+            glLineWidth(2.0f);
+        } else if (i % 5 == 0) {
+            // 每5格的线条使用中等颜色
+            glColor3f(0.4f, 0.4f, 0.4f);
         } else {
             // 普通网格线使用较浅的颜色
-            glColor3f(0.3f, 0.3f, 0.3f);
+            glColor3f(0.25f, 0.25f, 0.25f);
         }
         
         glVertex3f(x, 0.0f, -halfSize);
@@ -866,6 +934,101 @@ void GraphicsEngine3D::RenderGrid(int size, float spacing) {
     
     glEnd();
     
+    // 绘制刻度标识
+    glLineWidth(2.0f);
+    glColor3f(0.7f, 0.7f, 0.7f);
+    
+    glBegin(GL_LINES);
+    
+    // 在X轴上绘制刻度标识
+    for (int i = -size/2; i <= size/2; i++) {
+        if (i != 0 && i % 5 == 0) {  // 每5个单位绘制一个刻度
+            float x = i * spacing;
+            glVertex3f(x, 0.0f, -0.1f);
+            glVertex3f(x, 0.0f, 0.1f);
+            // 添加垂直的小标识
+            glVertex3f(x, 0.0f, 0.0f);
+            glVertex3f(x, 0.05f, 0.0f);
+        }
+    }
+    
+    // 在Z轴上绘制刻度标识
+    for (int i = -size/2; i <= size/2; i++) {
+        if (i != 0 && i % 5 == 0) {  // 每5个单位绘制一个刻度
+            float z = i * spacing;
+            glVertex3f(-0.1f, 0.0f, z);
+            glVertex3f(0.1f, 0.0f, z);
+            // 添加垂直的小标识
+            glVertex3f(0.0f, 0.0f, z);
+            glVertex3f(0.0f, 0.05f, z);
+        }
+    }
+    
+    glEnd();
+    
     // 恢复OpenGL状态
+    glPopAttrib();
+}/**
+
+ * @brief 渲染光源可视化
+ * 
+ * 在光源位置绘制一个小太阳图标，帮助用户了解光源位置。
+ * 太阳图标由一个中心圆和周围的射线组成。
+ */
+void GraphicsEngine3D::RenderLightSource() {
+    // 保存当前OpenGL状态
+    glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
+    glPushMatrix();
+    
+    // 移动到光源位置
+    glTranslatef(light.positionX, light.positionY, light.positionZ);
+    
+    // 设置光源颜色（使用光源的颜色）
+    glColor3f(light.color[0], light.color[1], light.color[2]);
+    
+    // 绘制中心圆球（太阳的核心）
+    glPointSize(12.0f);
+    glBegin(GL_POINTS);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glEnd();
+    
+    // 绘制太阳射线
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    
+    // 8个方向的射线
+    float rayLength = 0.3f;
+    
+    // 水平和垂直射线
+    glVertex3f(-rayLength, 0.0f, 0.0f); glVertex3f(rayLength, 0.0f, 0.0f);   // X轴
+    glVertex3f(0.0f, -rayLength, 0.0f); glVertex3f(0.0f, rayLength, 0.0f);   // Y轴
+    glVertex3f(0.0f, 0.0f, -rayLength); glVertex3f(0.0f, 0.0f, rayLength);   // Z轴
+    
+    // 对角线射线
+    float diag = rayLength * 0.707f;  // sqrt(2)/2
+    glVertex3f(-diag, -diag, 0.0f); glVertex3f(diag, diag, 0.0f);
+    glVertex3f(-diag, diag, 0.0f); glVertex3f(diag, -diag, 0.0f);
+    glVertex3f(-diag, 0.0f, -diag); glVertex3f(diag, 0.0f, diag);
+    glVertex3f(-diag, 0.0f, diag); glVertex3f(diag, 0.0f, -diag);
+    glVertex3f(0.0f, -diag, -diag); glVertex3f(0.0f, diag, diag);
+    glVertex3f(0.0f, -diag, diag); glVertex3f(0.0f, diag, -diag);
+    
+    glEnd();
+    
+    // 绘制光源信息文本（使用简单的线条表示坐标）
+    glLineWidth(1.0f);
+    glColor3f(1.0f, 1.0f, 0.0f);  // 黄色文字
+    
+    // 在光源旁边显示坐标信息（简化表示）
+    glBegin(GL_LINES);
+    // 绘制一个小的坐标标识
+    float offset = 0.5f;
+    glVertex3f(offset, offset, 0.0f);
+    glVertex3f(offset + 0.2f, offset, 0.0f);
+    glVertex3f(offset, offset, 0.0f);
+    glVertex3f(offset, offset + 0.2f, 0.0f);
+    glEnd();
+    
+    glPopMatrix();
     glPopAttrib();
 }

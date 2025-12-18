@@ -241,6 +241,25 @@ public:
      */
     bool GetShowGrid() const { return showGrid; }
     
+    /**
+     * @brief 渲染光源可视化
+     * 
+     * 在光源位置绘制一个小太阳图标，帮助用户了解光源位置
+     */
+    void RenderLightSource();
+    
+    /**
+     * @brief 设置是否显示光源
+     * @param show 是否显示光源可视化
+     */
+    void SetShowLight(bool show) { showLight = show; }
+    
+    /**
+     * @brief 获取是否显示光源
+     * @return 是否显示光源可视化
+     */
+    bool GetShowLight() const { return showLight; }
+    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄
@@ -269,6 +288,7 @@ private:
     // === 显示选项 ===
     bool showAxes;                        ///< 是否显示坐标轴
     bool showGrid;                        ///< 是否显示网格
+    bool showLight;                       ///< 是否显示光源可视化
     
     // === 私有辅助方法 ===
     /**
