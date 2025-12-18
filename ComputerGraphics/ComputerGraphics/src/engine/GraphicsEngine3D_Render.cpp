@@ -345,8 +345,8 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     float globalAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
     
-    // 在视图矩阵之后设置光源位置，光源位置在世界坐标系中
-    float lightPos[] = {light.positionX, light.positionY, light.positionZ, 1.0f};
+    // 设置光源位置 - 取反以修正光照方向
+    float lightPos[] = {-light.positionX, -light.positionY, -light.positionZ, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     
     // 设置环境光分量（Ambient）
@@ -974,7 +974,8 @@ void GraphicsEngine3D::RenderLightSource() {
     glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
     glPushMatrix();
     
-    glTranslatef(light.positionX, light.positionY, light.positionZ);
+    // 光源实际位置（取反后的位置）
+    glTranslatef(-light.positionX, -light.positionY, -light.positionZ);
     
     // 黄色太阳
     glColor3f(1.0f, 1.0f, 0.0f);
