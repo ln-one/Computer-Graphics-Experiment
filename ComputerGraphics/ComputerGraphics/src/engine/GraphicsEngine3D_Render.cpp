@@ -292,61 +292,77 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     glLoadIdentity();
     
     // 计算摄像机位置（球坐标转笛卡尔坐标）
-    // 摄像机绕目标点旋转，距离由camera.distance控制
-    float cameraX = camera.targetX + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * cosf(camera.angleX * (float)M_PI / 180.0f);
-    float cameraY = camera.targetY + camera.distance * sinf(camera.angleY * (float)M_PI / 180.0f);
-    float cameraZ = camera.targetZ + camera.distance * cosf(camera.angleY * (float)M_PI / 180.0f) * sinf(camera.angleX * (float)M_PI / 180.0f);
-    
-    // 手动计算视图矩阵（lookAt矩阵）
-    // 因为gluLookAt可能不可用，所以手动实现
-    
-    // 计算前向向量（从摄像机指向目标）
-    float fx = camera.targetX - cameraX;
-    float fy = camera.targetY - cameraY;
-    float fz = camera.targetZ - cameraZ;
-    float flen = sqrtf(fx*fx + fy*fy + fz*fz);
-    fx /= flen; fy /= flen; fz /= flen;
-    
-    // 计算右向量（前向 × 上向）
-    float upX = 0.0f, upY = 1.0f, upZ = 0.0f;
-    float rx = fy * upZ - fz * upY;
-    float ry = fz * upX - fx * upZ;
-    float rz = fx * upY - fy * upX;
-    float rlen = sqrtf(rx*rx + ry*ry + rz*rz);
-    rx /= rlen; ry /= rlen; rz /= rlen;
-    
-    // 计算真正的上向量（右向 × 前向）
-    float ux = ry * fz - rz * fy;
-    float uy = rz * fx - rx * fz;
-    float uz = rx * fy - ry * fx;
-    
-    // 构建视图矩阵（列主序）
-    float viewMatrix[16] = {
-        rx, ux, -fx, 0,
-        ry, uy, -fy, 0,
-        rz, uz, -fz, 0,
-        -(rx*cameraX + ry*cameraY + rz*cameraZ),
-        -(ux*cameraX + uy*cameraY + uz*cameraZ),
-        -(-fx*cameraX + -fy*cameraY + -fz*cameraZ),
-        1
-    };
-    
-    // 先应用视图矩阵
-    glMultMatrixf(viewMatrix);
+    float radX = camera.angleX * (float)M_PI / 180.0f;
+    float radY = camera.angleY * (float)M_PI / 180.0f;
+    float cameraX = camera.targetX + camera.distance * cosf(radY) * sinf(radX);
+    float cameraY = camera.targetY + camera.distance * sinf(radY);
+    float cameraZ = camera.targetZ + camera.distance * cosf(radY) * cosf(radX);
     
     // ========================================================================
-    // 启用OpenGL固定管线光照
+    // 在设置视图矩阵之前，先设置光源位置（世界坐标系）
+    // 这样光源位置就是固定在世界空间中的
     // ========================================================================
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     
     float globalAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
     
-    // 设置光源位置 - 取反以修正光照方向
-    float lightPos[] = {-light.positionX, -light.positionY, -light.positionZ, 1.0f};
+    // 使用gluLookAt风格的视图矩阵
+    // 计算摄像机的前向、右向、上向向量
+    float forwardX = camera.targetX - cameraX;
+    float forwardY = camera.targetY - cameraY;
+    float forwardZ = camera.targetZ - cameraZ;
+    
+    // 归一化前向向量
+    float forwardLen = sqrtf(forwardX * forwardX + forwardY * forwardY + forwardZ * forwardZ);
+    if (forwardLen > 0.0001f) {
+        forwardX /= forwardLen;
+        forwardY /= forwardLen;
+        forwardZ /= forwardLen;
+    }
+    
+    // 世界上向量
+    float worldUpX = 0.0f, worldUpY = 1.0f, worldUpZ = 0.0f;
+    
+    // 右向量 = 前向 × 上向
+    float rightX = forwardY * worldUpZ - forwardZ * worldUpY;
+    float rightY = forwardZ * worldUpX - forwardX * worldUpZ;
+    float rightZ = forwardX * worldUpY - forwardY * worldUpX;
+    
+    // 归一化右向量
+    float rightLen = sqrtf(rightX * rightX + rightY * rightY + rightZ * rightZ);
+    if (rightLen > 0.0001f) {
+        rightX /= rightLen;
+        rightY /= rightLen;
+        rightZ /= rightLen;
+    }
+    
+    // 真正的上向量 = 右向 × 前向
+    float upX = rightY * forwardZ - rightZ * forwardY;
+    float upY = rightZ * forwardX - rightX * forwardZ;
+    float upZ = rightX * forwardY - rightY * forwardX;
+    
+    // 计算平移分量（点乘）
+    float tx = -(rightX * cameraX + rightY * cameraY + rightZ * cameraZ);
+    float ty = -(upX * cameraX + upY * cameraY + upZ * cameraZ);
+    float tz = (forwardX * cameraX + forwardY * cameraY + forwardZ * cameraZ);
+    
+    // 构建视图矩阵（lookAt矩阵）
+    // OpenGL使用列主序（column-major），数组按列存储
+    float viewMatrix[16] = {
+        rightX,    upX,    -forwardX,  0.0f,  // 第一列
+        rightY,    upY,    -forwardY,  0.0f,  // 第二列
+        rightZ,    upZ,    -forwardZ,  0.0f,  // 第三列
+        tx,        ty,     tz,         1.0f   // 第四列
+    };
+    
+    glLoadMatrixf(viewMatrix);
+    
+    // 设置光源位置（在视图矩阵设置后，光源位置会被变换到眼睛空间）
+    // 使用w=1.0表示点光源（位置光源）
+    float lightPos[] = {light.positionX, light.positionY, light.positionZ, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     
     // 设置环境光分量（Ambient）
@@ -378,6 +394,12 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
         1.0f
     };
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+    
+    // 设置光照模型参数
+    // GL_LIGHT_MODEL_LOCAL_VIEWER: 使用局部观察者模型，镜面反射更准确
+    // GL_LIGHT_MODEL_TWO_SIDE: 双面光照，背面也能正确计算光照
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     
     // ========================================================================
     // 渲染所有3D图形
