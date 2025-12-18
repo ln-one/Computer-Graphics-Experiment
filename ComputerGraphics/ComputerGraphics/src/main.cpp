@@ -151,6 +151,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             AppendMenuW(h3DControlMenu, MF_STRING, ID_3D_SELECT, L"选择(&S)");
             AppendMenuW(h3DControlMenu, MF_STRING, ID_3D_VIEW_CONTROL, L"视角控制(&V)");
             AppendMenuW(h3DControlMenu, MF_STRING, ID_3D_LIGHTING, L"光照设置(&L)");
+            AppendMenuW(h3DControlMenu, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(h3DControlMenu, MF_STRING | MF_CHECKED, ID_3D_SHOW_AXES, L"显示坐标轴(&A)");
+            AppendMenuW(h3DControlMenu, MF_STRING | MF_CHECKED, ID_3D_SHOW_GRID, L"显示网格(&G)");
             AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)h3DControlMenu, L"3D控制(&O)");
             
             SetMenu(hwnd, hMenuBar);
@@ -402,6 +405,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         g_engine3D.UpdateLight();
                         InvalidateRect(hwnd, NULL, FALSE);
                     }
+                    break;
+                }
+                case ID_3D_SHOW_AXES: {
+                    // 切换坐标轴显示状态
+                    bool showAxes = g_engine3D.GetShowAxes();
+                    g_engine3D.SetShowAxes(!showAxes);
+                    
+                    // 更新菜单项的选中状态
+                    HMENU hMenu = GetMenu(hwnd);
+                    CheckMenuItem(hMenu, ID_3D_SHOW_AXES, 
+                                  g_engine3D.GetShowAxes() ? MF_CHECKED : MF_UNCHECKED);
+                    
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    break;
+                }
+                case ID_3D_SHOW_GRID: {
+                    // 切换网格显示状态
+                    bool showGrid = g_engine3D.GetShowGrid();
+                    g_engine3D.SetShowGrid(!showGrid);
+                    
+                    // 更新菜单项的选中状态
+                    HMENU hMenu = GetMenu(hwnd);
+                    CheckMenuItem(hMenu, ID_3D_SHOW_GRID, 
+                                  g_engine3D.GetShowGrid() ? MF_CHECKED : MF_UNCHECKED);
+                    
+                    InvalidateRect(hwnd, NULL, FALSE);
                     break;
                 }
             }

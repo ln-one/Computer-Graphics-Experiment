@@ -198,6 +198,49 @@ public:
      */
     void RenderPlaneImmediate(float width, float height);
     
+    /**
+     * @brief 渲染坐标轴
+     * 
+     * 绘制X、Y、Z三个坐标轴，帮助用户确定方向：
+     * - X轴：红色，指向右方
+     * - Y轴：绿色，指向上方  
+     * - Z轴：蓝色，指向前方
+     */
+    void RenderCoordinateAxes();
+    
+    /**
+     * @brief 渲染网格
+     * 
+     * 在XZ平面上绘制网格，帮助用户判断位置和距离
+     * @param size 网格大小（每边的格子数）
+     * @param spacing 网格间距
+     */
+    void RenderGrid(int size = 10, float spacing = 1.0f);
+    
+    /**
+     * @brief 设置是否显示坐标轴
+     * @param show 是否显示坐标轴
+     */
+    void SetShowAxes(bool show) { showAxes = show; }
+    
+    /**
+     * @brief 设置是否显示网格
+     * @param show 是否显示网格
+     */
+    void SetShowGrid(bool show) { showGrid = show; }
+    
+    /**
+     * @brief 获取是否显示坐标轴
+     * @return 是否显示坐标轴
+     */
+    bool GetShowAxes() const { return showAxes; }
+    
+    /**
+     * @brief 获取是否显示网格
+     * @return 是否显示网格
+     */
+    bool GetShowGrid() const { return showGrid; }
+    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄
@@ -222,6 +265,10 @@ private:
     // === OpenGL资源 ===
     unsigned int shaderProgram;           ///< 着色器程序ID
     bool isInitialized;                   ///< OpenGL初始化标志
+    
+    // === 显示选项 ===
+    bool showAxes;                        ///< 是否显示坐标轴
+    bool showGrid;                        ///< 是否显示网格
     
     // === 私有辅助方法 ===
     /**

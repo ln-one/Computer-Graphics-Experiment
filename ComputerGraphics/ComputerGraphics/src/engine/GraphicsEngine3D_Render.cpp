@@ -454,8 +454,22 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
         glPopMatrix();  // 恢复矩阵
     }
     
-    // 禁用光照
+    // ========================================================================
+    // 渲染坐标轴和网格（不受光照影响）
+    // ========================================================================
+    
+    // 禁用光照，确保坐标轴和网格以固定颜色显示
     glDisable(GL_LIGHTING);
+    
+    // 渲染坐标轴（如果启用）
+    if (showAxes) {
+        RenderCoordinateAxes();
+    }
+    
+    // 渲染网格（如果启用）
+    if (showGrid) {
+        RenderGrid();
+    }
 }
 
 
@@ -715,4 +729,143 @@ void GraphicsEngine3D::RenderPlaneImmediate(float width, float height) {
     glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfWidth, 0.0f, halfHeight);
     
     glEnd();
+}
+// ============================================================================
+// 坐标轴和网格渲染函数
+// ============================================================================
+
+/**
+ * @brief 渲染坐标轴
+ * 
+ * 绘制X、Y、Z三个坐标轴，帮助用户确定方向：
+ * - X轴：红色，指向右方（正X方向）
+ * - Y轴：绿色，指向上方（正Y方向）
+ * - Z轴：蓝色，指向前方（正Z方向）
+ * 
+ * 每个轴的长度为2个单位，从原点开始绘制。
+ * 使用较粗的线条以便清晰可见。
+ */
+void GraphicsEngine3D::RenderCoordinateAxes() {
+    // 保存当前OpenGL状态
+    glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT);
+    
+    // 设置线条宽度
+    glLineWidth(3.0f);
+    
+    // 开始绘制线条
+    glBegin(GL_LINES);
+    
+    // X轴 - 红色
+    glColor3f(1.0f, 0.0f, 0.0f);  // 红色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(2.0f, 0.0f, 0.0f);  // X正方向
+    
+    // Y轴 - 绿色
+    glColor3f(0.0f, 1.0f, 0.0f);  // 绿色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(0.0f, 2.0f, 0.0f);  // Y正方向
+    
+    // Z轴 - 蓝色
+    glColor3f(0.0f, 0.0f, 1.0f);  // 蓝色
+    glVertex3f(0.0f, 0.0f, 0.0f);  // 原点
+    glVertex3f(0.0f, 0.0f, 2.0f);  // Z正方向
+    
+    glEnd();
+    
+    // 绘制坐标轴标签（简单的字母标识）
+    // 在每个轴的末端绘制小的标识线来表示轴的方向
+    
+    // X轴箭头（简化为小线段）
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex3f(1.8f, 0.1f, 0.0f);
+    glVertex3f(2.0f, 0.0f, 0.0f);
+    glVertex3f(1.8f, -0.1f, 0.0f);
+    glVertex3f(2.0f, 0.0f, 0.0f);
+    glEnd();
+    
+    // Y轴箭头
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex3f(0.1f, 1.8f, 0.0f);
+    glVertex3f(0.0f, 2.0f, 0.0f);
+    glVertex3f(-0.1f, 1.8f, 0.0f);
+    glVertex3f(0.0f, 2.0f, 0.0f);
+    glEnd();
+    
+    // Z轴箭头
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 0.1f, 1.8f);
+    glVertex3f(0.0f, 0.0f, 2.0f);
+    glVertex3f(0.0f, -0.1f, 1.8f);
+    glVertex3f(0.0f, 0.0f, 2.0f);
+    glEnd();
+    
+    // 恢复OpenGL状态
+    glPopAttrib();
+}
+
+/**
+ * @brief 渲染网格
+ * 
+ * 在XZ平面上绘制网格，帮助用户判断位置和距离。
+ * 网格以原点为中心，向四个方向延伸。
+ * 
+ * @param size 网格大小（每边的格子数，默认10）
+ * @param spacing 网格间距（默认1.0单位）
+ * 
+ * 网格特点：
+ * - 主轴线（X=0和Z=0）使用较深的颜色
+ * - 其他网格线使用较浅的颜色
+ * - 所有线条都在Y=0平面上
+ */
+void GraphicsEngine3D::RenderGrid(int size, float spacing) {
+    // 保存当前OpenGL状态
+    glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT);
+    
+    // 设置线条宽度
+    glLineWidth(1.0f);
+    
+    // 计算网格范围
+    float halfSize = size * spacing * 0.5f;
+    
+    glBegin(GL_LINES);
+    
+    // 绘制平行于X轴的线条（沿Z方向）
+    for (int i = -size/2; i <= size/2; i++) {
+        float z = i * spacing;
+        
+        if (i == 0) {
+            // 主轴线（Z=0）使用较深的颜色
+            glColor3f(0.5f, 0.5f, 0.5f);
+        } else {
+            // 普通网格线使用较浅的颜色
+            glColor3f(0.3f, 0.3f, 0.3f);
+        }
+        
+        glVertex3f(-halfSize, 0.0f, z);
+        glVertex3f(halfSize, 0.0f, z);
+    }
+    
+    // 绘制平行于Z轴的线条（沿X方向）
+    for (int i = -size/2; i <= size/2; i++) {
+        float x = i * spacing;
+        
+        if (i == 0) {
+            // 主轴线（X=0）使用较深的颜色
+            glColor3f(0.5f, 0.5f, 0.5f);
+        } else {
+            // 普通网格线使用较浅的颜色
+            glColor3f(0.3f, 0.3f, 0.3f);
+        }
+        
+        glVertex3f(x, 0.0f, -halfSize);
+        glVertex3f(x, 0.0f, halfSize);
+    }
+    
+    glEnd();
+    
+    // 恢复OpenGL状态
+    glPopAttrib();
 }

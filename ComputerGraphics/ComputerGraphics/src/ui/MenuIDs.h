@@ -64,6 +64,8 @@
 #define ID_3D_SELECT 61001                   ///< 3D图形选择模式
 #define ID_3D_VIEW_CONTROL 61002             ///< 3D视角控制模式
 #define ID_3D_LIGHTING 61003                 ///< 3D光照设置
+#define ID_3D_SHOW_AXES 61004                ///< 显示/隐藏坐标轴
+#define ID_3D_SHOW_GRID 61005                ///< 显示/隐藏网格
 
 // === 3D对话框ID ===
 #define IDD_TRANSFORM3D 70001                ///< 3D变换对话框
