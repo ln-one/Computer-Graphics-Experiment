@@ -491,51 +491,51 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
  * - 顶点位置
  */
 void GraphicsEngine3D::RenderCubeImmediate(float size) {
-    float halfSize = size * 0.5f;
+    float h = size * 0.5f;
     
     glBegin(GL_QUADS);
     
-    // 前面 (Z+)
-    glNormal3f(0.0f, 0.0f, 1.0f);  // 法线指向Z正方向
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfSize, -halfSize,  halfSize);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f( halfSize, -halfSize,  halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f( halfSize,  halfSize,  halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfSize,  halfSize,  halfSize);
+    // 前面 (Z+) - 从前面看逆时针
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(-h, -h,  h);
+    glVertex3f( h, -h,  h);
+    glVertex3f( h,  h,  h);
+    glVertex3f(-h,  h,  h);
     
-    // 后面 (Z-)
-    glNormal3f(0.0f, 0.0f, -1.0f);  // 法线指向Z负方向
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(-halfSize, -halfSize, -halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(-halfSize,  halfSize, -halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f( halfSize,  halfSize, -halfSize);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f( halfSize, -halfSize, -halfSize);
+    // 后面 (Z-) - 从后面看逆时针
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glVertex3f( h, -h, -h);
+    glVertex3f(-h, -h, -h);
+    glVertex3f(-h,  h, -h);
+    glVertex3f( h,  h, -h);
     
-    // 顶面 (Y+)
-    glNormal3f(0.0f, 1.0f, 0.0f);  // 法线指向Y正方向
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfSize,  halfSize, -halfSize);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfSize,  halfSize,  halfSize);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f( halfSize,  halfSize,  halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f( halfSize,  halfSize, -halfSize);
+    // 顶面 (Y+) - 从上面看逆时针
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(-h,  h,  h);
+    glVertex3f( h,  h,  h);
+    glVertex3f( h,  h, -h);
+    glVertex3f(-h,  h, -h);
     
-    // 底面 (Y-)
-    glNormal3f(0.0f, -1.0f, 0.0f);  // 法线指向Y负方向
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(-halfSize, -halfSize, -halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f( halfSize, -halfSize, -halfSize);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f( halfSize, -halfSize,  halfSize);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(-halfSize, -halfSize,  halfSize);
+    // 底面 (Y-) - 从下面看逆时针
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(-h, -h, -h);
+    glVertex3f( h, -h, -h);
+    glVertex3f( h, -h,  h);
+    glVertex3f(-h, -h,  h);
     
-    // 右面 (X+)
-    glNormal3f(1.0f, 0.0f, 0.0f);  // 法线指向X正方向
-    glTexCoord2f(1.0f, 0.0f); glVertex3f( halfSize, -halfSize, -halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f( halfSize,  halfSize, -halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f( halfSize,  halfSize,  halfSize);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f( halfSize, -halfSize,  halfSize);
+    // 右面 (X+) - 从右面看逆时针
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glVertex3f( h, -h,  h);
+    glVertex3f( h, -h, -h);
+    glVertex3f( h,  h, -h);
+    glVertex3f( h,  h,  h);
     
-    // 左面 (X-)
-    glNormal3f(-1.0f, 0.0f, 0.0f);  // 法线指向X负方向
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfSize, -halfSize, -halfSize);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(-halfSize, -halfSize,  halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(-halfSize,  halfSize,  halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfSize,  halfSize, -halfSize);
+    // 左面 (X-) - 从左面看逆时针
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(-h, -h, -h);
+    glVertex3f(-h, -h,  h);
+    glVertex3f(-h,  h,  h);
+    glVertex3f(-h,  h, -h);
     
     glEnd();
 }
