@@ -974,8 +974,8 @@ void GraphicsEngine3D::RenderLightSource() {
     glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
     glPushMatrix();
     
-    // 光源实际位置（取反后的位置）
-    glTranslatef(-light.positionX, -light.positionY, -light.positionZ);
+    // 光源显示位置（用户设置的位置）
+    glTranslatef(light.positionX, light.positionY, light.positionZ);
     
     // 黄色太阳
     glColor3f(1.0f, 1.0f, 0.0f);
