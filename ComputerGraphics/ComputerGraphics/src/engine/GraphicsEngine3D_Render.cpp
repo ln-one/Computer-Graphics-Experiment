@@ -623,15 +623,15 @@ void GraphicsEngine3D::RenderSphereImmediate(float radius, int segments, int rin
             float z4 = radius * sinf(phi2) * sinf(theta2);
             float nx4 = x4 / radius, ny4 = y4 / radius, nz4 = z4 / radius;
             
-            // 第一个三角形: 1-2-3
+            // 第一个三角形: 1-3-2 (逆时针顺序，从外部看)
             glTexCoord2f(u1, v1); glNormal3f(nx1, ny1, nz1); glVertex3f(x1, y1, z1);
-            glTexCoord2f(u1, v2); glNormal3f(nx2, ny2, nz2); glVertex3f(x2, y2, z2);
             glTexCoord2f(u2, v1); glNormal3f(nx3, ny3, nz3); glVertex3f(x3, y3, z3);
+            glTexCoord2f(u1, v2); glNormal3f(nx2, ny2, nz2); glVertex3f(x2, y2, z2);
             
-            // 第二个三角形: 2-4-3
-            glTexCoord2f(u1, v2); glNormal3f(nx2, ny2, nz2); glVertex3f(x2, y2, z2);
-            glTexCoord2f(u2, v2); glNormal3f(nx4, ny4, nz4); glVertex3f(x4, y4, z4);
+            // 第二个三角形: 3-4-2 (逆时针顺序，从外部看)
             glTexCoord2f(u2, v1); glNormal3f(nx3, ny3, nz3); glVertex3f(x3, y3, z3);
+            glTexCoord2f(u2, v2); glNormal3f(nx4, ny4, nz4); glVertex3f(x4, y4, z4);
+            glTexCoord2f(u1, v2); glNormal3f(nx2, ny2, nz2); glVertex3f(x2, y2, z2);
         }
     }
     
@@ -678,16 +678,16 @@ void GraphicsEngine3D::RenderCylinderImmediate(float radius, float height, int s
         float u1 = (float)i / segments;
         float u2 = (float)(i + 1) / segments;
         
-        // 侧面四边形（两个三角形）
-        // 三角形1
+        // 侧面四边形（两个三角形，逆时针顺序从外部看）
+        // 三角形1: 底左-顶左-底右
         glTexCoord2f(u1, 0.0f); glNormal3f(nx1, 0.0f, nz1); glVertex3f(x1, -halfHeight, z1);
-        glTexCoord2f(u2, 0.0f); glNormal3f(nx2, 0.0f, nz2); glVertex3f(x2, -halfHeight, z2);
         glTexCoord2f(u1, 1.0f); glNormal3f(nx1, 0.0f, nz1); glVertex3f(x1, halfHeight, z1);
+        glTexCoord2f(u2, 0.0f); glNormal3f(nx2, 0.0f, nz2); glVertex3f(x2, -halfHeight, z2);
         
-        // 三角形2
+        // 三角形2: 底右-顶左-顶右
         glTexCoord2f(u2, 0.0f); glNormal3f(nx2, 0.0f, nz2); glVertex3f(x2, -halfHeight, z2);
-        glTexCoord2f(u2, 1.0f); glNormal3f(nx2, 0.0f, nz2); glVertex3f(x2, halfHeight, z2);
         glTexCoord2f(u1, 1.0f); glNormal3f(nx1, 0.0f, nz1); glVertex3f(x1, halfHeight, z1);
+        glTexCoord2f(u2, 1.0f); glNormal3f(nx2, 0.0f, nz2); glVertex3f(x2, halfHeight, z2);
     }
     glEnd();
     
@@ -710,17 +710,17 @@ void GraphicsEngine3D::RenderCylinderImmediate(float radius, float height, int s
         float tu2 = (cosf(theta2) + 1.0f) * 0.5f;
         float tv2 = (sinf(theta2) + 1.0f) * 0.5f;
         
-        // 顶面（法线指向Y+）
+        // 顶面（法线指向Y+，从上往下看逆时针）
         glNormal3f(0.0f, 1.0f, 0.0f);
         glTexCoord2f(0.5f, 0.5f); glVertex3f(0.0f, halfHeight, 0.0f);  // 圆心
-        glTexCoord2f(tu1, tv1); glVertex3f(x1, halfHeight, z1);
         glTexCoord2f(tu2, tv2); glVertex3f(x2, halfHeight, z2);
+        glTexCoord2f(tu1, tv1); glVertex3f(x1, halfHeight, z1);
         
-        // 底面（法线指向Y-）
+        // 底面（法线指向Y-，从下往上看逆时针）
         glNormal3f(0.0f, -1.0f, 0.0f);
         glTexCoord2f(0.5f, 0.5f); glVertex3f(0.0f, -halfHeight, 0.0f);  // 圆心
-        glTexCoord2f(tu2, tv2); glVertex3f(x2, -halfHeight, z2);
         glTexCoord2f(tu1, tv1); glVertex3f(x1, -halfHeight, z1);
+        glTexCoord2f(tu2, tv2); glVertex3f(x2, -halfHeight, z2);
     }
     glEnd();
 }
