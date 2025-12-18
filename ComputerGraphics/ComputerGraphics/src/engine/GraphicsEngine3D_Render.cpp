@@ -346,16 +346,25 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     float globalAmbient[] = {0.1f, 0.1f, 0.1f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
     
-    // 重要：在应用视图矩阵之前设置光源位置
-    // 这样光源位置就是在世界坐标系中，不会受摄像机变换影响
+    // 重要：在单位矩阵下设置光源位置，确保光源在世界坐标系中
+    glPushMatrix();
+    glLoadIdentity();  // 重置为单位矩阵
     float lightPos[] = {light.positionX, light.positionY, light.positionZ, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    glPopMatrix();
     
-    // 调试输出光源位置
-    char lightDebug[256];
-    sprintf_s(lightDebug, "光源位置: (%.2f, %.2f, %.2f)", 
-              light.positionX, light.positionY, light.positionZ);
+    // 调试输出光源和摄像机信息
+    char lightDebug[512];
+    sprintf_s(lightDebug, "光源位置(世界坐标): (%.2f, %.2f, %.2f), 摄像机位置: (%.2f, %.2f, %.2f)", 
+              light.positionX, light.positionY, light.positionZ,
+              cameraX, cameraY, cameraZ);
     OutputDebugStringA(lightDebug);
+    
+    // 输出光照强度信息
+    char intensityDebug[256];
+    sprintf_s(intensityDebug, "光照强度 - 环境光: %.2f, 漫反射: %.2f, 镜面反射: %.2f", 
+              light.ambientIntensity, light.diffuseIntensity, light.specularIntensity);
+    OutputDebugStringA(intensityDebug);
     
     // 现在应用视图矩阵
     glMultMatrixf(viewMatrix);
@@ -483,6 +492,9 @@ void GraphicsEngine3D::RenderWithFixedPipeline() {
     if (showLight) {
         RenderLightSource();
     }
+    
+    // 渲染一个测试立方体在原点，帮助观察光照效果
+    RenderTestCube();
 }
 
 
@@ -1059,6 +1071,50 @@ void GraphicsEngine3D::RenderLightSource() {
     }
     glEnd();
     
+    // 绘制指向原点的光线方向指示器
+    glColor3f(1.0f, 1.0f, 0.0f);  // 黄色光线
+    glLineWidth(4.0f);
+    glBegin(GL_LINES);
+    
+    // 计算指向原点的方向向量
+    float dirX = -light.positionX;
+    float dirY = -light.positionY;
+    float dirZ = -light.positionZ;
+    
+    // 归一化方向向量
+    float length = sqrtf(dirX*dirX + dirY*dirY + dirZ*dirZ);
+    if (length > 0.001f) {
+        dirX /= length;
+        dirY /= length;
+        dirZ /= length;
+        
+        // 绘制指向原点的箭头
+        float arrowLength = 0.8f;
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(dirX * arrowLength, dirY * arrowLength, dirZ * arrowLength);
+        
+        // 绘制箭头头部
+        float headLength = 0.2f;
+        float perpX = dirY;  // 简单的垂直向量
+        float perpY = -dirX;
+        float perpZ = 0.0f;
+        
+        float headX = dirX * arrowLength;
+        float headY = dirY * arrowLength;
+        float headZ = dirZ * arrowLength;
+        
+        glVertex3f(headX, headY, headZ);
+        glVertex3f(headX - dirX * headLength + perpX * headLength * 0.5f, 
+                   headY - dirY * headLength + perpY * headLength * 0.5f, 
+                   headZ - dirZ * headLength);
+        
+        glVertex3f(headX, headY, headZ);
+        glVertex3f(headX - dirX * headLength - perpX * headLength * 0.5f, 
+                   headY - dirY * headLength - perpY * headLength * 0.5f, 
+                   headZ - dirZ * headLength);
+    }
+    glEnd();
+    
     // 在光源上方绘制一个小标识，表示这是光源
     glColor3f(1.0f, 1.0f, 1.0f);  // 白色标识
     glLineWidth(2.0f);
@@ -1069,6 +1125,37 @@ void GraphicsEngine3D::RenderLightSource() {
     glVertex3f(-0.1f, 0.6f, 0.0f);
     glVertex3f(0.1f, 0.6f, 0.0f);
     glEnd();
+    
+    glPopMatrix();
+    glPopAttrib();
+}/**
+ *
+ @brief 渲染测试立方体
+ * 
+ * 在原点渲染一个小立方体，帮助观察光照效果。
+ * 这个立方体使用标准的材质属性，可以清楚地显示光照方向。
+ */
+void GraphicsEngine3D::RenderTestCube() {
+    // 保存当前OpenGL状态
+    glPushAttrib(GL_CURRENT_BIT);
+    glPushMatrix();
+    
+    // 移动到原点（实际上不需要移动）
+    // glTranslatef(0.0f, 0.0f, 0.0f);
+    
+    // 设置测试立方体的材质
+    float ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    float diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float shininess = 64.0f;
+    
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+    
+    // 渲染一个小立方体（边长0.5）
+    RenderCubeImmediate(0.5f);
     
     glPopMatrix();
     glPopAttrib();
