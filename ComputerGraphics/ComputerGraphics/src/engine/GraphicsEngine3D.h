@@ -260,13 +260,6 @@ public:
      */
     bool GetShowLight() const { return showLight; }
     
-    /**
-     * @brief 渲染测试立方体
-     * 
-     * 在原点渲染一个小立方体，帮助观察光照效果
-     */
-    void RenderTestCube();
-    
 private:
     // === 核心组件 ===
     HWND hwnd;                            ///< 窗口句柄
