@@ -109,30 +109,39 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
             // 对话框初始化
             // 显示当前纹理状态并初始化控件
             // ================================================================
+            // 纹理对话框控件ID（在资源文件中定义）
+            const int ID_TEXTURE_PATH = 8001;
+            const int ID_BROWSE_BTN = 8002;
+            const int ID_MAPPING_COMBO = 8003;
+            const int ID_SCALE_U = 8004;
+            const int ID_SCALE_V = 8005;
+            const int ID_OFFSET_U = 8006;
+            const int ID_OFFSET_V = 8007;
+            const int ID_REMOVE_BTN = 8008;
+            
             if (s_currentShape) {
                 // 显示当前纹理状态
                 if (s_currentShape->hasTexture && s_currentShape->textureID != 0) {
-                    SetDlgItemTextA(hwnd, 5265, "(Texture loaded)");  // 路径编辑框
+                    SetDlgItemTextA(hwnd, ID_TEXTURE_PATH, "(Texture loaded)");
                 } else {
-                    SetDlgItemTextA(hwnd, 5265, "(No texture)");  // 路径编辑框
+                    SetDlgItemTextA(hwnd, ID_TEXTURE_PATH, "(No texture)");
                 }
                 
                 // 初始化纹理映射类型下拉框
-                // 不同的映射方式适合不同形状的物体
-                HWND hCombo = GetDlgItem(hwnd, 5267);  // 映射类型下拉框
-                SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Planar (平面映射)");
-                SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Spherical (球面映射)");
-                SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Cylindrical (柱面映射)");
-                SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Box (盒式映射)");
-                SendMessageW(hCombo, CB_SETCURSEL, 0, 0);  // 默认选择平面映射
+                HWND hCombo = GetDlgItem(hwnd, ID_MAPPING_COMBO);
+                if (hCombo) {
+                    SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Planar (平面映射)");
+                    SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Spherical (球面映射)");
+                    SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Cylindrical (柱面映射)");
+                    SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Box (盒式映射)");
+                    SendMessageW(hCombo, CB_SETCURSEL, 0, 0);
+                }
                 
                 // 设置默认纹理参数
-                // 缩放：控制纹理重复次数，1.0表示不重复
-                // 偏移：控制纹理起始位置，0.0表示从原点开始
-                SetFloatValue(hwnd, 5268, 1.0f);  // U缩放
-                SetFloatValue(hwnd, 5269, 1.0f);  // V缩放
-                SetFloatValue(hwnd, 5270, 0.0f);  // U偏移
-                SetFloatValue(hwnd, 5271, 0.0f);  // V偏移
+                SetFloatValue(hwnd, ID_SCALE_U, 1.0f);
+                SetFloatValue(hwnd, ID_SCALE_V, 1.0f);
+                SetFloatValue(hwnd, ID_OFFSET_U, 0.0f);
+                SetFloatValue(hwnd, ID_OFFSET_V, 0.0f);
             }
             
             // 将对话框居中显示
@@ -155,7 +164,7 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
             OutputDebugStringA(cmdDebug);
             
             switch (LOWORD(wParam)) {
-                case 5266: {  // 浏览按钮（资源编译器分配的ID）
+                case 8002: {  // 浏览按钮
                     // ========================================================
                     // 用户点击浏览按钮
                     // 打开文件选择对话框让用户选择纹理文件
@@ -164,12 +173,12 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                     std::string filepath;
                     if (OpenFileDialog(hwnd, filepath)) {
                         s_texturePath = filepath;
-                        SetDlgItemTextA(hwnd, 5265, filepath.c_str());  // 路径编辑框
+                        SetDlgItemTextA(hwnd, 8001, filepath.c_str());  // 路径编辑框
                     }
                     return TRUE;
                 }
                 
-                case 5272: {  // 移除纹理按钮
+                case 8008: {  // 移除纹理按钮
                     // ========================================================
                     // 用户点击移除纹理按钮
                     // 删除当前图形的纹理
@@ -182,7 +191,7 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                         }
                         s_currentShape->hasTexture = false;
                         s_texturePath = "";
-                        SetDlgItemTextA(hwnd, 5265, "(No texture)");  // 路径编辑框
+                        SetDlgItemTextA(hwnd, 8001, "(No texture)");  // 路径编辑框
                         
                         // 调试输出
                         OutputDebugStringA("Texture removed from shape");
