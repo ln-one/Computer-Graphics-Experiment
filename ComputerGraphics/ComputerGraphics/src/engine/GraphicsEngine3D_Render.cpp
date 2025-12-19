@@ -747,17 +747,17 @@ void GraphicsEngine3D::RenderPlaneImmediate(float width, float height) {
     
     glBegin(GL_TRIANGLES);
     
-    // 第一个三角形
+    // 第一个三角形（从Y+方向看逆时针）
     glNormal3f(0.0f, 1.0f, 0.0f);  // 法线指向Y+
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfWidth, 0.0f, -halfHeight);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(halfWidth, 0.0f, -halfHeight);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(halfWidth, 0.0f, halfHeight);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(halfWidth, 0.0f, -halfHeight);
     
-    // 第二个三角形
+    // 第二个三角形（从Y+方向看逆时针）
     glNormal3f(0.0f, 1.0f, 0.0f);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfWidth, 0.0f, -halfHeight);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(halfWidth, 0.0f, halfHeight);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfWidth, 0.0f, halfHeight);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(halfWidth, 0.0f, halfHeight);
     
     glEnd();
 }
