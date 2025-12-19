@@ -149,12 +149,19 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
         }
 
         case WM_COMMAND: {
+            // 调试输出
+            char cmdDebug[128];
+            sprintf_s(cmdDebug, "TextureDialog WM_COMMAND: 控件ID=%d", LOWORD(wParam));
+            OutputDebugStringA(cmdDebug);
+            
             switch (LOWORD(wParam)) {
-                case IDC_BTN_BROWSE_TEXTURE: {
+                case IDC_BTN_BROWSE_TEXTURE:
+                case 5167: {  // 兼容资源编译器分配的ID
                     // ========================================================
                     // 用户点击浏览按钮
                     // 打开文件选择对话框让用户选择纹理文件
                     // ========================================================
+                    OutputDebugStringA("浏览按钮被点击");
                     std::string filepath;
                     if (OpenFileDialog(hwnd, filepath)) {
                         s_texturePath = filepath;
@@ -163,7 +170,8 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                     return TRUE;
                 }
                 
-                case IDC_BTN_REMOVE_TEXTURE: {
+                case IDC_BTN_REMOVE_TEXTURE:
+                case 5168: {
                     // ========================================================
                     // 用户点击移除纹理按钮
                     // 删除当前图形的纹理
