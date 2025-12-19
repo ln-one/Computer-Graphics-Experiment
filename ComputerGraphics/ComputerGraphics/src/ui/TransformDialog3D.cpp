@@ -127,6 +127,12 @@ INT_PTR CALLBACK TransformDialog3D::DialogProc(HWND hwnd, UINT msg,
         }
         
         case WM_COMMAND: {
+            // 调试输出：显示收到的控件ID
+            char cmdDebug[128];
+            sprintf_s(cmdDebug, "WM_COMMAND: 控件ID=%d, 通知码=%d", 
+                      LOWORD(wParam), HIWORD(wParam));
+            OutputDebugStringA(cmdDebug);
+            
             switch (LOWORD(wParam)) {
                 case IDOK: {
                     // ========================================================
@@ -253,16 +259,26 @@ INT_PTR CALLBACK TransformDialog3D::DialogProc(HWND hwnd, UINT msg,
                 
                 case IDC_BTN_MATERIAL: {
                     // 用户点击材质按钮，打开材质编辑对话框
+                    OutputDebugStringA("材质按钮被点击");
                     if (s_currentShape) {
+                        OutputDebugStringA("正在打开材质对话框...");
                         MaterialDialog::Show(hwnd, s_currentShape);
+                        OutputDebugStringA("材质对话框已关闭");
+                    } else {
+                        OutputDebugStringA("错误: s_currentShape 为空");
                     }
                     return TRUE;
                 }
                 
                 case IDC_BTN_TEXTURE: {
                     // 用户点击纹理按钮，打开纹理设置对话框
+                    OutputDebugStringA("纹理按钮被点击");
                     if (s_currentShape) {
+                        OutputDebugStringA("正在打开纹理对话框...");
                         TextureDialog::Show(hwnd, s_currentShape);
+                        OutputDebugStringA("纹理对话框已关闭");
+                    } else {
+                        OutputDebugStringA("错误: s_currentShape 为空");
                     }
                     return TRUE;
                 }
