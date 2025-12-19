@@ -257,7 +257,7 @@ INT_PTR CALLBACK TransformDialog3D::DialogProc(HWND hwnd, UINT msg,
                     return TRUE;
                 }
                 
-                case IDC_BTN_MATERIAL: {
+                case 5165: {  // 材质按钮（资源编译器分配的ID）
                     // 用户点击材质按钮，打开材质编辑对话框
                     OutputDebugStringA("材质按钮被点击");
                     if (s_currentShape) {
@@ -270,7 +270,7 @@ INT_PTR CALLBACK TransformDialog3D::DialogProc(HWND hwnd, UINT msg,
                     return TRUE;
                 }
                 
-                case IDC_BTN_TEXTURE: {
+                case 5166: {  // 纹理按钮（资源编译器分配的ID）
                     // 用户点击纹理按钮，打开纹理设置对话框
                     OutputDebugStringA("纹理按钮被点击");
                     if (s_currentShape) {
