@@ -112,14 +112,14 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
             if (s_currentShape) {
                 // 显示当前纹理状态
                 if (s_currentShape->hasTexture && s_currentShape->textureID != 0) {
-                    SetDlgItemTextA(hwnd, IDC_EDIT_TEXTURE_PATH, "(Texture loaded)");
+                    SetDlgItemTextA(hwnd, 5265, "(Texture loaded)");  // 路径编辑框
                 } else {
-                    SetDlgItemTextA(hwnd, IDC_EDIT_TEXTURE_PATH, "(No texture)");
+                    SetDlgItemTextA(hwnd, 5265, "(No texture)");  // 路径编辑框
                 }
                 
                 // 初始化纹理映射类型下拉框
                 // 不同的映射方式适合不同形状的物体
-                HWND hCombo = GetDlgItem(hwnd, IDC_COMBO_MAPPING_TYPE);
+                HWND hCombo = GetDlgItem(hwnd, 5267);  // 映射类型下拉框
                 SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Planar (平面映射)");
                 SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Spherical (球面映射)");
                 SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Cylindrical (柱面映射)");
@@ -129,10 +129,10 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                 // 设置默认纹理参数
                 // 缩放：控制纹理重复次数，1.0表示不重复
                 // 偏移：控制纹理起始位置，0.0表示从原点开始
-                SetFloatValue(hwnd, IDC_EDIT_TEX_SCALE_U, 1.0f);
-                SetFloatValue(hwnd, IDC_EDIT_TEX_SCALE_V, 1.0f);
-                SetFloatValue(hwnd, IDC_EDIT_TEX_OFFSET_U, 0.0f);
-                SetFloatValue(hwnd, IDC_EDIT_TEX_OFFSET_V, 0.0f);
+                SetFloatValue(hwnd, 5268, 1.0f);  // U缩放
+                SetFloatValue(hwnd, 5269, 1.0f);  // V缩放
+                SetFloatValue(hwnd, 5270, 0.0f);  // U偏移
+                SetFloatValue(hwnd, 5271, 0.0f);  // V偏移
             }
             
             // 将对话框居中显示
@@ -155,8 +155,7 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
             OutputDebugStringA(cmdDebug);
             
             switch (LOWORD(wParam)) {
-                case IDC_BTN_BROWSE_TEXTURE:
-                case 5167: {  // 兼容资源编译器分配的ID
+                case 5266: {  // 浏览按钮（资源编译器分配的ID）
                     // ========================================================
                     // 用户点击浏览按钮
                     // 打开文件选择对话框让用户选择纹理文件
@@ -165,13 +164,12 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                     std::string filepath;
                     if (OpenFileDialog(hwnd, filepath)) {
                         s_texturePath = filepath;
-                        SetDlgItemTextA(hwnd, IDC_EDIT_TEXTURE_PATH, filepath.c_str());
+                        SetDlgItemTextA(hwnd, 5265, filepath.c_str());  // 路径编辑框
                     }
                     return TRUE;
                 }
                 
-                case IDC_BTN_REMOVE_TEXTURE:
-                case 5168: {
+                case 5272: {  // 移除纹理按钮
                     // ========================================================
                     // 用户点击移除纹理按钮
                     // 删除当前图形的纹理
@@ -184,7 +182,7 @@ INT_PTR CALLBACK TextureDialog::DialogProc(HWND hwnd, UINT msg,
                         }
                         s_currentShape->hasTexture = false;
                         s_texturePath = "";
-                        SetDlgItemTextA(hwnd, IDC_EDIT_TEXTURE_PATH, "(No texture)");
+                        SetDlgItemTextA(hwnd, 5265, "(No texture)");  // 路径编辑框
                         
                         // 调试输出
                         OutputDebugStringA("Texture removed from shape");
