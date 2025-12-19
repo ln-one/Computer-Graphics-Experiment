@@ -83,7 +83,7 @@ void GraphicsEngine::ClearCanvas() {
  */
 void GraphicsEngine::RenderAll() {
     for (const auto& shape : shapes) {
-        // 选中的图形用红色显示
+        // 选中的图形用黄色显示
         COLORREF color = shape.selected ? RGB(255, 0, 0) : shape.color;
         ShapeRenderer::DrawShape(hdc, shape, color);
         // 为选中的图形绘制选择指示器

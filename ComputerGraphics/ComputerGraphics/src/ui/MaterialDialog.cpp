@@ -66,7 +66,11 @@ bool MaterialDialog::Show(HWND parent, Shape3D* shape) {
     s_currentShape = shape;
     
     // 获取应用程序实例句柄
+    // 尝试从父窗口获取，如果失败则使用GetModuleHandle
     HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(parent, GWLP_HINSTANCE);
+    if (!hInstance) {
+        hInstance = GetModuleHandle(NULL);
+    }
     
     // 显示模态对话框
     INT_PTR result = DialogBoxW(hInstance, MAKEINTRESOURCEW(IDD_MATERIAL3D), 
